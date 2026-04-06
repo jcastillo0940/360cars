@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Valuation\ValuationSettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class WebAuthController extends Controller
 {
@@ -18,8 +19,22 @@ class WebAuthController extends Controller
 
     public function create()
     {
+        Log::info('auth.login_page', [
+            'auth_check' => Auth::check(),
+            'user_id' => Auth::id(),
+            'redirect_to' => request()->string('redirect')->toString(),
+            'session_id' => request()->hasSession() ? request()->session()->getId() : null,
+        ]);
+
         if (Auth::check()) {
-            return redirect()->route($this->redirectRoute(Auth::user()));
+            $route = $this->redirectRoute(Auth::user());
+
+            Log::info('auth.login_page.redirect_authenticated', [
+                'user_id' => Auth::id(),
+                'route' => $route,
+            ]);
+
+            return redirect()->route($route);
         }
 
         return view('auth.login', [
@@ -31,11 +46,31 @@ class WebAuthController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $credentials = $request->validated();
+        $email = strtolower((string) $credentials['email']);
 
-        if (! Auth::attempt([
-            'email' => strtolower((string) $credentials['email']),
+        Log::info('auth.login_attempt.start', [
+            'email' => $email,
+            'redirect' => (string) $request->input('redirect'),
+            'session_id_before' => $request->session()->getId(),
+            'session_token_prefix_before' => is_string($request->session()->token()) ? substr((string) $request->session()->token(), 0, 12) : null,
+            'has_session_cookie' => $request->cookies->has((string) config('session.cookie')),
+            'has_xsrf_cookie' => $request->cookies->has('XSRF-TOKEN'),
+        ]);
+
+        $authenticated = Auth::attempt([
+            'email' => $email,
             'password' => $credentials['password'],
-        ], true)) {
+        ], true);
+
+        Log::info('auth.login_attempt.result', [
+            'email' => $email,
+            'authenticated' => $authenticated,
+            'auth_check_after_attempt' => Auth::check(),
+            'user_id_after_attempt' => Auth::id(),
+            'session_id_after_attempt' => $request->session()->getId(),
+        ]);
+
+        if (! $authenticated) {
             return back()
                 ->withErrors(['email' => 'Las credenciales proporcionadas no son validas.'])
                 ->onlyInput('email');
@@ -45,11 +80,32 @@ class WebAuthController extends Controller
         $request->user()->forceFill(['last_seen_at' => now()])->save();
 
         $redirectTo = (string) $request->input('redirect');
+
+        Log::info('auth.login_attempt.authenticated', [
+            'user_id' => $request->user()?->id,
+            'account_type' => $request->user()?->account_type,
+            'session_id_regenerated' => $request->session()->getId(),
+            'session_token_prefix_after_regenerate' => is_string($request->session()->token()) ? substr((string) $request->session()->token(), 0, 12) : null,
+            'redirect_input' => $redirectTo,
+        ]);
+
         if ($redirectTo !== '' && str_starts_with($redirectTo, '/')) {
+            Log::info('auth.login_attempt.redirecting_custom', [
+                'user_id' => $request->user()?->id,
+                'redirect_to' => $redirectTo,
+            ]);
+
             return redirect()->to($redirectTo)->with('status', 'Bienvenido de nuevo.');
         }
 
-        return redirect()->route($this->redirectRoute($request->user()))->with('status', 'Bienvenido de nuevo.');
+        $route = $this->redirectRoute($request->user());
+
+        Log::info('auth.login_attempt.redirecting_default', [
+            'user_id' => $request->user()?->id,
+            'route' => $route,
+        ]);
+
+        return redirect()->route($route)->with('status', 'Bienvenido de nuevo.');
     }
 
     public function register()
@@ -89,6 +145,11 @@ class WebAuthController extends Controller
 
     public function destroy(): RedirectResponse
     {
+        Log::info('auth.logout', [
+            'user_id' => Auth::id(),
+            'session_id' => request()->hasSession() ? request()->session()->getId() : null,
+        ]);
+
         Auth::logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
