@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\LogAuthDebug;
 use App\Http\Middleware\LoggablePreventRequestForgery;
+use App\Http\Middleware\PreventPageCache;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
         $middleware->trustProxies(at: '*');
         $middleware->web(prepend: [
+            PreventPageCache::class,
             LogAuthDebug::class,
         ], replace: [
             PreventRequestForgery::class => LoggablePreventRequestForgery::class,
