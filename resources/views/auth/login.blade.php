@@ -1,4 +1,4 @@
-@extends('layouts.auth')
+﻿@extends('layouts.auth')
 
 @section('title', 'Ingresar | Movikaa')
 
@@ -81,11 +81,11 @@
                 @endif
                 <label class="grid gap-2">
                     <span class="text-sm font-semibold text-slate-700">Correo electronico</span>
-                    <input type="email" name="email" value="{{ old('email', 'seller@360cars.local') }}" required class="min-h-14 rounded-2xl border border-outline-variant/40 bg-white px-4 text-slate-900 shadow-sm outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10 {{ ($publicTheme ?? 'light') === 'dark' ? 'bg-white/5 text-white placeholder:text-slate-400' : '' }}" placeholder="tu@correo.com" />
+                    <input type="email" name="email" value="{{ old('email', 'seller@360cars.local') }}" required autocomplete="email" class="min-h-14 rounded-2xl border border-outline-variant/40 bg-white px-4 text-slate-900 shadow-sm outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10 {{ ($publicTheme ?? 'light') === 'dark' ? 'bg-white/5 text-white placeholder:text-slate-400' : '' }}" placeholder="tu@correo.com" />
                 </label>
                 <label class="grid gap-2">
                     <span class="text-sm font-semibold text-slate-700">Contrasena</span>
-                    <input type="password" name="password" value="password" required class="min-h-14 rounded-2xl border border-outline-variant/40 bg-white px-4 text-slate-900 shadow-sm outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10 {{ ($publicTheme ?? 'light') === 'dark' ? 'bg-white/5 text-white placeholder:text-slate-400' : '' }}" placeholder="Ingresa tu contrasena" />
+                    <input type="password" name="password" value="password" required autocomplete="current-password" class="min-h-14 rounded-2xl border border-outline-variant/40 bg-white px-4 text-slate-900 shadow-sm outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10 {{ ($publicTheme ?? 'light') === 'dark' ? 'bg-white/5 text-white placeholder:text-slate-400' : '' }}" placeholder="Ingresa tu contrasena" />
                 </label>
                 <div class="flex flex-col gap-3 pt-2 sm:flex-row">
                     <button type="submit" class="inline-flex min-h-14 items-center justify-center rounded-2xl bg-secondary px-6 font-headline text-base font-extrabold text-white shadow-lg transition hover:bg-secondary-container">Ingresar</button>
@@ -101,4 +101,5 @@
     </div>
 </section>
 @endsection
+
 
