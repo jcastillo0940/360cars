@@ -26,7 +26,7 @@
     </nav>
     <div class="portal-note">
         <p class="muted-label">Estado global</p>
-        <p>{{ $publishedVehicleCount }} publicaciones publicadas ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· {{ $paidTransactionsCount }} transacciones pagadas.</p>
+        <p>{{ $publishedVehicleCount }} publicaciones publicadas · {{ $paidTransactionsCount }} transacciones pagadas.</p>
     </div>
 @endsection
 
@@ -40,7 +40,7 @@
 <section class="dashboard-panel reveal" id="exchange-rate">
     <div class="panel-heading"><div><p class="eyebrow">Moneda</p><h2>Tipo de cambio CRC / USD</h2></div><form method="POST" action="{{ route('admin.exchange-rate.refresh') }}">@csrf<button type="submit" class="button button--ghost">Actualizar tasa</button></form></div>
     <div class="control-strip">
-        <article class="control-card"><span class="muted-label">CRC por USD</span><strong>{{ number_format((float) data_get($exchangeQuote, 'usd_to_crc', 0), 2) }}</strong><p>Fuente: {{ data_get($exchangeQuote, 'source', 'N/A') }}{{ data_get($exchangeQuote, 'stale') ? ' ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· cache anterior' : '' }}</p></article>
+        <article class="control-card"><span class="muted-label">CRC por USD</span><strong>{{ number_format((float) data_get($exchangeQuote, 'usd_to_crc', 0), 2) }}</strong><p>Fuente: {{ data_get($exchangeQuote, 'source', 'N/A') }}{{ data_get($exchangeQuote, 'stale') ? ' · cache anterior' : '' }}</p></article>
         <article class="control-card"><span class="muted-label">USD por CRC</span><strong>{{ number_format((float) data_get($exchangeQuote, 'crc_to_usd', 0), 6) }}</strong><p>Actualizado: {{ data_get($exchangeQuote, 'fetched_at') ? \Illuminate\Support\Carbon::parse(data_get($exchangeQuote, 'fetched_at'))->format('d/m/Y H:i') : 'Sin dato' }}</p></article>
     </div>
 </section>
@@ -122,7 +122,7 @@
                 <tbody>
                     @foreach ($latestVehicles as $vehicle)
                         <tr>
-                            <td><strong>{{ $vehicle->title }}</strong><span>{{ $vehicle->make?->name }} ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· {{ $vehicle->model?->name }}</span></td>
+                            <td><strong>{{ $vehicle->title }}</strong><span>{{ $vehicle->make?->name }} · {{ $vehicle->model?->name }}</span></td>
                             <td>{{ $vehicle->owner?->email }}</td>
                             <td><span class="status-badge {{ $vehicle->status === 'published' ? 'status-badge--success' : ($vehicle->status === 'draft' ? 'status-badge--warn' : '') }}">{{ $vehicle->status }}</span></td>
                             <td><strong>{{ \App\Support\VehiclePricePresenter::present((float) $vehicle->price, $vehicle->currency, $exchangeQuote)['primary_formatted'] }}</strong><span>{{ \App\Support\VehiclePricePresenter::present((float) $vehicle->price, $vehicle->currency, $exchangeQuote)['secondary_formatted'] }}</span></td>
@@ -158,7 +158,7 @@
         <div class="panel-heading"><div><p class="eyebrow">Insights</p><h2>Subscripciones activas</h2></div></div>
         <div class="feature-checklist">
             @forelse ($activeSubscriptions as $subscription)
-                <div><strong>{{ $subscription->user?->email }}</strong><p>{{ $subscription->plan?->name }} ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· vence {{ optional($subscription->ends_at)->format('d/m/Y') ?? 'N/A' }}</p></div>
+                <div><strong>{{ $subscription->user?->email }}</strong><p>{{ $subscription->plan?->name }} · vence {{ optional($subscription->ends_at)->format('d/m/Y') ?? 'N/A' }}</p></div>
             @empty
                 <div><strong>Sin subscripciones</strong><p>No hay subscripciones activas registradas.</p></div>
             @endforelse
@@ -170,11 +170,78 @@
     <div class="panel-heading"><div><p class="eyebrow">Planes disponibles</p><h2>Estructura comercial activa</h2></div></div>
     <div class="feature-checklist">
         @foreach ($plans as $plan)
-            <div><strong>{{ $plan->name }}</strong><p>${{ number_format((float) $plan->price, 0) }} ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· {{ $plan->max_active_listings ?? 'Ilimitadas' }} publicaciones ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· {{ $plan->photo_limit ?? 'Ilimitadas' }} fotos.</p></div>
+            <div><strong>{{ $plan->name }}</strong><p>${{ number_format((float) $plan->price, 0) }} · {{ $plan->max_active_listings ?? 'Ilimitadas' }} publicaciones · {{ $plan->photo_limit ?? 'Ilimitadas' }} fotos.</p></div>
         @endforeach
     </div>
 </section>
 
+
+<section class="panel-grid panel-grid--wide" id="catalog">
+    <article class="dashboard-panel reveal">
+        <div class="panel-heading"><div><p class="eyebrow">Catalogo vehicular</p><h2>Crear marca o modelo</h2></div><span class="pill">Costa Rica</span></div>
+        <div class="control-strip">
+            <article class="control-card"><span class="muted-label">Marcas activas</span><strong>{{ $catalogStats['makes_active'] }}</strong><p>{{ $catalogStats['makes_total'] }} marcas registradas en total.</p></article>
+            <article class="control-card"><span class="muted-label">Modelos activos</span><strong>{{ $catalogStats['models_active'] }}</strong><p>{{ $catalogStats['models_total'] }} modelos registrados en total.</p></article>
+        </div>
+        <div class="panel-grid panel-grid--wide" style="margin-top: 1rem;">
+            <div class="dashboard-panel dashboard-panel--nested">
+                <div class="panel-heading"><div><p class="eyebrow">Nueva marca</p><h2>Agregar marca</h2></div></div>
+                <form method="POST" action="{{ route('admin.catalog.makes.store') }}" class="portal-form">
+                    @csrf
+                    <label class="form-field"><span>Nombre de la marca</span><input type="text" name="name" placeholder="Ej. Changan" required /></label>
+                    <div class="form-actions"><button type="submit" class="button button--solid">Guardar marca</button></div>
+                </form>
+            </div>
+            <div class="dashboard-panel dashboard-panel--nested">
+                <div class="panel-heading"><div><p class="eyebrow">Nuevo modelo</p><h2>Agregar modelo</h2></div></div>
+                <form method="POST" action="{{ route('admin.catalog.models.store') }}" class="portal-form">
+                    @csrf
+                    <div class="form-grid">
+                        <label class="form-field"><span>Marca</span><select name="vehicle_make_id" required>@foreach ($catalogMakes as $make)<option value="{{ $make->id }}">{{ $make->name }}</option>@endforeach</select></label>
+                        <label class="form-field"><span>Nombre del modelo</span><input type="text" name="name" placeholder="Ej. Tiggo 7 Pro" required /></label>
+                    </div>
+                    <div class="form-actions"><button type="submit" class="button button--solid">Guardar modelo</button></div>
+                </form>
+            </div>
+        </div>
+    </article>
+    <article class="dashboard-panel reveal reveal--delay">
+        <div class="panel-heading"><div><p class="eyebrow">Catalogo activo</p><h2>Marcas y modelos administrables</h2></div></div>
+        <div class="feature-checklist">
+            @forelse ($catalogMakes as $make)
+                <div>
+                    <div class="support-band support-band--spaced">
+                        <div>
+                            <strong>{{ $make->name }}</strong>
+                            <p>{{ $make->models->where('is_active', true)->count() }} modelos activos de {{ $make->models->count() }}.</p>
+                        </div>
+                        <form method="POST" action="{{ route('admin.catalog.makes.toggle', $make) }}">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="button button--ghost">{{ $make->is_active ? 'Desactivar marca' : 'Activar marca' }}</button>
+                        </form>
+                    </div>
+                    <div class="media-chip-row">
+                        @forelse ($make->models as $model)
+                            <span class="media-chip">
+                                {{ $model->name }}
+                                <form method="POST" action="{{ route('admin.catalog.models.toggle', $model) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="button button--ghost">{{ $model->is_active ? 'Desactivar' : 'Activar' }}</button>
+                                </form>
+                            </span>
+                        @empty
+                            <span class="status-badge status-badge--warn">Sin modelos registrados</span>
+                        @endforelse
+                    </div>
+                </div>
+            @empty
+                <div><strong>Sin catalogo</strong><p>Todavia no se han cargado marcas y modelos.</p></div>
+            @endforelse
+        </div>
+    </article>
+</section>
 <section class="panel-grid panel-grid--wide" id="features">
     <article class="dashboard-panel reveal">
         <div class="panel-heading"><div><p class="eyebrow">Configuracion del onboarding</p><h2>Crear extra configurable</h2></div><span class="pill">Seller UX</span></div>

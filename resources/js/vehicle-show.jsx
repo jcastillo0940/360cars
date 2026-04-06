@@ -1,67 +1,6 @@
-import React, { useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-
-function Icon({ name, className = '' }) {
-    return <span className={`material-symbols-outlined ${className}`.trim()} aria-hidden="true">{name}</span>;
-}
-
-function TopBar({ homeUrl, catalogUrl, sellUrl, accountUrl }) {
-    const [menuOpen, setMenuOpen] = useState(false);
-
-    return (
-        <nav className="fixed inset-x-0 top-0 z-50 border-b border-outline-variant/30 bg-white/80 backdrop-blur-md">
-            <div className="mx-auto flex h-20 max-w-screen-2xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center gap-4 lg:gap-12">
-                    <button
-                        type="button"
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant/40 text-primary transition hover:bg-primary/5 md:hidden"
-                        onClick={() => setMenuOpen((current) => !current)}
-                        aria-label="Abrir menu"
-                    >
-                        <Icon name={menuOpen ? 'close' : 'menu'} className="text-[24px]" />
-                    </button>
-                    <a href={homeUrl} className="font-headline text-2xl font-black tracking-tight text-primary sm:text-3xl">Movikaa</a>
-                    <div className="hidden md:flex md:gap-6 lg:gap-8">
-                        <a href={catalogUrl} className="font-headline text-sm font-bold tracking-tight text-primary lg:text-base">Comprar</a>
-                        <a href={homeUrl + '#destacados'} className="font-headline text-sm font-bold tracking-tight text-slate-600 transition hover:text-primary lg:text-base">Destacados</a>
-                        <a href={homeUrl + '/tasador'} className="font-headline text-sm font-bold tracking-tight text-slate-600 transition hover:text-primary lg:text-base">Valuacion</a>
-                        <a href={homeUrl + '#noticias'} className="font-headline text-sm font-bold tracking-tight text-slate-600 transition hover:text-primary lg:text-base">Noticias</a>
-                    </div>
-                </div>
-                <div className="hidden items-center gap-4 md:flex">
-                    <a href={accountUrl} className="px-5 py-2 text-sm font-bold text-slate-600 transition hover:text-primary">Ingresar</a>
-                    <a href={sellUrl} className="rounded bg-secondary px-4 py-2.5 font-headline text-sm font-bold text-white shadow-md transition-colors hover:bg-secondary-container">Vender mi auto</a>
-                </div>
-                <a href={accountUrl} className="inline-flex h-11 w-11 items-center justify-center rounded-full text-primary md:hidden">
-                    <Icon name="person" className="text-[24px]" />
-                </a>
-            </div>
-            {menuOpen ? (
-                <div className="border-t border-outline-variant/20 bg-white px-4 py-4 shadow-xl md:hidden">
-                    <div className="flex flex-col gap-4">
-                        <a href={catalogUrl} className="font-headline text-base font-bold tracking-tight text-slate-700">Comprar</a>
-                        <a href={homeUrl + '#destacados'} className="font-headline text-base font-bold tracking-tight text-slate-700">Destacados</a>
-                        <a href={homeUrl + '/tasador'} className="font-headline text-base font-bold tracking-tight text-slate-700">Valuacion</a>
-                        <a href={homeUrl + '#noticias'} className="font-headline text-base font-bold tracking-tight text-slate-700">Noticias</a>
-                        <div className="mt-3 flex flex-col gap-3 border-t border-outline-variant/20 pt-4">
-                            <a href={accountUrl} className="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700">Ingresar</a>
-                            <a href={sellUrl} className="rounded bg-secondary px-4 py-3 text-center font-headline font-bold text-white">Vender mi auto</a>
-                        </div>
-                    </div>
-                </div>
-            ) : null}
-        </nav>
-    );
-}
-
-function PriceStack({ primary, secondary, large = false }) {
-    return (
-        <div>
-            <span className={large ? 'block text-4xl font-black text-primary' : 'block text-xl font-black text-primary'}>{primary}</span>
-            {secondary ? <span className={large ? 'mt-2 block text-sm font-semibold text-slate-400' : 'mt-1 block text-[11px] font-semibold text-slate-400'}>{secondary}</span> : null}
-        </div>
-    );
-}
+import { Icon, PriceStack, PublicFooter, PublicTopBar } from './public-shell';
 
 async function requestJson(url, method, csrfToken, body = null) {
     const response = await fetch(url, {
@@ -80,27 +19,46 @@ async function requestJson(url, method, csrfToken, body = null) {
     return payload;
 }
 
-function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, publicTheme = 'light', vehicle, relatedVehicles, engagement, endpoints }) {
+function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authUser, valuationUrl, publicTheme = 'light', vehicle, relatedVehicles, engagement, endpoints, footerLinks }) {
     const [activeImage, setActiveImage] = useState(vehicle.media[0]?.url || vehicle.primary_image);
     const [favorited, setFavorited] = useState((engagement.favoriteVehicleIds || []).includes(vehicle.id));
     const [compared, setCompared] = useState((engagement.comparisonVehicleIds || []).includes(vehicle.id));
     const [message, setMessage] = useState('');
+    const [guestName, setGuestName] = useState('');
+    const [guestPhone, setGuestPhone] = useState('');
     const [messageState, setMessageState] = useState('');
     const isDark = publicTheme === 'dark';
+    const currentPath = `${window.location.pathname}${window.location.search}`;
     const specs = [
         ['Marca', vehicle.make],
         ['Modelo', vehicle.model],
-        ['Ano', vehicle.year],
+        ['A\u00f1o', vehicle.year],
         ['Combustible', vehicle.fuel_type],
-        ['Transmision', vehicle.transmission],
-        ['Carroceria', vehicle.body_type],
-        ['Condicion', vehicle.condition],
+        ['Transmisi\u00f3n', vehicle.transmission],
+        ['Carrocer\u00eda', vehicle.body_type],
+        ['Condici\u00f3n', vehicle.condition],
         ['Kilometraje', vehicle.mileage ? `${vehicle.mileage} ${vehicle.mileage_unit}` : 'No indicado'],
     ];
 
+    const whatsappHref = useMemo(() => {
+        if (!vehicle.whatsapp_url) {
+            return null;
+        }
+
+        const composed = [
+            `Hola ${vehicle.seller_name}, me interesa ${vehicle.title}.`,
+            guestName ? `Mi nombre es ${guestName}.` : '',
+            guestPhone ? `Mi telefono es ${guestPhone}.` : '',
+            message || '',
+        ].filter(Boolean).join(' ');
+
+        const [baseUrl] = vehicle.whatsapp_url.split('?text=');
+        return `${baseUrl}?text=${encodeURIComponent(composed)}`;
+    }, [vehicle.whatsapp_url, vehicle.seller_name, vehicle.title, guestName, guestPhone, message]);
+
     const ensureBuyer = () => {
         if (!engagement.authenticated) {
-            window.location.href = endpoints.loginUrl;
+            window.location.href = `${endpoints.loginUrl}?redirect=${encodeURIComponent(currentPath)}`;
             return false;
         }
         return true;
@@ -120,7 +78,19 @@ function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, publicTheme
 
     const contactSeller = async (event) => {
         event.preventDefault();
-        if (!ensureBuyer()) return;
+
+        if (!engagement.authenticated) {
+            if (whatsappHref) {
+                setMessageState('Te llevamos a WhatsApp para contactar al vendedor directamente.');
+                window.open(whatsappHref, '_blank', 'noopener,noreferrer');
+                return;
+            }
+
+            setMessageState('Completa tu inicio de sesion para enviar un mensaje interno al vendedor.');
+            window.location.href = `${endpoints.loginUrl}?redirect=${encodeURIComponent(currentPath)}`;
+            return;
+        }
+
         const payload = await requestJson(endpoints.contactTemplate.replace('__VEHICLE__', String(vehicle.id)), 'POST', endpoints.csrfToken, { body: message });
         setMessageState(payload.sent ? 'Mensaje enviado al vendedor y guardado en tu dashboard.' : 'No fue posible enviar el mensaje.');
         if (payload.sent) setMessage('');
@@ -128,7 +98,16 @@ function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, publicTheme
 
     return (
         <div className={`font-body md:pb-0 ${isDark ? 'theme-dark bg-[#05070b] pb-20 text-white' : 'bg-background pb-20 text-on-background'}`}>
-            <TopBar homeUrl={homeUrl} catalogUrl={catalogUrl} sellUrl={sellUrl} accountUrl={accountUrl} />
+            <PublicTopBar
+                homeUrl={homeUrl}
+                catalogUrl={catalogUrl}
+                valuationUrl={valuationUrl}
+                sellUrl={sellUrl}
+                accountUrl={accountUrl}
+                authUser={authUser}
+                newsUrl={`${homeUrl}#noticias`}
+                featuredUrl={`${homeUrl}#destacados`}
+            />
             <main className="pt-20">
                 <section className="mx-auto max-w-screen-2xl px-4 py-8 sm:px-6 lg:px-8">
                     <a href={catalogUrl} className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline">
@@ -141,7 +120,7 @@ function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, publicTheme
                             </div>
                             <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-5">
                                 {(vehicle.media.length ? vehicle.media : [{ id: 'primary', url: vehicle.primary_image, thumb_url: vehicle.primary_image, alt: vehicle.title }]).map((item) => (
-                                    <button key={item.id} type="button" onClick={() => setActiveImage(item.url)} className={`overflow-hidden rounded-2xl border ${activeImage === item.url ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30'}`}>
+                                    <button key={item.id} type="button" onClick={() => setActiveImage(item.url)} className={`overflow-hidden rounded-2xl border ${activeImage === item.url ? 'border-secondary ring-2 ring-secondary/25' : 'border-outline-variant/30'}`}>
                                         <img src={item.thumb_url || item.url} alt={item.alt} className="h-20 w-full object-cover" />
                                     </button>
                                 ))}
@@ -154,17 +133,17 @@ function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, publicTheme
                                     <span className="rounded-full bg-primary-fixed px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-primary">{vehicle.publication_tier}</span>
                                     {vehicle.is_paid ? <span className="rounded-full bg-secondary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-secondary">{vehicle.plan_name}</span> : null}
                                     <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">{vehicle.visibility_bucket}</span>
-                                    {vehicle.price_badge ? <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-amber-700">{vehicle.price_badge}</span> : null}
+                                    {vehicle.price_badge ? <span className="rounded-full bg-secondary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-secondary">{vehicle.price_badge}</span> : null}
                                 </div>
                                 <h1 className="mt-4 font-headline text-4xl font-extrabold tracking-tight text-slate-950">{vehicle.title}</h1>
-                                <p className="mt-3 text-base text-slate-500">{vehicle.city || 'Costa Rica'} · {vehicle.published_label}</p>
+                                <p className="mt-3 text-base text-slate-500">{vehicle.city || 'Costa Rica'} | {vehicle.published_label}</p>
                                 <div className="mt-6 flex items-end justify-between gap-4">
                                     <PriceStack primary={vehicle.price} secondary={vehicle.price_secondary} large />
                                     <div className="flex gap-2">
-                                        <button type="button" onClick={toggleFavorite} className={`rounded-full p-3 transition-colors ${favorited ? 'bg-primary text-white' : 'bg-surface-container-high text-slate-600 hover:bg-primary hover:text-white'}`}>
+                                        <button type="button" onClick={toggleFavorite} className={`rounded-full p-3 transition-colors ${favorited ? 'bg-secondary text-white' : 'bg-secondary/12 text-secondary hover:bg-secondary hover:text-white'}`}>
                                             <Icon name="favorite" className="text-[22px]" />
                                         </button>
-                                        <button type="button" onClick={toggleCompare} className={`rounded-full p-3 transition-colors ${compared ? 'bg-primary text-white' : 'bg-surface-container-high text-slate-600 hover:bg-primary hover:text-white'}`}>
+                                        <button type="button" onClick={toggleCompare} className={`rounded-full p-3 transition-colors ${compared ? 'bg-secondary text-white' : 'bg-secondary/12 text-secondary hover:bg-secondary hover:text-white'}`}>
                                             <Icon name="balance" className="text-[22px]" />
                                         </button>
                                     </div>
@@ -194,13 +173,29 @@ function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, publicTheme
 
                             <form onSubmit={contactSeller} className="rounded-[2rem] bg-white p-6 shadow-xl sm:p-8">
                                 <div className="mb-5 flex items-center justify-between">
-                                    <h2 className="font-headline text-2xl font-extrabold tracking-tight">Contactar vendedor</h2>
+                                    <div>
+                                        <h2 className="font-headline text-2xl font-extrabold tracking-tight">Contactar vendedor</h2>
+                                        <p className="mt-2 text-sm text-slate-500">{engagement.authenticated ? 'Envia un mensaje interno desde tu cuenta.' : 'Si aun no tienes cuenta, puedes escribir por WhatsApp o usar el correo del anuncio para continuar.'}</p>
+                                        <p className="mt-2 text-sm text-slate-400">{vehicle.contact_phone ? `WhatsApp: ${vehicle.contact_phone}` : 'Sin WhatsApp configurado'}{vehicle.contact_email ? ` | Correo: ${vehicle.contact_email}` : ''}</p>
+                                    </div>
                                     <Icon name="chat" className="text-[24px] text-primary" />
                                 </div>
+
+                                {!engagement.authenticated ? (
+                                    <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                        <input value={guestName} onChange={(event) => setGuestName(event.target.value)} type="text" placeholder="Tu nombre" className="w-full rounded-2xl border border-outline-variant/30 bg-slate-50 px-4 py-4 text-sm outline-none focus:border-primary" />
+                                        <input value={guestPhone} onChange={(event) => setGuestPhone(event.target.value)} type="text" placeholder="Tu telefono" className="w-full rounded-2xl border border-outline-variant/30 bg-slate-50 px-4 py-4 text-sm outline-none focus:border-primary" />
+                                    </div>
+                                ) : null}
+
                                 <textarea value={message} onChange={(event) => setMessage(event.target.value)} rows={5} placeholder="Hola, me interesa este vehiculo. Me gustaria conocer disponibilidad, historial y opciones de financiamiento." className="w-full rounded-2xl border border-outline-variant/30 bg-slate-50 px-4 py-4 text-sm outline-none focus:border-primary"></textarea>
                                 <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                    <button type="submit" className="inline-flex items-center justify-center rounded-2xl bg-secondary px-5 py-4 font-headline text-lg font-extrabold text-white transition-colors hover:bg-secondary-container">Enviar mensaje</button>
-                                    <a href={accountUrl} className="inline-flex items-center justify-center rounded-2xl border border-primary px-5 py-4 font-headline text-lg font-extrabold text-primary transition-colors hover:bg-primary hover:text-white">Ver mi panel buyer</a>
+                                    <button type="submit" className="inline-flex items-center justify-center rounded-2xl bg-secondary px-5 py-4 font-headline text-lg font-extrabold text-white transition-colors hover:bg-secondary-container">{engagement.authenticated ? 'Enviar mensaje' : 'Contactar ahora'}</button>
+                                    {whatsappHref ? (
+                                        <a href={whatsappHref} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-2xl border border-secondary bg-secondary/12 px-5 py-4 font-headline text-lg font-extrabold text-secondary transition-colors hover:bg-secondary hover:text-white">WhatsApp directo</a>
+                                    ) : (
+                                        <a href={`${loginUrl}?redirect=${encodeURIComponent(currentPath)}`} className="inline-flex items-center justify-center rounded-2xl border border-secondary bg-secondary/12 px-5 py-4 font-headline text-lg font-extrabold text-secondary transition-colors hover:bg-secondary hover:text-white">Iniciar sesion</a>
+                                    )}
                                 </div>
                                 {messageState ? <p className="mt-4 text-sm text-slate-500">{messageState}</p> : null}
                             </form>
@@ -237,6 +232,17 @@ function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, publicTheme
                     </div>
                 </section>
             </main>
+
+            <PublicFooter
+                homeUrl={homeUrl}
+                catalogUrl={catalogUrl}
+                valuationUrl={valuationUrl}
+                sellUrl={sellUrl}
+                loginUrl={loginUrl || accountUrl}
+                termsUrl={footerLinks.termsUrl}
+                privacyUrl={footerLinks.privacyUrl}
+                cookiesUrl={footerLinks.cookiesUrl}
+            />
         </div>
     );
 }
@@ -245,3 +251,8 @@ const element = document.getElementById('vehicle-show-react');
 if (element) {
     createRoot(element).render(<VehicleShowPage {...JSON.parse(element.dataset.props || '{}')} />);
 }
+
+
+
+
+

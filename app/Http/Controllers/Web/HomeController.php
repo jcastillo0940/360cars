@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Vehicle;
+use App\Models\VehicleMake;
 use App\Services\Currency\ExchangeRateService;
 use App\Services\Valuation\ValuationSettingsService;
 use App\Support\VehiclePricePresenter;
@@ -52,9 +53,42 @@ class HomeController extends Controller
             ->values()
             ->map(fn (Vehicle $vehicle) => $this->mapVehicle($vehicle, $exchangeQuote));
 
+        $catalogMakes = collect();
+
+        if (Schema::hasTable('vehicle_makes')) {
+            $catalogMakes = VehicleMake::query()
+                ->active()
+                ->with(['models' => fn ($query) => $query->active()->orderBy('name')])
+                ->orderBy('name')
+                ->get()
+                ->map(fn (VehicleMake $make) => [
+                    'id' => $make->id,
+                    'name' => $make->name,
+                    'slug' => $make->slug,
+                    'models' => $make->models->map(fn ($model) => [
+                        'id' => $model->id,
+                        'name' => $model->name,
+                        'slug' => $model->slug,
+                    ])->values()->all(),
+                ])
+                ->values();
+        }
+
+        $cities = $publishedVehicles
+            ->pluck('city')
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
+        $priceCeiling = (int) max(20000000, (int) ceil(((float) $publishedVehicles->max('price') ?: 20000000) / 500000) * 500000);
+
         return view('home', [
             'featuredPaidVehicles' => $featuredPaid,
             'recentVehicles' => $recentVehicles,
+            'catalogMakes' => $catalogMakes,
+            'catalogCities' => $cities,
+            'catalogPriceCeiling' => $priceCeiling,
             'publicTheme' => (string) $this->valuationSettings->get('frontend.public_theme', 'light'),
         ]);
     }
@@ -77,7 +111,7 @@ class HomeController extends Controller
             'price' => $pricing['primary_formatted'],
             'price_secondary' => $pricing['secondary_formatted'],
             'price_raw' => $pricing['primary_raw'],
-            'meta' => collect([$vehicle->fuel_type, $vehicle->body_type, $vehicle->transmission])->filter()->implode(' Â· '),
+            'meta' => collect([$vehicle->fuel_type, $vehicle->body_type, $vehicle->transmission])->filter()->implode(' | '),
             'image' => $image,
             'url' => route('catalog.show', $vehicle->slug),
             'city' => $vehicle->city,
@@ -89,3 +123,4 @@ class HomeController extends Controller
         ];
     }
 }
+

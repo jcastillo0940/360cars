@@ -26,7 +26,10 @@ class PublicCatalogController extends Controller
             'make' => $request->string('make')->toString(),
             'model' => $request->string('model')->toString(),
             'city' => $request->string('city')->toString(),
+            'min_price' => $request->integer('min_price') ?: null,
             'max_price' => $request->integer('max_price') ?: null,
+            'min_year' => $request->integer('min_year') ?: null,
+            'max_year' => $request->integer('max_year') ?: null,
         ];
 
         $query = $this->publishedVehiclesQuery();
@@ -43,12 +46,25 @@ class PublicCatalogController extends Controller
             $query->where('city', $filters['city']);
         }
 
+        if ($filters['min_price']) {
+            $query->where('price', '>=', $filters['min_price']);
+        }
+
         if ($filters['max_price']) {
             $query->where('price', '<=', $filters['max_price']);
         }
 
+        if ($filters['min_year']) {
+            $query->where('year', '>=', $filters['min_year']);
+        }
+
+        if ($filters['max_year']) {
+            $query->where('year', '<=', $filters['max_year']);
+        }
+
         $vehicles = $query->paginate(9)->withQueryString();
         $exchangeQuote = $this->exchangeRateService->latest();
+        $filterOptions = $this->filterOptions();
 
         return view('catalog.index', [
             'props' => [
@@ -56,17 +72,17 @@ class PublicCatalogController extends Controller
                 'accountUrl' => $this->resolveAccountUrl(),
                 'sellUrl' => $this->resolveSellUrl(),
                 'catalogUrl' => route('catalog.index'),
+                'comparisonsUrl' => auth()->check() ? route('buyer.comparisons.index') : route('login', ['redirect' => route('buyer.comparisons.index')]),
+                'valuationUrl' => route('valuation.index'),
+                'loginUrl' => auth()->check() ? $this->resolveAccountUrl() : route('login'),
+                'authUser' => $this->authUserPayload(),
                 'publicTheme' => (string) $this->valuationSettings->get('frontend.public_theme', 'light'),
                 'vehicles' => $this->mapVehiclePaginator($vehicles, $exchangeQuote),
                 'filters' => $filters,
-                'filterOptions' => [
-                    'makes' => $this->publishedVehiclesQuery()->with('make:id,name')->get()->pluck('make.name')->filter()->unique()->values(),
-                    'models' => $this->publishedVehiclesQuery()->with('model:id,name')->get()->pluck('model.name')->filter()->unique()->values(),
-                    'cities' => $this->publishedVehiclesQuery()->pluck('city')->filter()->unique()->values(),
-                    'priceSteps' => [5000000, 10000000, 20000000, 40000000],
-                ],
+                'filterOptions' => $filterOptions,
                 'engagement' => $this->engagementPayload(),
                 'endpoints' => $this->engagementEndpoints(),
+                'footerLinks' => $this->footerLinks(),
             ],
         ]);
     }
@@ -74,6 +90,11 @@ class PublicCatalogController extends Controller
     public function show(Vehicle $vehicle)
     {
         abort_unless($vehicle->status === 'published' && (! $vehicle->expires_at || $vehicle->expires_at->isFuture()), 404);
+
+        if (! auth()->check() || auth()->id() !== $vehicle->user_id) {
+            $vehicle->increment('view_count');
+            $vehicle->refresh();
+        }
 
         $vehicle->load(['make', 'model', 'media', 'owner']);
         $exchangeQuote = $this->exchangeRateService->latest();
@@ -93,11 +114,16 @@ class PublicCatalogController extends Controller
                 'accountUrl' => $this->resolveAccountUrl(),
                 'sellUrl' => $this->resolveSellUrl(),
                 'catalogUrl' => route('catalog.index'),
+                'comparisonsUrl' => auth()->check() ? route('buyer.comparisons.index') : route('login', ['redirect' => route('buyer.comparisons.index')]),
+                'valuationUrl' => route('valuation.index'),
+                'loginUrl' => auth()->check() ? $this->resolveAccountUrl() : route('login'),
+                'authUser' => $this->authUserPayload(),
                 'publicTheme' => (string) $this->valuationSettings->get('frontend.public_theme', 'light'),
                 'vehicle' => $this->mapVehicle($vehicle, $exchangeQuote),
                 'relatedVehicles' => $related->map(fn (Vehicle $item) => $this->mapVehicle($item, $exchangeQuote))->values(),
                 'engagement' => $this->engagementPayload(),
                 'endpoints' => $this->engagementEndpoints(),
+                'footerLinks' => $this->footerLinks(),
             ],
         ]);
     }
@@ -114,9 +140,46 @@ class PublicCatalogController extends Controller
             ->latest();
     }
 
+    protected function filterOptions(): array
+    {
+        $vehicles = $this->publishedVehiclesQuery()->get();
+        $makes = $vehicles->pluck('make')->filter()->unique('id')->sortBy('name')->values();
+        $modelsByMake = $makes->mapWithKeys(function ($make) use ($vehicles) {
+            return [
+                $make->name => $vehicles
+                    ->filter(fn ($vehicle) => $vehicle->make?->name === $make->name && $vehicle->model?->name)
+                    ->pluck('model.name')
+                    ->unique()
+                    ->sort()
+                    ->values()
+                    ->all(),
+            ];
+        });
+
+        $minPrice = (int) floor(((float) $vehicles->min('price') ?: 0) / 500000) * 500000;
+        $maxPrice = (int) ceil(((float) $vehicles->max('price') ?: 20000000) / 500000) * 500000;
+
+        return [
+            'makes' => $makes->pluck('name')->all(),
+            'models' => $vehicles->pluck('model.name')->filter()->unique()->sort()->values()->all(),
+            'modelsByMake' => $modelsByMake,
+            'cities' => $vehicles->pluck('city')->filter()->unique()->sort()->values()->all(),
+            'priceRange' => [
+                'min' => max(0, $minPrice),
+                'max' => max(20000000, $maxPrice),
+                'step' => 500000,
+            ],
+            'yearRange' => [
+                'min' => (int) ($vehicles->min('year') ?: 2000),
+                'max' => (int) ($vehicles->max('year') ?: now()->year),
+                'step' => 1,
+            ],
+        ];
+    }
+
     protected function engagementPayload(): array
     {
-        if (! auth()->check() || ! auth()->user()->hasRole('buyer')) {
+        if (! auth()->check()) {
             return [
                 'authenticated' => false,
                 'favoriteVehicleIds' => [],
@@ -138,10 +201,19 @@ class PublicCatalogController extends Controller
         return [
             'favoriteTemplate' => route('buyer.favorites.store', ['vehicle' => '__VEHICLE__']),
             'comparisonTemplate' => route('buyer.comparisons.store', ['vehicle' => '__VEHICLE__']),
-            'savedSearchUrl' => auth()->check() && auth()->user()->hasRole('buyer') ? route('buyer.saved-searches.store') : null,
+            'savedSearchUrl' => auth()->check() ? route('buyer.saved-searches.store') : null,
             'contactTemplate' => route('buyer.conversations.store', ['vehicle' => '__VEHICLE__']),
             'loginUrl' => route('login'),
             'csrfToken' => csrf_token(),
+        ];
+    }
+
+    protected function footerLinks(): array
+    {
+        return [
+            'termsUrl' => route('legal.terms'),
+            'privacyUrl' => route('legal.privacy'),
+            'cookiesUrl' => route('legal.cookies'),
         ];
     }
 
@@ -154,6 +226,24 @@ class PublicCatalogController extends Controller
         return auth()->user()->hasRole('seller', 'dealer', 'admin')
             ? route('seller.dashboard')
             : route('seller.onboarding.create');
+    }
+
+    protected function authUserPayload(): array
+    {
+        if (! auth()->check()) {
+            return [
+                'authenticated' => false,
+            ];
+        }
+
+        $firstName = trim(strtok((string) auth()->user()->name, ' '));
+
+        return [
+            'authenticated' => true,
+            'firstName' => $firstName !== '' ? $firstName : 'Cuenta',
+            'dashboardUrl' => $this->resolveAccountUrl(),
+            'buyerUrl' => route('buyer.dashboard'),
+        ];
     }
 
     protected function resolveAccountUrl(): string
@@ -188,7 +278,7 @@ class PublicCatalogController extends Controller
 
     protected function mapVehicle(Vehicle $vehicle, array $exchangeQuote): array
     {
-        $vehicle->loadMissing(['make', 'model', 'media']);
+        $vehicle->loadMissing(['make', 'model', 'media', 'owner']);
 
         $media = $vehicle->media
             ->sortBy([['is_primary', 'desc'], ['sort_order', 'asc']])
@@ -208,6 +298,10 @@ class PublicCatalogController extends Controller
             });
 
         $pricing = VehiclePricePresenter::present((float) $vehicle->price, $vehicle->currency, $exchangeQuote);
+        $contactPhone = $vehicle->owner?->whatsapp_phone ?: $vehicle->owner?->phone;
+        $whatsAppUrl = $contactPhone
+            ? 'https://wa.me/'.$this->normalizeCostaRicaPhone($contactPhone).'?text='.rawurlencode('Hola, me interesa '.$vehicle->title.' que vi en Movikaa.')
+            : null;
 
         return [
             'id' => $vehicle->id,
@@ -235,6 +329,31 @@ class PublicCatalogController extends Controller
             'media' => $media,
             'primary_image' => $media->first()['url'] ?? 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1400&q=80',
             'published_label' => optional($vehicle->published_at)->diffForHumans() ?? 'Recien publicado',
+            'visibility_bucket' => data_get($vehicle->metadata, 'visibility_bucket', 'standard'),
+            'plan_name' => data_get($vehicle->metadata, 'plan_name', 'Basico'),
+            'is_paid' => (bool) data_get($vehicle->metadata, 'plan_is_paid', false),
+            'seller_name' => $vehicle->owner?->name ?: 'Vendedor Movikaa',
+            'contact_phone' => $contactPhone,
+            'whatsapp_url' => $whatsAppUrl,
         ];
     }
+
+    protected function normalizeCostaRicaPhone(?string $phone): string
+    {
+        $digits = preg_replace('/\D+/', '', (string) $phone);
+
+        if (str_starts_with($digits, '506')) {
+            return $digits;
+        }
+
+        return '506'.$digits;
+    }
 }
+
+
+
+
+
+
+
+

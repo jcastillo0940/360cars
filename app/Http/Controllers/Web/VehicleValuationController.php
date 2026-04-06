@@ -67,17 +67,30 @@ class VehicleValuationController extends Controller
 
     private function baseProps(): array
     {
+        $accountUrl = auth()->check()
+            ? (auth()->user()->hasRole('admin')
+                ? route('admin.dashboard')
+                : (auth()->user()->hasRole('seller', 'dealer') ? route('seller.dashboard') : route('buyer.dashboard')))
+            : route('login');
+
+        $sellUrl = auth()->check() && auth()->user()->hasRole('seller', 'dealer', 'admin')
+            ? route('seller.dashboard')
+            : route('seller.onboarding.create');
+
         return [
             'homeUrl' => route('home'),
             'catalogUrl' => route('catalog.index'),
-            'sellUrl' => route('seller.onboarding.create'),
-            'accountUrl' => route('login'),
+            'valuationUrl' => route('valuation.index'),
+            'sellUrl' => $sellUrl,
+            'accountUrl' => $accountUrl,
+            'loginUrl' => route('login'),
+            'authUser' => $this->authUserPayload($accountUrl),
             'submitUrl' => route('valuation.store'),
             'csrfToken' => csrf_token(),
-            'makes' => VehicleMake::query()->with('models')->orderBy('name')->get()->map(fn (VehicleMake $make) => [
+            'makes' => VehicleMake::query()->active()->with(['models' => fn ($query) => $query->active()->orderBy('name')])->orderBy('name')->get()->map(fn (VehicleMake $make) => [
                 'id' => $make->id,
                 'name' => $make->name,
-                'models' => $make->models->sortBy('name')->values()->map(fn ($model) => [
+                'models' => $make->models->values()->map(fn ($model) => [
                     'id' => $model->id,
                     'name' => $model->name,
                 ]),
@@ -96,6 +109,29 @@ class VehicleValuationController extends Controller
             'result' => null,
             'shareUrl' => null,
             'publicTheme' => (string) $this->valuationSettings->get('frontend.public_theme', 'light'),
+            'footerLinks' => [
+                'termsUrl' => route('legal.terms'),
+                'privacyUrl' => route('legal.privacy'),
+                'cookiesUrl' => route('legal.cookies'),
+            ],
+        ];
+    }
+
+    private function authUserPayload(string $accountUrl): array
+    {
+        if (! auth()->check()) {
+            return [
+                'authenticated' => false,
+            ];
+        }
+
+        $firstName = trim(strtok((string) auth()->user()->name, ' '));
+
+        return [
+            'authenticated' => true,
+            'firstName' => $firstName !== '' ? $firstName : 'Cuenta',
+            'dashboardUrl' => $accountUrl,
+            'buyerUrl' => route('buyer.dashboard'),
         ];
     }
 
@@ -137,4 +173,6 @@ class VehicleValuationController extends Controller
         ];
     }
 }
+
+
 

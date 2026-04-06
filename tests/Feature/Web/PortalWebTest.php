@@ -210,7 +210,7 @@ class PortalWebTest extends TestCase
         $this->assertDatabaseHas('subscriptions', [
             'user_id' => $seller->id,
             'plan_id' => $plan->id,
-            'status' => 'active',
+            'status' => 'pending',
         ]);
     }
 
@@ -325,5 +325,6 @@ class PortalWebTest extends TestCase
             ->assertSee($vehicle->title);
     }
 }
+
 
 

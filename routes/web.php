@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use App\Http\Controllers\Web\AdminPortalController;
 use App\Http\Controllers\Web\Auth\WebAuthController;
@@ -20,6 +20,19 @@ Route::get('/tasador/evaluaciones/{token}', [VehicleValuationController::class, 
 Route::get('/vende-tu-auto', [SellerOnboardingController::class, 'create'])->name('seller.onboarding.create');
 Route::post('/vende-tu-auto', [SellerOnboardingController::class, 'store'])->name('seller.onboarding.store');
 
+Route::view('/legal/terminos', 'legal.page', [
+    'pageTitle' => 'Terminos de servicio',
+    'pageDescription' => 'Condiciones generales para publicar, vender y explorar vehiculos dentro de Movikaa en Costa Rica.',
+])->name('legal.terms');
+Route::view('/legal/privacidad', 'legal.page', [
+    'pageTitle' => 'Politica de privacidad',
+    'pageDescription' => 'Resumen de tratamiento de datos, autenticacion, contacto y trazabilidad comercial del marketplace.',
+])->name('legal.privacy');
+Route::view('/legal/cookies', 'legal.page', [
+    'pageTitle' => 'Politica de cookies',
+    'pageDescription' => 'Uso de cookies funcionales, de sesion y de rendimiento para mejorar la experiencia del usuario.',
+])->name('legal.cookies');
+
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [WebAuthController::class, 'create'])->name('login');
     Route::post('/login', [WebAuthController::class, 'store'])->name('login.store');
@@ -30,19 +43,27 @@ Route::middleware('guest')->group(function (): void {
 Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [WebAuthController::class, 'destroy'])->name('logout');
 
-    Route::middleware('role:buyer')->group(function (): void {
-        Route::get('/buyer', [BuyerPortalController::class, 'index'])->name('buyer.dashboard');
-        Route::post('/buyer/favorites/{vehicle}', [BuyerEngagementController::class, 'favorite'])->name('buyer.favorites.store');
-        Route::delete('/buyer/favorites/{vehicle}', [BuyerEngagementController::class, 'unfavorite'])->name('buyer.favorites.destroy');
-        Route::post('/buyer/comparisons/{vehicle}', [BuyerEngagementController::class, 'addToComparison'])->name('buyer.comparisons.store');
-        Route::delete('/buyer/comparisons/{vehicle}', [BuyerEngagementController::class, 'removeFromComparison'])->name('buyer.comparisons.destroy');
-        Route::post('/buyer/saved-searches', [BuyerEngagementController::class, 'saveSearch'])->name('buyer.saved-searches.store');
-        Route::delete('/buyer/saved-searches/{savedSearch}', [BuyerEngagementController::class, 'destroySavedSearch'])->name('buyer.saved-searches.destroy');
-        Route::post('/buyer/conversations/{vehicle}', [BuyerEngagementController::class, 'contactSeller'])->name('buyer.conversations.store');
-    });
+    Route::get('/buyer', [BuyerPortalController::class, 'index'])->name('buyer.dashboard');
+    Route::get('/buyer/favorites', [BuyerPortalController::class, 'favorites'])->name('buyer.favorites.index');
+    Route::get('/buyer/comparisons', [BuyerPortalController::class, 'comparisons'])->name('buyer.comparisons.index');
+    Route::get('/buyer/searches', [BuyerPortalController::class, 'searches'])->name('buyer.searches.index');
+    Route::get('/buyer/messages', [BuyerPortalController::class, 'messages'])->name('buyer.messages.index');
+    Route::post('/buyer/favorites/{vehicle}', [BuyerEngagementController::class, 'favorite'])->name('buyer.favorites.store');
+    Route::delete('/buyer/favorites/{vehicle}', [BuyerEngagementController::class, 'unfavorite'])->name('buyer.favorites.destroy');
+    Route::post('/buyer/comparisons/{vehicle}', [BuyerEngagementController::class, 'addToComparison'])->name('buyer.comparisons.store');
+    Route::delete('/buyer/comparisons/{vehicle}', [BuyerEngagementController::class, 'removeFromComparison'])->name('buyer.comparisons.destroy');
+    Route::post('/buyer/saved-searches', [BuyerEngagementController::class, 'saveSearch'])->name('buyer.saved-searches.store');
+    Route::delete('/buyer/saved-searches/{savedSearch}', [BuyerEngagementController::class, 'destroySavedSearch'])->name('buyer.saved-searches.destroy');
+    Route::post('/buyer/conversations/{vehicle}', [BuyerEngagementController::class, 'contactSeller'])->name('buyer.conversations.store');
 
-    Route::middleware('role:seller,dealer,admin')->group(function (): void {
+    Route::middleware('role:buyer,seller,dealer,admin')->group(function (): void {
         Route::get('/seller', [SellerPortalController::class, 'index'])->name('seller.dashboard');
+        Route::get('/seller/listings', [SellerPortalController::class, 'listings'])->name('seller.listings');
+        Route::get('/seller/create', [SellerPortalController::class, 'createPage'])->name('seller.create');
+        Route::get('/seller/vehicles/{vehicle}/edit', [SellerPortalController::class, 'editPage'])->name('seller.vehicles.edit');
+        Route::get('/seller/media', [SellerPortalController::class, 'mediaPage'])->name('seller.media');
+        Route::get('/seller/billing', [SellerPortalController::class, 'billingPage'])->name('seller.billing');
+        Route::get('/seller/messages', [SellerPortalController::class, 'messagesPage'])->name('seller.messages');
         Route::post('/seller/vehicles', [SellerPortalController::class, 'store'])->name('seller.vehicles.store');
         Route::put('/seller/vehicles/{vehicle}', [SellerPortalController::class, 'update'])->name('seller.vehicles.update');
         Route::patch('/seller/vehicles/{vehicle}/publish', [SellerPortalController::class, 'publish'])->name('seller.vehicles.publish');
@@ -54,16 +75,32 @@ Route::middleware('auth')->group(function (): void {
         Route::delete('/seller/vehicles/{vehicle}/media/{media}', [SellerPortalController::class, 'destroyMedia'])->name('seller.vehicles.media.destroy');
 
         Route::post('/seller/billing/subscribe', [SellerBillingController::class, 'subscribeSandbox'])->name('seller.billing.subscribe');
+        Route::post('/seller/billing/free', [SellerBillingController::class, 'activateFree'])->name('seller.billing.free');
+        Route::post('/seller/billing/request-payment', [SellerBillingController::class, 'requestManualPayment'])->name('seller.billing.request-payment');
         Route::post('/seller/billing/paypal/create-order', [SellerBillingController::class, 'createPayPalOrder'])->name('seller.billing.paypal.create-order');
         Route::get('/seller/billing/paypal/return', [SellerBillingController::class, 'capturePayPalReturn'])->name('seller.billing.paypal.return');
     });
 
     Route::middleware('role:admin')->group(function (): void {
         Route::get('/admin', [AdminPortalController::class, 'index'])->name('admin.dashboard');
+        Route::get('/admin/catalog', [AdminPortalController::class, 'catalog'])->name('admin.catalog');
+        Route::get('/admin/payments', [AdminPortalController::class, 'payments'])->name('admin.payments');
+        Route::get('/admin/users', [AdminPortalController::class, 'users'])->name('admin.users');
+        Route::get('/admin/settings', [AdminPortalController::class, 'settings'])->name('admin.settings');
         Route::post('/admin/exchange-rate/refresh', [AdminPortalController::class, 'refreshExchangeRate'])->name('admin.exchange-rate.refresh');
         Route::post('/admin/valuation-ai', [VehicleValuationController::class, 'updateAiSetting'])->name('admin.valuation-ai.update');
         Route::post('/admin/public-theme', [AdminPortalController::class, 'updatePublicTheme'])->name('admin.public-theme.update');
+        Route::post('/admin/payment-methods', [AdminPortalController::class, 'updatePaymentMethods'])->name('admin.payment-methods.update');
+        Route::post('/admin/integrations', [AdminPortalController::class, 'updateIntegrations'])->name('admin.integrations.update');
+        Route::patch('/admin/payments/{transaction}/approve', [AdminPortalController::class, 'approvePayment'])->name('admin.payments.approve');
+        Route::patch('/admin/payments/{transaction}/reject', [AdminPortalController::class, 'rejectPayment'])->name('admin.payments.reject');
+        Route::post('/admin/catalog/makes', [AdminPortalController::class, 'storeCatalogMake'])->name('admin.catalog.makes.store');
+        Route::patch('/admin/catalog/makes/{vehicleMake}/toggle', [AdminPortalController::class, 'toggleCatalogMake'])->name('admin.catalog.makes.toggle');
+        Route::post('/admin/catalog/models', [AdminPortalController::class, 'storeCatalogModel'])->name('admin.catalog.models.store');
+        Route::patch('/admin/catalog/models/{vehicleModel}/toggle', [AdminPortalController::class, 'toggleCatalogModel'])->name('admin.catalog.models.toggle');
         Route::post('/admin/feature-options', [AdminPortalController::class, 'storeFeatureOption'])->name('admin.feature-options.store');
         Route::patch('/admin/feature-options/{featureOption}/toggle', [AdminPortalController::class, 'toggleFeatureOption'])->name('admin.feature-options.toggle');
     });
 });
+
+

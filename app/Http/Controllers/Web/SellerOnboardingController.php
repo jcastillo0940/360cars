@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Seller\SellerOnboardingStoreRequest;
+use App\Models\Province;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleFeatureOption;
@@ -32,8 +33,26 @@ class SellerOnboardingController extends Controller
 
     public function create(Request $request)
     {
+        $googleMapsKey = (string) $this->valuationSettings->get('integrations.google_maps.key', config('services.google_maps.key'));
+
         return view('seller.onboarding', [
-            'makes' => VehicleMake::query()->with('models')->orderBy('name')->get(),
+            'makes' => VehicleMake::query()->active()->with(['models' => fn ($query) => $query->active()->orderBy('name')])->orderBy('name')->get(),
+            'locationTree' => Province::query()
+                ->with([
+                    'cantons' => fn ($query) => $query->orderBy('name'),
+                    'cantons.districts' => fn ($query) => $query->orderBy('name'),
+                ])
+                ->orderBy('name')
+                ->get()
+                ->map(fn (Province $province) => [
+                    'name' => $province->name,
+                    'cantons' => $province->cantons->map(fn ($canton) => [
+                        'name' => $canton->name,
+                        'districts' => $canton->districts->pluck('name')->values()->all(),
+                    ])->values()->all(),
+                ])
+                ->values()
+                ->all(),
             'featureOptions' => VehicleFeatureOption::query()
                 ->where('is_active', true)
                 ->orderBy('category')
@@ -42,10 +61,12 @@ class SellerOnboardingController extends Controller
                 ->get()
                 ->groupBy('category'),
             'vehicleConfig' => config('vehicle'),
+            'googleMapsEnabled' => filled($googleMapsKey),
             'years' => range((int) date('Y') + 1, 1950),
-            'googleMapsKey' => config('services.google_maps.key'),
+            'googleMapsKey' => $googleMapsKey,
             'exchangeQuote' => $this->exchangeRateService->latest(),
             'publicTheme' => (string) $this->valuationSettings->get('frontend.public_theme', 'light'),
+            'currentUser' => $request->user(),
             'prefill' => [
                 'vehicle_make_id' => $request->query('vehicle_make_id'),
                 'vehicle_model_id' => $request->query('vehicle_model_id'),
@@ -60,6 +81,9 @@ class SellerOnboardingController extends Controller
                 'engine_size' => $request->query('engine_size'),
                 'price' => $request->query('price'),
                 'city' => $request->query('city'),
+                'province' => $request->query('province'),
+                'canton' => $request->query('canton'),
+                'district' => $request->query('district'),
             ],
         ]);
     }
@@ -68,20 +92,50 @@ class SellerOnboardingController extends Controller
     {
         $data = $request->validated();
         $queuedMediaIds = [];
+        $wasAuthenticated = $request->user() !== null;
 
         DB::transaction(function () use ($data, $request, &$queuedMediaIds): void {
-            $email = $data['contact_email'] ?? $this->syntheticEmail($data['contact_phone']);
+            $user = $request->user();
 
-            $user = User::create([
-                'name' => $data['seller_name'],
-                'email' => strtolower($email),
-                'password' => $data['password'],
-                'account_type' => 'seller',
-                'phone' => $data['contact_phone'] ?? null,
-                'whatsapp_phone' => $data['contact_phone'] ?? null,
-                'country_code' => 'CR',
-                'last_seen_at' => now(),
-            ]);
+            if (! $user) {
+                $email = $data['contact_email'] ?? $this->syntheticEmail($data['contact_phone'] ?? null);
+
+                $user = User::create([
+                    'name' => $data['seller_name'],
+                    'email' => strtolower($email),
+                    'password' => $data['password'],
+                    'account_type' => 'seller',
+                    'phone' => $data['contact_phone'] ?? null,
+                    'whatsapp_phone' => $data['contact_phone'] ?? null,
+                    'country_code' => 'CR',
+                    'last_seen_at' => now(),
+                ]);
+
+                Auth::login($user);
+                $request->session()->regenerate();
+            } else {
+                $updates = [
+                    'last_seen_at' => now(),
+                ];
+
+                if (! empty($data['contact_phone']) && ! $user->phone) {
+                    $updates['phone'] = $data['contact_phone'];
+                }
+
+                if (! empty($data['contact_phone']) && ! $user->whatsapp_phone) {
+                    $updates['whatsapp_phone'] = $data['contact_phone'];
+                }
+
+                if (! empty($data['contact_email']) && ! $user->email) {
+                    $updates['email'] = strtolower($data['contact_email']);
+                }
+
+                if (! empty($data['seller_name']) && ! $user->name) {
+                    $updates['name'] = $data['seller_name'];
+                }
+
+                $user->fill($updates)->save();
+            }
 
             $this->limitGuard->ensureCanUseTier($user, 'basic');
             $this->limitGuard->ensureCanPublish($user);
@@ -115,11 +169,14 @@ class SellerOnboardingController extends Controller
                 'seats' => $data['seats'] ?? null,
                 'price' => $data['price'],
                 'currency' => 'CRC',
-                'city' => $data['city'],
-                'state' => $data['state'],
+                'city' => $data['district'] ?? $data['city'],
+                'state' => $data['province'] ?? $data['state'],
+                'province' => $data['province'] ?? $data['state'],
+                'canton' => $data['canton'] ?? null,
+                'district' => $data['district'] ?? $data['city'],
                 'country_code' => 'CR',
-                'latitude' => $data['latitude'],
-                'longitude' => $data['longitude'],
+                'latitude' => $data['latitude'] ?? null,
+                'longitude' => $data['longitude'] ?? null,
                 'description' => $data['description'],
                 'features' => $this->features($data['features'] ?? [], $data['features_list'] ?? null),
                 'status' => 'published',
@@ -160,14 +217,16 @@ class SellerOnboardingController extends Controller
                 $queuedMediaIds[] = $media->id;
                 $isPrimary = false;
             }
-
-            Auth::login($user);
-            $request->session()->regenerate();
         });
 
         $this->imageProcessor->dispatchMany($queuedMediaIds);
 
-        return redirect()->route('seller.dashboard')->with('status', 'Tu auto fue registrado y tu cuenta seller quedo lista.');
+        return redirect()->route('seller.dashboard')->with(
+            'status',
+            $wasAuthenticated
+                ? 'Tu auto fue publicado con tu cuenta actual y ya quedo listo en tu panel seller.'
+                : 'Tu auto fue registrado y tu cuenta seller quedo lista.'
+        );
     }
 
     private function syntheticEmail(?string $phone): string
@@ -202,3 +261,5 @@ class SellerOnboardingController extends Controller
         return $slug;
     }
 }
+
+

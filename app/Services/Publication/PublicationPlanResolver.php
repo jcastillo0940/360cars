@@ -5,14 +5,22 @@ namespace App\Services\Publication;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
+use App\Services\Billing\BillingService;
 
 class PublicationPlanResolver
 {
+    public function __construct(
+        private readonly BillingService $billingService,
+    ) {
+    }
+
     public function resolveFor(User $user): Plan
     {
         if ($user->hasRole('admin')) {
             return Plan::query()->where('slug', 'agencia-pro')->firstOrFail();
         }
+
+        $this->billingService->synchronizeUserSubscriptions($user);
 
         $subscription = Subscription::query()
             ->with('plan')

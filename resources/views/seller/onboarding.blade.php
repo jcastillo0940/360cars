@@ -1,5 +1,4 @@
-
-@extends('layouts.marketing')
+﻿@extends('layouts.marketing')
 
 @section('title', 'Vende Tu Auto | Movikaa')
 
@@ -10,7 +9,19 @@
 @endsection
 
 @section('content')
-@php($prefill = $prefill ?? [])
+@php
+    $prefill = $prefill ?? [];
+    $homeUrl = route('home');
+    $catalogUrl = route('catalog.index');
+    $valuationUrl = route('valuation.index');
+    $sellUrl = auth()->check() && auth()->user()->hasRole('seller', 'dealer', 'admin') ? route('seller.dashboard') : route('seller.onboarding.create');
+    $accountUrl = auth()->check()
+        ? (auth()->user()->hasRole('admin')
+            ? route('admin.dashboard')
+            : (auth()->user()->hasRole('seller', 'dealer') ? route('seller.dashboard') : route('buyer.dashboard')))
+        : route('login');
+    $firstName = auth()->check() ? trim(strtok((string) auth()->user()->name, ' ')) : null;
+@endphp
 <div class="seller-onboarding-page {{ ($publicTheme ?? 'light') === 'dark' ? 'theme-dark bg-[#05070b] text-white' : 'bg-background text-on-background' }} min-h-screen font-body">
     <nav class="fixed inset-x-0 top-0 z-50 border-b border-outline-variant/30 bg-white/80 backdrop-blur-md" data-topbar>
         <div class="mx-auto flex h-20 max-w-screen-2xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -27,10 +38,34 @@
                 </div>
             </div>
             <div class="hidden items-center gap-4 md:flex">
-                <a href="{{ route('login') }}" class="px-5 py-2 text-sm font-bold text-slate-600 transition hover:text-primary">Ingresar</a>
-                <a href="{{ route('seller.onboarding.create') }}" class="rounded bg-secondary px-6 py-2.5 font-headline text-sm font-bold text-white shadow-md transition hover:bg-secondary-container">Vender mi auto</a>
+                @if (auth()->check())
+                    <details class="relative">
+                        <summary class="inline-flex list-none items-center gap-3 rounded-full border border-outline-variant/40 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:border-primary hover:text-primary">
+                            <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary-fixed text-primary">
+                                <span class="material-symbols-outlined text-[20px]">person</span>
+                            </span>
+                            <span>Hola, {{ $firstName ?: 'Cuenta' }}</span>
+                            <span class="material-symbols-outlined text-[18px]">expand_more</span>
+                        </summary>
+                        <div class="absolute right-0 top-[calc(100%+0.75rem)] w-72 overflow-hidden rounded-3xl border border-outline-variant/20 bg-white p-3 shadow-2xl">
+                            <div class="rounded-2xl bg-surface-container-low p-4">
+                                <p class="text-xs font-bold uppercase tracking-[0.18em] text-primary">Tu cuenta</p>
+                                <strong class="mt-2 block font-headline text-xl font-extrabold text-slate-900">Hola, {{ $firstName ?: 'Cuenta' }}</strong>
+                                <p class="mt-2 text-sm text-slate-500">Tu sesion ya esta activa. Entra a tu panel o continua publicando autos.</p>
+                            </div>
+                            <div class="mt-3 grid gap-2">
+                                <a href="{{ $accountUrl }}" class="rounded-2xl border border-outline-variant/20 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:bg-primary-fixed hover:text-primary">Ir a mi panel</a>
+                                <a href="{{ $sellUrl }}" class="rounded-2xl border border-secondary bg-secondary px-4 py-3 text-sm font-bold text-white transition hover:bg-secondary-container">Publicar o gestionar autos</a>
+                                <a href="{{ route('buyer.dashboard') }}" class="rounded-2xl border border-outline-variant/20 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:bg-primary-fixed hover:text-primary">Ver mi actividad</a>
+                            </div>
+                        </div>
+                    </details>
+                @else
+                    <a href="{{ $accountUrl }}" class="px-5 py-2 text-sm font-bold text-slate-600 transition hover:text-primary">Ingresar</a>
+                @endif
+                <a href="{{ $sellUrl }}" class="rounded bg-secondary px-6 py-2.5 font-headline text-sm font-bold text-white shadow-md transition hover:bg-secondary-container">Vender mi auto</a>
             </div>
-            <a href="{{ route('login') }}" class="inline-flex h-11 w-11 items-center justify-center rounded-full text-primary md:hidden">
+            <a href="{{ $accountUrl }}" class="inline-flex h-11 w-11 items-center justify-center rounded-full text-primary md:hidden">
                 <span class="material-symbols-outlined text-[24px]">person</span>
             </a>
         </div>
@@ -41,8 +76,17 @@
                 <a href="{{ route('valuation.index') }}" class="font-headline text-base font-bold tracking-tight text-slate-700">Valuacion</a>
                 <a href="{{ route('home') }}#noticias" class="font-headline text-base font-bold tracking-tight text-slate-700">Noticias</a>
                 <div class="mt-3 flex flex-col gap-3 border-t border-outline-variant/20 pt-4">
-                    <a href="{{ route('login') }}" class="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700">Ingresar</a>
-                    <a href="{{ route('seller.onboarding.create') }}" class="rounded bg-secondary px-4 py-3 text-center font-headline font-bold text-white">Vender mi auto</a>
+                    @if (auth()->check())
+                        <div class="rounded-2xl bg-surface-container-low px-4 py-4">
+                            <p class="text-xs font-bold uppercase tracking-[0.18em] text-primary">Cuenta activa</p>
+                            <strong class="mt-2 block font-headline text-lg font-extrabold text-slate-900">Hola, {{ $firstName ?: 'Cuenta' }}</strong>
+                            <p class="mt-2 text-sm text-slate-500">Tu sesion ya esta iniciada.</p>
+                        </div>
+                        <a href="{{ $accountUrl }}" class="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700">Ir a mi panel</a>
+                    @else
+                        <a href="{{ $accountUrl }}" class="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700">Ingresar</a>
+                    @endif
+                    <a href="{{ $sellUrl }}" class="rounded bg-secondary px-4 py-3 text-center font-headline font-bold text-white">Vender mi auto</a>
                 </div>
             </div>
         </div>
@@ -136,6 +180,7 @@
                             <input type="hidden" name="city" value="{{ old('city', data_get($prefill, 'city')) }}" data-map-city />
                             <input type="hidden" name="state" value="{{ old('state', 'Costa Rica') }}" data-map-state />
                             <input type="hidden" name="location_label" value="{{ old('location_label') }}" data-map-label />
+                            <script type="application/json" id="cr-location-tree">@json($locationTree)</script>
 
                             <div class="grid gap-5">
                                 <section class="wizard-step rounded-[24px] border border-outline-variant/20 bg-slate-50 p-5 sm:p-6" data-step-panel data-step-title="Identidad del vehiculo">
@@ -156,7 +201,7 @@
                                     <div class="grid gap-4 md:grid-cols-2">
                                         <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Marca</span><select class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" name="vehicle_make_id" required data-make-select><option value="">Selecciona</option>@foreach ($makes as $make)<option value="{{ $make->id }}" @selected(old('vehicle_make_id', data_get($prefill, 'vehicle_make_id')) == $make->id)>{{ $make->name }}</option>@endforeach</select></label>
                                         <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Modelo</span><select class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" name="vehicle_model_id" required data-model-select><option value="">Selecciona</option>@foreach ($makes as $make) @foreach ($make->models as $model)<option value="{{ $model->id }}" @selected(old('vehicle_model_id', data_get($prefill, 'vehicle_model_id')) == $model->id) data-make="{{ $make->id }}">{{ $model->name }}</option>@endforeach @endforeach</select></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Anio</span><select class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" name="year" required>@foreach ($years as $year)<option value="{{ $year }}" @selected((int) old('year', data_get($prefill, 'year', date('Y'))) === (int) $year)>{{ $year }}</option>@endforeach</select></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Año</span><select class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" name="year" required>@foreach ($years as $year)<option value="{{ $year }}" @selected((int) old('year', data_get($prefill, 'year', date('Y'))) === (int) $year)>{{ $year }}</option>@endforeach</select></label>
                                         <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Version</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="trim" value="{{ old('trim', data_get($prefill, 'trim')) }}" placeholder="Ej. Limited, EX, Sport" /></label>
                                         <label class="grid gap-2 md:col-span-2"><span class="text-sm font-semibold text-slate-800">Descripcion del anuncio</span><textarea class="min-h-[160px] rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm leading-7 text-slate-700 shadow-sm" rows="5" name="description" required placeholder="Describe estado general, mantenimientos, extras, historial y por que vale la pena tu auto.">{{ old('description') }}</textarea></label>
                                     </div>
@@ -184,7 +229,7 @@
                                         <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Traccion</span><select class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" name="drivetrain"><option value="">No especificar</option>@foreach ($vehicleConfig['drivetrains'] as $drivetrain)<option value="{{ $drivetrain }}" @selected(old('drivetrain', data_get($prefill, 'drivetrain')) === $drivetrain)>{{ $drivetrain }}</option>@endforeach</select></label>
                                         <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Kilometraje</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="number" name="mileage" min="0" step="1" value="{{ old('mileage', data_get($prefill, 'mileage')) }}" placeholder="Ej. 82000" /><small class="text-sm text-slate-500">Ingresa los kilometros reales del odometro.</small></label>
                                         <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Motor</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="engine" value="{{ old('engine') }}" placeholder="Ej. 2.0 Turbo, V6" /><small class="text-sm text-slate-500">Describe el motor tal como lo reconoce el mercado.</small></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Tamano motor</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="number" step="0.1" name="engine_size" value="{{ old('engine_size', data_get($prefill, 'engine_size')) }}" placeholder="2.5" /><small class="text-sm text-slate-500">Formato en litros. Ejemplo: 1.8, 2.0, 3.5.</small></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Tamaño motor</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="number" step="0.1" name="engine_size" value="{{ old('engine_size', data_get($prefill, 'engine_size')) }}" placeholder="2.5" /><small class="text-sm text-slate-500">Formato en litros. Ejemplo: 1.8, 2.0, 3.5.</small></label>
                                         <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Color exterior</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="exterior_color" value="{{ old('exterior_color') }}" /></label>
                                         <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Color interior</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="interior_color" value="{{ old('interior_color') }}" /></label>
                                         <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Puertas</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="number" name="doors" value="{{ old('doors') }}" min="1" max="8" /></label>
@@ -221,12 +266,19 @@
                                         <div class="feature-option-groups">
                                             @forelse ($featureOptions as $category => $options)
                                                 <div class="feature-option-group">
-                                                    <h3>{{ str($category)->replace('-', ' ')->title() }}</h3>
+                                                    <div class="feature-option-group__header">
+                                                        <div>
+                                                            <h3>{{ str($category)->replace('-', ' ')->title() }}</h3>
+                                                            <p>{{ $options->count() }} opciones disponibles</p>
+                                                        </div>
+                                                    </div>
                                                     <div class="feature-option-grid">
                                                         @foreach ($options as $option)
                                                             <label class="feature-option-card border-outline-variant/20 bg-slate-50">
-                                                                <input type="checkbox" name="features[]" value="{{ $option->slug }}" @checked(in_array($option->slug, old('features', []), true)) />
-                                                                <span>{{ $option->name }}</span>
+                                                                <div class="feature-option-card__top">
+                                                                    <input type="checkbox" name="features[]" value="{{ $option->slug }}" @checked(in_array($option->slug, old('features', []), true)) />
+                                                                    <span>{{ $option->name }}</span>
+                                                                </div>
                                                                 @if ($option->description)
                                                                     <small>{{ $option->description }}</small>
                                                                 @endif
@@ -352,9 +404,10 @@
                                     </div>
 
                                     <div class="grid gap-4 md:grid-cols-2">
-                                        <label class="grid gap-2 md:col-span-2"><span class="text-sm font-semibold text-slate-800">Direccion o punto de referencia</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="map_search" value="{{ old('location_label') }}" placeholder="Ej. Escazu, San Jose, Costa Rica" data-map-search required /></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Ciudad</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" value="{{ old('city', data_get($prefill, 'city')) }}" data-map-city-display readonly /></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Provincia / Estado</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" value="{{ old('state', 'Costa Rica') }}" data-map-state-display readonly /></label>
+                                        <label class="grid gap-2 md:col-span-2"><span class="text-sm font-semibold text-slate-800">Direccion o punto de referencia</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="map_search" value="{{ old('location_label') }}" placeholder="Ej. Barrio Los Yoses, cerca del parque, San Pedro" data-map-search required /></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Provincia</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="province" value="{{ old('province', data_get($prefill, 'province', '')) }}" list="province-list" placeholder="Escribe o selecciona una provincia" data-location-province autocomplete="off" /><datalist id="province-list"></datalist></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Canton</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="canton" value="{{ old('canton', data_get($prefill, 'canton', '')) }}" list="canton-list" placeholder="Selecciona primero una provincia" data-location-canton autocomplete="off" /><datalist id="canton-list"></datalist></label>
+                                        <label class="grid gap-2 md:col-span-2"><span class="text-sm font-semibold text-slate-800">Distrito</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="district" value="{{ old('district', data_get($prefill, 'district', data_get($prefill, 'city', ''))) }}" list="district-list" placeholder="Selecciona primero un canton" data-location-district autocomplete="off" /><datalist id="district-list"></datalist><small class="text-sm text-slate-500">La ruta correcta en Costa Rica es: provincia, luego canton y despues distrito.</small></label>
                                         <div class="grid gap-2 md:col-span-2"><span class="text-sm font-semibold text-slate-800">Mapa</span><div class="map-canvas rounded-[24px] border border-outline-variant/20 bg-white" data-map-canvas></div></div>
                                     </div>
                                     @if ($googleMapsKey)
@@ -363,10 +416,15 @@
 
                                     <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                         <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-outline-variant/30 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:text-primary" data-wizard-prev>Volver</button>
-                                        <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl bg-secondary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary-container" data-wizard-next>Siguiente: tu cuenta</button>
+                                        @if ($currentUser)
+                                            <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-xl bg-secondary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary-container" data-submit-onboarding>Publicar con mi cuenta</button>
+                                        @else
+                                            <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl bg-secondary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary-container" data-wizard-next>Siguiente: tu cuenta</button>
+                                        @endif
                                     </div>
                                 </section>
 
+                                @unless ($currentUser)
                                 <section class="wizard-step rounded-[24px] border border-outline-variant/20 bg-slate-50 p-5 sm:p-6" data-step-panel data-step-title="Cuenta seller" hidden>
                                     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                         <div>
@@ -400,6 +458,7 @@
                                         <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-outline-variant/30 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:text-primary" data-wizard-prev>Volver</button>
                                     </div>
                                 </section>
+                                @endunless
                             </div>
                         </form>
                     </section>
@@ -409,3 +468,8 @@
     </main>
 </div>
 @endsection
+
+
+
+
+

@@ -77,3 +77,4 @@ class PublicationLimitGuard
         return $this->resolver->resolveFor($user);
     }
 }
+

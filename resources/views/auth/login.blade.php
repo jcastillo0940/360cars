@@ -1,4 +1,4 @@
-﻿@extends('layouts.auth')
+@extends('layouts.auth')
 
 @section('title', 'Ingresar | Movikaa')
 
@@ -76,6 +76,9 @@
 
             <form method="POST" action="{{ route('login.store') }}" class="mt-8 grid gap-5">
                 @csrf
+                @if (!empty($redirectTo))
+                    <input type="hidden" name="redirect" value="{{ $redirectTo }}" />
+                @endif
                 <label class="grid gap-2">
                     <span class="text-sm font-semibold text-slate-700">Correo electronico</span>
                     <input type="email" name="email" value="{{ old('email', 'seller@360cars.local') }}" required class="min-h-14 rounded-2xl border border-outline-variant/40 bg-white px-4 text-slate-900 shadow-sm outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10 {{ ($publicTheme ?? 'light') === 'dark' ? 'bg-white/5 text-white placeholder:text-slate-400' : '' }}" placeholder="tu@correo.com" />
@@ -98,3 +101,4 @@
     </div>
 </section>
 @endsection
+

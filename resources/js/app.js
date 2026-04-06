@@ -426,8 +426,12 @@ const wirePhotoSequence = (wizard) => {
     const optionalOpen = sequence.querySelector('[data-photo-optional-open]');
     const optionalSkip = sequence.querySelector('[data-photo-optional-skip]');
     const sidebarLoader = document.querySelector('[data-sidebar-loader]');
+    const stepNextButton = wizard.querySelector('[data-photo-step-next]');
+    const stepStatus = wizard.querySelector('[data-photo-step-status]');
+    const stepCopy = wizard.querySelector('[data-photo-step-copy]');
     const requiredPanels = panels.filter((panel) => panel.dataset.photoOptional !== 'true');
     const optionalPanels = panels.filter((panel) => panel.dataset.photoOptional === 'true');
+    const requiredInputs = requiredPanels.map((panel) => panel.querySelector('input[type="file"]')).filter(Boolean);
 
     let mode = 'required';
     let currentIndex = 0;
@@ -446,6 +450,28 @@ const wirePhotoSequence = (wizard) => {
         return input.reportValidity();
     };
 
+    const syncStepGate = () => {
+        const readyCount = requiredInputs.filter((input) => input.files?.length).length;
+        const remaining = Math.max(requiredInputs.length - readyCount, 0);
+        const allReady = remaining === 0;
+
+        if (stepNextButton) {
+            stepNextButton.disabled = !allReady;
+            stepNextButton.classList.toggle('is-pulse-locked', !allReady);
+            stepNextButton.classList.toggle('is-ready-to-continue', allReady);
+        }
+
+        if (stepStatus) {
+            stepStatus.textContent = allReady ? 'Fotos obligatorias completas' : `Faltan ${remaining} foto${remaining === 1 ? '' : 's'}`;
+        }
+
+        if (stepCopy) {
+            stepCopy.textContent = allReady
+                ? 'Perfecto. Ya puedes continuar a la ubicacion o agregar un par de fotos opcionales.'
+                : 'Sube frontal, trasera, laterales e interiores antes de continuar a la ubicacion.';
+        }
+    };
+
     const showOptionalEntry = (message = 'Ya completaste las fotos base. Puedes continuar o subir dos extras.') => {
         panels.forEach((panel) => {
             panel.hidden = true;
@@ -461,6 +487,7 @@ const wirePhotoSequence = (wizard) => {
         if (sidebarLoader) {
             sidebarLoader.textContent = 'Las fotos obligatorias ya quedaron listas. Puedes continuar o subir dos adicionales.';
         }
+        syncStepGate();
     };
 
     const sync = () => {
@@ -496,6 +523,8 @@ const wirePhotoSequence = (wizard) => {
         if (sidebarLoader) {
             sidebarLoader.textContent = `Sube ${title.toLowerCase()} y luego continua con la siguiente fotografia.`;
         }
+
+        syncStepGate();
     };
 
     prevButton?.addEventListener('click', () => {
@@ -544,6 +573,23 @@ const wirePhotoSequence = (wizard) => {
 
     optionalSkip?.addEventListener('click', () => {
         showOptionalEntry('Perfecto. Dejamos solo las fotos base y ya puedes pasar al siguiente paso.');
+    });
+
+    requiredInputs.forEach((input) => {
+        input.addEventListener('change', () => {
+            window.setTimeout(syncStepGate, 30);
+        });
+    });
+
+    stepNextButton?.addEventListener('click', (event) => {
+        if (stepNextButton.disabled) {
+            event.preventDefault();
+            const currentRequiredPanel = requiredPanels.find((panel) => {
+                const input = panel.querySelector('input[type="file"]');
+                return input && !input.files?.length;
+            });
+            currentRequiredPanel?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     });
 
     sync();
@@ -713,23 +759,90 @@ const mapCanvas = document.querySelector('[data-map-canvas]');
 const mapSearch = document.querySelector('[data-map-search]');
 
 if (mapCanvas && mapSearch) {
+    const sidebarLoader = document.querySelector('[data-sidebar-loader]');
+    const latInput = document.querySelector('[data-map-lat]');
+    const lngInput = document.querySelector('[data-map-lng]');
+    const cityInput = document.querySelector('[data-map-city]');
+    const stateInput = document.querySelector('[data-map-state]');
+    const labelInput = document.querySelector('[data-map-label]');
+    const provinceField = document.querySelector('[data-location-province]');
+    const cantonField = document.querySelector('[data-location-canton]');
+    const districtField = document.querySelector('[data-location-district]');
+    const provinceList = document.getElementById('province-list');
+    const cantonList = document.getElementById('canton-list');
+    const districtList = document.getElementById('district-list');
+    const treeNode = document.getElementById('cr-location-tree');
+    const locationTree = (() => {
+        try {
+            return JSON.parse(treeNode?.textContent || '[]');
+        } catch (error) {
+            return [];
+        }
+    })();
+    const normalize = (value) => (value || '').trim().toLowerCase();
+
+    const setOptions = (list, values) => {
+        if (!list) return;
+        list.innerHTML = values.map((value) => `<option value="${value}"></option>`).join('');
+    };
+
+    const getProvince = () => locationTree.find((province) => normalize(province.name) === normalize(provinceField?.value));
+    const getCanton = () => getProvince()?.cantons?.find((canton) => normalize(canton.name) === normalize(cantonField?.value));
+
+    const syncLocationSelectors = (source = null) => {
+        setOptions(provinceList, locationTree.map((province) => province.name));
+
+        const province = getProvince();
+        const cantons = province?.cantons ?? [];
+        setOptions(cantonList, cantons.map((canton) => canton.name));
+
+        if (source === 'province' && cantonField) {
+            const currentCantonValid = cantons.some((canton) => normalize(canton.name) === normalize(cantonField.value));
+            if (!currentCantonValid) {
+                cantonField.value = '';
+                if (districtField) districtField.value = '';
+            }
+        }
+
+        const canton = getCanton();
+        const districts = canton?.districts ?? [];
+        setOptions(districtList, districts);
+
+        if (source === 'canton' && districtField) {
+            const currentDistrictValid = districts.some((district) => normalize(district) === normalize(districtField.value));
+            if (!currentDistrictValid) {
+                districtField.value = '';
+            }
+        }
+    };
+
+    const syncManualLocation = () => {
+        if (labelInput) labelInput.value = mapSearch.value || '';
+        if (cityInput && districtField) cityInput.value = districtField.value || '';
+        if (stateInput && provinceField) stateInput.value = provinceField.value || '';
+    };
+
+    mapSearch.addEventListener('input', syncManualLocation);
+    provinceField?.addEventListener('input', () => {
+        syncLocationSelectors('province');
+        syncManualLocation();
+    });
+    cantonField?.addEventListener('input', () => {
+        syncLocationSelectors('canton');
+        syncManualLocation();
+    });
+    districtField?.addEventListener('input', syncManualLocation);
+    syncLocationSelectors();
+    syncManualLocation();
+
     const bootMap = () => {
-        const sidebarLoader = document.querySelector('[data-sidebar-loader]');
         if (!window.google?.maps?.places) {
-            mapCanvas.innerHTML = '<div class="map-canvas__fallback">Configura GOOGLE_MAPS_API_KEY para usar el mapa interactivo. Mientras tanto puedes escribir la ubicacion manualmente en el buscador.</div>';
+            mapCanvas.innerHTML = '<div class="map-canvas__fallback">Configura GOOGLE_MAPS_API_KEY para usar el mapa interactivo. Mientras tanto puedes completar manualmente provincia, canton, distrito y la referencia del auto.</div>';
             if (sidebarLoader) {
-                sidebarLoader.textContent = 'El mapa no cargo. Puedes seguir con la busqueda manual mientras configuras Google Maps.';
+                sidebarLoader.textContent = 'Google Maps no esta activo. Completa referencia, provincia, canton y distrito manualmente para continuar.';
             }
             return;
         }
-
-        const latInput = document.querySelector('[data-map-lat]');
-        const lngInput = document.querySelector('[data-map-lng]');
-        const cityInput = document.querySelector('[data-map-city]');
-        const stateInput = document.querySelector('[data-map-state]');
-        const labelInput = document.querySelector('[data-map-label]');
-        const cityDisplay = document.querySelector('[data-map-city-display]');
-        const stateDisplay = document.querySelector('[data-map-state-display]');
 
         const initialLat = Number(latInput?.value || 9.9281);
         const initialLng = Number(lngInput?.value || -84.0907);
@@ -768,18 +881,34 @@ if (mapCanvas && mapSearch) {
             if (lngInput) lngInput.value = String(lng);
             if (labelInput) labelInput.value = place.formatted_address || mapSearch.value;
 
-            let city = 'Costa Rica';
-            let state = 'Costa Rica';
+            let province = '';
+            let canton = '';
+            let district = '';
 
             (place.address_components || []).forEach((component) => {
-                if (component.types.includes('locality')) city = component.long_name;
-                if (component.types.includes('administrative_area_level_1')) state = component.long_name;
+                if (component.types.includes('administrative_area_level_1')) province = component.long_name;
+                if (component.types.includes('administrative_area_level_2')) canton = component.long_name;
+                if (component.types.includes('locality') || component.types.includes('sublocality_level_1')) district = component.long_name;
             });
 
-            if (cityInput) cityInput.value = city;
-            if (stateInput) stateInput.value = state;
-            if (cityDisplay) cityDisplay.value = city;
-            if (stateDisplay) stateDisplay.value = state;
+            if (provinceField && province) {
+                provinceField.value = province;
+            }
+
+            syncLocationSelectors('province');
+
+            if (cantonField && canton) {
+                cantonField.value = canton;
+            }
+
+            syncLocationSelectors('canton');
+
+            if (districtField && district) {
+                districtField.value = district;
+            }
+
+            if (cityInput) cityInput.value = district || districtField?.value || '';
+            if (stateInput) stateInput.value = province || provinceField?.value || '';
             mapSearch.dispatchEvent(new Event('input', { bubbles: true }));
         };
 
@@ -812,4 +941,32 @@ if (mapCanvas && mapSearch) {
             }
         }, 400);
     }
+}
+const sellerMakeSelect = document.querySelector('[data-seller-make-select]');
+const sellerModelSelect = document.querySelector('[data-seller-model-select]');
+
+if (sellerMakeSelect && sellerModelSelect) {
+    const modelOptions = Array.from(sellerModelSelect.querySelectorAll('option[data-make-id]'));
+
+    const syncSellerModels = () => {
+        const selectedMake = sellerMakeSelect.value;
+        let selectedVisible = false;
+
+        modelOptions.forEach((option) => {
+            const visible = !selectedMake || option.dataset.makeId === selectedMake;
+            option.hidden = !visible;
+            option.disabled = !visible;
+
+            if (visible && option.value === sellerModelSelect.value) {
+                selectedVisible = true;
+            }
+        });
+
+        if (!selectedVisible) {
+            sellerModelSelect.value = '';
+        }
+    };
+
+    sellerMakeSelect.addEventListener('change', syncSellerModels);
+    syncSellerModels();
 }

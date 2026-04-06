@@ -127,7 +127,10 @@ class BuyerEngagementController extends Controller
             ->whereHas('participants', fn ($query) => $query->where('users.id', $vehicle->user_id))
             ->first();
 
+        $isNewConversation = false;
+
         if (! $conversation) {
+            $isNewConversation = true;
             $conversation = Conversation::create([
                 'vehicle_id' => $vehicle->id,
                 'subject' => 'Consulta por '.$vehicle->title,
@@ -155,6 +158,10 @@ class BuyerEngagementController extends Controller
         $conversation->forceFill([
             'last_message_at' => now(),
         ])->save();
+
+        if ($isNewConversation) {
+            $vehicle->increment('lead_count');
+        }
 
         return request()->expectsJson()
             ? response()->json(['sent' => true, 'conversation_id' => $conversation->id])

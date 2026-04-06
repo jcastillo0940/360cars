@@ -62,6 +62,10 @@ class UpsertVehicleRequest extends FormRequest
             'expires_at' => ['nullable', 'date'],
             'images' => ['nullable', 'array', 'max:20'],
             'images.*' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'optional_images' => ['nullable', 'array', 'max:8'],
+            'optional_images.*' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'required_images' => ['nullable', 'array'],
+            'required_images.*' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
         ];
     }
 

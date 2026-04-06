@@ -24,6 +24,7 @@ class WebAuthController extends Controller
 
         return view('auth.login', [
             'publicTheme' => (string) $this->valuationSettings->get('frontend.public_theme', 'light'),
+            'redirectTo' => request()->string('redirect')->toString(),
         ]);
     }
 
@@ -42,6 +43,11 @@ class WebAuthController extends Controller
 
         $request->session()->regenerate();
         $request->user()->forceFill(['last_seen_at' => now()])->save();
+
+        $redirectTo = (string) $request->input('redirect');
+        if ($redirectTo !== '' && str_starts_with($redirectTo, '/')) {
+            return redirect()->to($redirectTo)->with('status', 'Bienvenido de nuevo.');
+        }
 
         return redirect()->route($this->redirectRoute($request->user()))->with('status', 'Bienvenido de nuevo.');
     }

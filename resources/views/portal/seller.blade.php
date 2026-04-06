@@ -27,7 +27,7 @@
     </div>
     <div class="portal-note">
         <p class="muted-label">Capacidad actual</p>
-        <p>{{ $currentPlan->name }} Ã‚Â· {{ $currentPlan->photo_limit ?? 'Sin limite' }} fotos Ã‚Â· {{ $capabilities['remaining_active_listings'] ?? 'Ilimitadas' }} publicaciones restantes.</p>
+        <p>{{ $currentPlan->name }} · {{ $currentPlan->photo_limit ?? 'Sin limite' }} fotos · {{ $capabilities['remaining_active_listings'] ?? 'Ilimitadas' }} publicaciones restantes.</p>
     </div>
 </section>
 @endsection
@@ -91,7 +91,7 @@
                 <label class="form-field form-field--wide"><span>Titulo del anuncio</span><input type="text" name="title" value="{{ old('title') }}" required /></label>
                 <label class="form-field"><span>Marca</span><select name="vehicle_make_id" required><option value="">Selecciona</option>@foreach ($makes as $make)<option value="{{ $make->id }}">{{ $make->name }}</option>@endforeach</select></label>
                 <label class="form-field"><span>Modelo</span><select name="vehicle_model_id" required><option value="">Selecciona</option>@foreach ($makes as $make) @foreach ($make->models as $model)<option value="{{ $model->id }}">{{ $make->name }} / {{ $model->name }}</option>@endforeach @endforeach</select></label>
-                <label class="form-field"><span>Anio</span><input type="number" name="year" min="1950" max="2100" value="{{ old('year', date('Y')) }}" required /></label>
+                <label class="form-field"><span>Año</span><input type="number" name="year" min="1950" max="2100" value="{{ old('year', date('Y')) }}" required /></label>
                 <input type="hidden" name="currency" value="CRC" />
                 <label class="form-field"><span>Precio en colones (CRC)</span><input type="number" step="1" name="price" value="{{ old('price') }}" required /><small>Se mostrara grande en colones y pequeno en dolares de referencia.</small></label>
                 <label class="form-field"><span>Kilometraje</span><input type="number" name="mileage" value="{{ old('mileage') }}" /></label>
@@ -127,7 +127,7 @@
         </div>
         <div class="support-band">
             <span class="muted-label">Suscripcion</span>
-            <p>{{ $subscription?->status ?? 'Sin suscripcion' }} Ã‚Â· {{ optional($subscription?->ends_at)->format('d/m/Y') ?? 'Sin vencimiento' }}</p>
+            <p>{{ $subscription?->status ?? 'Sin suscripcion' }} · {{ optional($subscription?->ends_at)->format('d/m/Y') ?? 'Sin vencimiento' }}</p>
         </div>
     </article>
 </section>
@@ -140,7 +140,7 @@
             <tbody>
                 @forelse ($vehicles as $vehicle)
                     <tr>
-                        <td><strong>{{ $vehicle->title }}</strong><span>{{ $vehicle->make?->name }} Ã‚Â· {{ $vehicle->model?->name }} Ã‚Â· {{ $vehicle->year }}</span></td>
+                        <td><strong>{{ $vehicle->title }}</strong><span>{{ $vehicle->make?->name }} · {{ $vehicle->model?->name }} · {{ $vehicle->year }}</span></td>
                         <td>
                             <span class="status-badge {{ $vehicle->status === 'published' ? 'status-badge--success' : ($vehicle->status === 'draft' ? 'status-badge--warn' : '') }}">{{ $vehicle->status }}</span>
                             @if ($vehicle->expires_at && $vehicle->expires_at->isPast())
@@ -195,7 +195,7 @@
     </article>
     <article class="dashboard-panel reveal reveal--delay">
         <div class="panel-heading"><div><p class="eyebrow">Planes disponibles</p><h2>Escala cuando lo necesites</h2></div></div>
-        <div class="feature-checklist">@foreach ($plans as $plan)<div><strong>{{ $plan->name }}</strong><p>${{ number_format((float) $plan->price, 0) }} Ã‚Â· {{ $plan->description }}</p></div>@endforeach</div>
+        <div class="feature-checklist">@foreach ($plans as $plan)<div><strong>{{ $plan->name }}</strong><p>${{ number_format((float) $plan->price, 0) }} · {{ $plan->description }}</p></div>@endforeach</div>
     </article>
 </section>
 
@@ -220,7 +220,7 @@
                     <div class="billing-plan-card">
                         <div>
                             <strong>{{ $plan->name }}</strong>
-                            <p>${{ number_format((float) $plan->price, 0) }} Ã‚Â· {{ $plan->description }}</p>
+                            <p>${{ number_format((float) $plan->price, 0) }} · {{ $plan->description }}</p>
                         </div>
                         <div class="form-actions">
                             <form method="POST" action="{{ route('seller.billing.subscribe') }}">@csrf<input type="hidden" name="plan_slug" value="{{ $plan->slug }}"><button type="submit" class="button button--ghost">Activar sandbox</button></form>
@@ -265,4 +265,5 @@
     </div>
 </section>
 @endsection
+
 
