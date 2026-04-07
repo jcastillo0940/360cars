@@ -352,11 +352,9 @@ class SellerPortalController extends Controller
 
         $featureOptions = VehicleFeatureOption::query()
             ->where('is_active', true)
-            ->orderBy('category')
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->get()
-            ->groupBy('category');
+            ->get();
 
         $photoSlots = config('vehicle.photo_slots', []);
         $existingMediaBySlot = collect();

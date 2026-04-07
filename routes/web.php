@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use App\Http\Controllers\Web\AdminPortalController;
 use App\Http\Controllers\Web\Auth\WebAuthController;
@@ -99,7 +99,9 @@ Route::middleware('auth')->group(function (): void {
         Route::post('/admin/catalog/models', [AdminPortalController::class, 'storeCatalogModel'])->name('admin.catalog.models.store');
         Route::patch('/admin/catalog/models/{vehicleModel}/toggle', [AdminPortalController::class, 'toggleCatalogModel'])->name('admin.catalog.models.toggle');
         Route::post('/admin/feature-options', [AdminPortalController::class, 'storeFeatureOption'])->name('admin.feature-options.store');
+        Route::put('/admin/feature-options/{featureOption}', [AdminPortalController::class, 'updateFeatureOption'])->name('admin.feature-options.update');
         Route::patch('/admin/feature-options/{featureOption}/toggle', [AdminPortalController::class, 'toggleFeatureOption'])->name('admin.feature-options.toggle');
+        Route::delete('/admin/feature-options/{featureOption}', [AdminPortalController::class, 'destroyFeatureOption'])->name('admin.feature-options.destroy');
     });
 });
 

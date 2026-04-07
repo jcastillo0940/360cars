@@ -55,11 +55,9 @@ class SellerOnboardingController extends Controller
                 ->all(),
             'featureOptions' => VehicleFeatureOption::query()
                 ->where('is_active', true)
-                ->orderBy('category')
                 ->orderBy('sort_order')
                 ->orderBy('name')
-                ->get()
-                ->groupBy('category'),
+                ->get(),
             'vehicleConfig' => config('vehicle'),
             'googleMapsEnabled' => filled($googleMapsKey),
             'years' => range((int) date('Y') + 1, 1950),

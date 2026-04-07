@@ -110,16 +110,9 @@
                     <div class="form-grid seller-form-grid seller-form-grid--two">
                         <div class="form-field form-field--wide">
                             <span>Features</span>
-                            <div class="seller-feature-groups">
-                                @foreach($featureOptions as $category => $group)
-                                    <div class="seller-feature-group">
-                                        <strong>{{ str($category)->replace('-', ' ')->title() }}</strong>
-                                        <div class="seller-feature-grid">
-                                            @foreach($group as $feature)
-                                                <label class="inline-check"><input type="checkbox" name="features[]" value="{{ $feature->slug }}" @checked(collect(old('features', $editingVehicle?->features ?? []))->contains($feature->slug)) /> <span>{{ $feature->name }}</span></label>
-                                            @endforeach
-                                        </div>
-                                    </div>
+                            <div class="seller-feature-checklist">
+                                @foreach($featureOptions as $feature)
+                                    <label class="inline-check"><input type="checkbox" name="features[]" value="{{ $feature->slug }}" @checked(collect(old('features', $editingVehicle?->features ?? []))->contains($feature->slug)) /> <span>{{ $feature->name }}</span></label>
                                 @endforeach
                             </div>
                         </div>

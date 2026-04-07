@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\Comparison;
 use App\Models\Vehicle;
+use App\Models\VehicleFeatureOption;
 use App\Services\Currency\ExchangeRateService;
 use App\Services\Valuation\ValuationSettingsService;
 use App\Support\VehiclePricePresenter;
@@ -26,6 +27,7 @@ class PublicCatalogController extends Controller
             'make' => $request->string('make')->toString(),
             'model' => $request->string('model')->toString(),
             'city' => $request->string('city')->toString(),
+            'features' => collect($request->input('features', []))->filter()->map(fn ($feature) => (string) $feature)->values()->all(),
             'min_price' => $request->integer('min_price') ?: null,
             'max_price' => $request->integer('max_price') ?: null,
             'min_year' => $request->integer('min_year') ?: null,
@@ -44,6 +46,14 @@ class PublicCatalogController extends Controller
 
         if ($filters['city'] !== '') {
             $query->where('city', $filters['city']);
+        }
+
+        if ($filters['features'] !== []) {
+            $query->where(function ($featureQuery) use ($filters): void {
+                foreach ($filters['features'] as $feature) {
+                    $featureQuery->orWhereJsonContains('features', $feature);
+                }
+            });
         }
 
         if ($filters['min_price']) {
@@ -159,11 +169,21 @@ class PublicCatalogController extends Controller
         $minPrice = (int) floor(((float) $vehicles->min('price') ?: 0) / 500000) * 500000;
         $maxPrice = (int) ceil(((float) $vehicles->max('price') ?: 20000000) / 500000) * 500000;
 
+        $featureOptions = VehicleFeatureOption::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['name', 'slug']);
+
         return [
             'makes' => $makes->pluck('name')->all(),
             'models' => $vehicles->pluck('model.name')->filter()->unique()->sort()->values()->all(),
             'modelsByMake' => $modelsByMake,
             'cities' => $vehicles->pluck('city')->filter()->unique()->sort()->values()->all(),
+            'features' => $featureOptions->map(fn (VehicleFeatureOption $feature) => [
+                'name' => $feature->name,
+                'slug' => $feature->slug,
+            ])->values()->all(),
             'priceRange' => [
                 'min' => max(0, $minPrice),
                 'max' => max(20000000, $maxPrice),

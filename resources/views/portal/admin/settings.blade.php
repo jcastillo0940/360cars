@@ -118,32 +118,52 @@
     </article>
 
     <article class="dashboard-panel" id="features">
-        <div class="panel-heading"><div><p class="portal-kicker">Onboarding seller</p><h2>Features configurables</h2></div></div>
+        <div class="panel-heading"><div><p class="portal-kicker">Onboarding seller</p><h2>Características configurables</h2></div></div>
         <form method="POST" action="{{ route('admin.feature-options.store') }}" class="portal-form">
             @csrf
             <div class="form-grid">
-                <label class="form-field"><span>Nombre del feature</span><input type="text" name="name" placeholder="Ej. Camara 360" required /></label>
-                <label class="form-field"><span>Categoria</span><input type="text" name="category" placeholder="seguridad, confort, tecnologia" required /></label>
-                <label class="form-field form-field--wide"><span>Descripcion</span><input type="text" name="description" placeholder="Texto corto para el seller" /></label>
+                <label class="form-field"><span>Nombre</span><input type="text" name="name" placeholder="Ej. Cámara 360" required /></label>
+                <label class="form-field"><span>Categoría</span><input type="text" name="category" list="feature-category-list" placeholder="equipamiento" required /></label>
+                <label class="form-field form-field--wide"><span>Descripción</span><input type="text" name="description" placeholder="Opcional" /></label>
                 <label class="form-field"><span>Orden</span><input type="number" name="sort_order" min="0" max="9999" value="0" /></label>
             </div>
-            <div class="form-actions"><button type="submit" class="button button--solid">Guardar feature</button></div>
+            <datalist id="feature-category-list">
+                @foreach ($featureCategories as $category)
+                    <option value="{{ $category }}"></option>
+                @endforeach
+            </datalist>
+            <div class="form-actions"><button type="submit" class="button button--solid">Crear característica</button></div>
         </form>
+
         <div class="catalog-stack mt-4">
-            @forelse ($featureOptions as $category => $group)
+            @forelse ($featureOptions->groupBy('category') as $category => $group)
                 <article class="catalog-block">
                     <div class="catalog-block__header"><div><strong>{{ str($category)->replace('-', ' ')->title() }}</strong><p>{{ $group->count() }} opciones</p></div></div>
-                    <div class="chip-grid">
+                    <div class="catalog-stack">
                         @foreach ($group as $feature)
-                            <div class="chip-card">
-                                <div><strong>{{ $feature->name }}</strong><p>{{ $feature->description }}</p></div>
-                                <form method="POST" action="{{ route('admin.feature-options.toggle', $feature) }}">@csrf @method('PATCH')<button type="submit" class="text-link">{{ $feature->is_active ? 'Desactivar' : 'Activar' }}</button></form>
+                            <form method="POST" action="{{ route('admin.feature-options.update', $feature) }}" class="portal-form">
+                                @csrf
+                                @method('PUT')
+                                <div class="form-grid">
+                                    <label class="form-field"><span>Nombre</span><input type="text" name="name" value="{{ $feature->name }}" required /></label>
+                                    <label class="form-field"><span>Categoría</span><input type="text" name="category" value="{{ $feature->category }}" list="feature-category-list" required /></label>
+                                    <label class="form-field form-field--wide"><span>Descripción</span><input type="text" name="description" value="{{ $feature->description }}" placeholder="Opcional" /></label>
+                                    <label class="form-field"><span>Orden</span><input type="number" name="sort_order" min="0" max="9999" value="{{ $feature->sort_order }}" /></label>
+                                </div>
+                                <div class="form-actions">
+                                    <span class="status-badge {{ $feature->is_active ? 'status-badge--success' : '' }}">{{ $feature->is_active ? 'Activa' : 'Inactiva' }}</span>
+                                    <button type="submit" class="button button--solid">Guardar cambios</button>
+                                </div>
+                            </form>
+                            <div class="form-actions mt-2">
+                                <form method="POST" action="{{ route('admin.feature-options.toggle', $feature) }}">@csrf @method('PATCH')<button type="submit" class="button button--ghost">{{ $feature->is_active ? 'Desactivar' : 'Activar' }}</button></form>
+                                <form method="POST" action="{{ route('admin.feature-options.destroy', $feature) }}" onsubmit="return confirm('¿Seguro que deseas eliminar esta característica?')">@csrf @method('DELETE')<button type="submit" class="button button--ghost-danger">Eliminar</button></form>
                             </div>
                         @endforeach
                     </div>
                 </article>
             @empty
-                <div class="empty-state"><strong>Sin features</strong><p>Todavia no has configurado features para el seller.</p></div>
+                <div class="empty-state"><strong>Sin características</strong><p>Todavía no has configurado características para el seller.</p></div>
             @endforelse
         </div>
     </article>

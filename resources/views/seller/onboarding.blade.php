@@ -1,4 +1,4 @@
-﻿@extends('layouts.marketing')
+@extends('layouts.marketing')
 
 @section('title', 'Vende Tu Auto | Movikaa')
 
@@ -22,46 +22,46 @@
         : route('login');
     $firstName = auth()->check() ? trim(strtok((string) auth()->user()->name, ' ')) : null;
 @endphp
-<div class="seller-onboarding-page {{ ($publicTheme ?? 'light') === 'dark' ? 'theme-dark bg-[#05070b] text-white' : 'bg-background text-on-background' }} min-h-screen font-body">
-    <nav class="fixed inset-x-0 top-0 z-50 border-b border-outline-variant/30 bg-white/80 backdrop-blur-md" data-topbar>
+<div class="seller-onboarding-page theme-dark bg-black text-white min-h-screen font-body">
+    <nav class="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/90 backdrop-blur-md" data-topbar>
         <div class="mx-auto flex h-20 max-w-screen-2xl items-center justify-between px-4 sm:px-6 lg:px-8">
             <div class="flex items-center gap-4 lg:gap-12">
-                <button type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant/40 text-primary transition hover:bg-primary/5 md:hidden" data-menu-toggle aria-expanded="false" aria-label="Abrir menu">
+                <button type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 text-primary transition hover:bg-white/5 md:hidden" data-menu-toggle aria-expanded="false" aria-label="Abrir menu">
                     <span class="material-symbols-outlined text-[24px]">menu</span>
                 </button>
                 <a href="{{ route('home') }}" class="font-headline text-2xl font-black tracking-tight text-primary sm:text-3xl">Movikaa</a>
                 <div class="hidden items-center gap-8 md:flex">
-                    <a href="{{ route('catalog.index') }}" class="font-headline text-sm font-bold tracking-tight text-slate-600 transition hover:text-primary">Comprar</a>
-                    <a href="{{ route('home') }}#destacados" class="font-headline text-sm font-bold tracking-tight text-slate-600 transition hover:text-primary">Destacados</a>
-                    <a href="{{ route('valuation.index') }}" class="font-headline text-sm font-bold tracking-tight text-slate-600 transition hover:text-primary">Valuacion</a>
-                    <a href="{{ route('home') }}#noticias" class="font-headline text-sm font-bold tracking-tight text-slate-600 transition hover:text-primary">Noticias</a>
+                    <a href="{{ route('catalog.index') }}" class="font-headline text-sm font-bold tracking-tight text-slate-200 transition hover:text-primary">Comprar</a>
+                    <a href="{{ route('home') }}#destacados" class="font-headline text-sm font-bold tracking-tight text-slate-200 transition hover:text-primary">Destacados</a>
+                    <a href="{{ route('valuation.index') }}" class="font-headline text-sm font-bold tracking-tight text-slate-200 transition hover:text-primary">Valuacion</a>
+                    <a href="{{ route('home') }}#noticias" class="font-headline text-sm font-bold tracking-tight text-slate-200 transition hover:text-primary">Noticias</a>
                 </div>
             </div>
             <div class="hidden items-center gap-4 md:flex">
                 @if (auth()->check())
                     <details class="relative">
-                        <summary class="inline-flex list-none items-center gap-3 rounded-full border border-outline-variant/40 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:border-primary hover:text-primary">
+                        <summary class="inline-flex list-none items-center gap-3 rounded-full border border-white/10 bg-[#11131a] px-4 py-2 text-sm font-bold text-white transition hover:border-primary hover:text-primary">
                             <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary-fixed text-primary">
                                 <span class="material-symbols-outlined text-[20px]">person</span>
                             </span>
                             <span>Hola, {{ $firstName ?: 'Cuenta' }}</span>
                             <span class="material-symbols-outlined text-[18px]">expand_more</span>
                         </summary>
-                        <div class="absolute right-0 top-[calc(100%+0.75rem)] w-72 overflow-hidden rounded-3xl border border-outline-variant/20 bg-white p-3 shadow-2xl">
-                            <div class="rounded-2xl bg-surface-container-low p-4">
+                        <div class="absolute right-0 top-[calc(100%+0.75rem)] w-72 overflow-hidden rounded-3xl border border-white/10 bg-[#11131a] p-3 shadow-2xl">
+                            <div class="rounded-2xl bg-white/5 p-4">
                                 <p class="text-xs font-bold uppercase tracking-[0.18em] text-primary">Tu cuenta</p>
-                                <strong class="mt-2 block font-headline text-xl font-extrabold text-slate-900">Hola, {{ $firstName ?: 'Cuenta' }}</strong>
-                                <p class="mt-2 text-sm text-slate-500">Tu sesion ya esta activa. Entra a tu panel o continua publicando autos.</p>
+                                <strong class="mt-2 block font-headline text-xl font-extrabold text-white">Hola, {{ $firstName ?: 'Cuenta' }}</strong>
+                                <p class="mt-2 text-sm text-slate-400">Tu sesion ya esta activa. Entra a tu panel o continua publicando autos.</p>
                             </div>
                             <div class="mt-3 grid gap-2">
-                                <a href="{{ $accountUrl }}" class="rounded-2xl border border-outline-variant/20 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:bg-primary-fixed hover:text-primary">Ir a mi panel</a>
+                                <a href="{{ $accountUrl }}" class="rounded-2xl border border-white/10 px-4 py-3 text-sm font-bold text-slate-100 transition hover:border-primary hover:bg-white/5 hover:text-primary">Ir a mi panel</a>
                                 <a href="{{ $sellUrl }}" class="rounded-2xl border border-secondary bg-secondary px-4 py-3 text-sm font-bold text-white transition hover:bg-secondary-container">Publicar o gestionar autos</a>
-                                <a href="{{ route('buyer.dashboard') }}" class="rounded-2xl border border-outline-variant/20 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:bg-primary-fixed hover:text-primary">Ver mi actividad</a>
+                                <a href="{{ route('buyer.dashboard') }}" class="rounded-2xl border border-white/10 px-4 py-3 text-sm font-bold text-slate-100 transition hover:border-primary hover:bg-white/5 hover:text-primary">Ver mi actividad</a>
                             </div>
                         </div>
                     </details>
                 @else
-                    <a href="{{ $accountUrl }}" class="px-5 py-2 text-sm font-bold text-slate-600 transition hover:text-primary">Ingresar</a>
+                    <a href="{{ $accountUrl }}" class="px-5 py-2 text-sm font-bold text-slate-200 transition hover:text-primary">Ingresar</a>
                 @endif
                 <a href="{{ $sellUrl }}" class="rounded bg-secondary px-6 py-2.5 font-headline text-sm font-bold text-white shadow-md transition hover:bg-secondary-container">Vender mi auto</a>
             </div>
@@ -69,22 +69,22 @@
                 <span class="material-symbols-outlined text-[24px]">person</span>
             </a>
         </div>
-        <div class="border-t border-outline-variant/20 bg-white px-4 py-4 shadow-xl md:hidden" data-mobile-menu hidden>
+        <div class="border-t border-white/10 bg-black px-4 py-4 shadow-xl md:hidden" data-mobile-menu hidden>
             <div class="flex flex-col gap-4">
-                <a href="{{ route('catalog.index') }}" class="font-headline text-base font-bold tracking-tight text-slate-700">Comprar</a>
-                <a href="{{ route('home') }}#destacados" class="font-headline text-base font-bold tracking-tight text-slate-700">Destacados</a>
-                <a href="{{ route('valuation.index') }}" class="font-headline text-base font-bold tracking-tight text-slate-700">Valuacion</a>
-                <a href="{{ route('home') }}#noticias" class="font-headline text-base font-bold tracking-tight text-slate-700">Noticias</a>
-                <div class="mt-3 flex flex-col gap-3 border-t border-outline-variant/20 pt-4">
+                <a href="{{ route('catalog.index') }}" class="font-headline text-base font-bold tracking-tight text-slate-100">Comprar</a>
+                <a href="{{ route('home') }}#destacados" class="font-headline text-base font-bold tracking-tight text-slate-100">Destacados</a>
+                <a href="{{ route('valuation.index') }}" class="font-headline text-base font-bold tracking-tight text-slate-100">Valuacion</a>
+                <a href="{{ route('home') }}#noticias" class="font-headline text-base font-bold tracking-tight text-slate-100">Noticias</a>
+                <div class="mt-3 flex flex-col gap-3 border-t border-white/10 pt-4">
                     @if (auth()->check())
-                        <div class="rounded-2xl bg-surface-container-low px-4 py-4">
+                        <div class="rounded-2xl bg-[#12131a] px-4 py-4">
                             <p class="text-xs font-bold uppercase tracking-[0.18em] text-primary">Cuenta activa</p>
-                            <strong class="mt-2 block font-headline text-lg font-extrabold text-slate-900">Hola, {{ $firstName ?: 'Cuenta' }}</strong>
-                            <p class="mt-2 text-sm text-slate-500">Tu sesion ya esta iniciada.</p>
+                            <strong class="mt-2 block font-headline text-lg font-extrabold text-white">Hola, {{ $firstName ?: 'Cuenta' }}</strong>
+                            <p class="mt-2 text-sm text-slate-400">Tu sesion ya esta iniciada.</p>
                         </div>
-                        <a href="{{ $accountUrl }}" class="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700">Ir a mi panel</a>
+                        <a href="{{ $accountUrl }}" class="rounded border border-white/10 px-4 py-3 text-center font-headline font-bold text-slate-100">Ir a mi panel</a>
                     @else
-                        <a href="{{ $accountUrl }}" class="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700">Ingresar</a>
+                        <a href="{{ $accountUrl }}" class="rounded border border-white/10 px-4 py-3 text-center font-headline font-bold text-slate-100">Ingresar</a>
                     @endif
                     <a href="{{ $sellUrl }}" class="rounded bg-secondary px-4 py-3 text-center font-headline font-bold text-white">Vender mi auto</a>
                 </div>
@@ -93,26 +93,31 @@
     </nav>
 
     <main class="pt-20">
-        <section class="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(0,91,183,0.16),_transparent_32%),linear-gradient(180deg,#f9f9fc_0%,#eef3fb_100%)] py-16 sm:py-20">
-            <div class="absolute inset-y-0 right-0 hidden w-1/2 opacity-30 lg:block">
-                <img class="h-full w-full object-cover" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80" alt="Vehiculo listo para vender" />
+        <section class="relative overflow-hidden bg-black py-16 sm:py-20">
+            <div class="absolute inset-0 hidden lg:block" aria-hidden="true">
+                <div class="absolute inset-y-0 right-0 w-[56%] overflow-hidden">
+                    <img class="h-full w-full scale-[1.06] object-cover object-right opacity-30 blur-[1px]" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80" alt="Vehiculo listo para vender" />
+                </div>
+                <div class="absolute inset-0 bg-[linear-gradient(90deg,#000_0%,#000_36%,rgba(0,0,0,0.94)_52%,rgba(0,0,0,0.74)_68%,rgba(0,0,0,0.88)_100%)]"></div>
+                <div class="absolute inset-y-0 right-[34%] w-40 bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.12),rgba(0,0,0,0)_72%)] blur-2xl"></div>
+                <div class="absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,#000_100%)]"></div>
             </div>
 
             <div class="relative z-10 mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
                 <div class="grid gap-6 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
-                    <aside class="grid gap-5 rounded-[28px] border border-outline-variant/25 bg-white/80 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8 lg:sticky lg:top-28">
+                    <aside class="grid gap-5 rounded-[28px] border border-white/10 bg-[#0d1117] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur sm:p-8 lg:sticky lg:top-28">
                         <div>
                             <span class="inline-flex rounded-full bg-primary-fixed px-4 py-2 text-[11px] font-bold uppercase tracking-[0.24em] text-primary">Vende tu auto</span>
-                            <h1 class="mt-5 font-headline text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">Publica rapido y termina sin perderte.</h1>
-                            <p class="mt-4 text-base leading-8 text-slate-600">Registra tu auto primero. Tu cuenta se crea al final. Asi reducimos friccion y te ayudamos a completar la publicacion mas rapido.</p>
+                            <h1 class="mt-5 font-headline text-4xl font-extrabold tracking-tight text-white sm:text-5xl">Publica rapido y termina sin perderte.</h1>
+                            <p class="mt-4 text-base leading-8 text-slate-300">Registra tu auto primero. Tu cuenta se crea al final. Asi reducimos friccion y te ayudamos a completar la publicacion mas rapido.</p>
                         </div>
 
-                        <div class="grid gap-4 rounded-2xl border border-outline-variant/20 bg-slate-50 p-5">
+                        <div class="grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-5">
                             <div class="flex items-start justify-between gap-4">
                                 <div>
                                     <span class="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Progreso</span>
-                                    <h2 class="mt-2 font-headline text-2xl font-extrabold tracking-tight text-slate-900" data-progress-heading>Vas por el 20%</h2>
-                                    <p class="mt-2 text-sm leading-7 text-slate-500" data-progress-copy>Completa los datos base del auto para arrancar bien tu publicacion.</p>
+                                    <h2 class="mt-2 font-headline text-2xl font-extrabold tracking-tight text-white" data-progress-heading>Vas por el 20%</h2>
+                                    <p class="mt-2 text-sm leading-7 text-slate-400" data-progress-copy>Completa los datos base del auto para arrancar bien tu publicacion.</p>
                                 </div>
                                 <div class="seller-progress-ring">
                                     <span data-progress-percent>20%</span>
@@ -121,18 +126,18 @@
                             <div class="seller-progress-bar">
                                 <span data-progress-bar style="width: 20%"></span>
                             </div>
-                            <div class="rounded-2xl bg-white p-4 shadow-sm">
+                            <div class="rounded-2xl bg-[#12131a] p-4 shadow-sm">
                                 <div class="flex items-center justify-between gap-3">
-                                    <strong class="text-sm font-bold text-slate-900">Estado del borrador</strong>
-                                    <span class="inline-flex rounded-full bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500" data-autosave-status>Sin guardar</span>
+                                    <strong class="text-sm font-bold text-white">Estado del borrador</strong>
+                                    <span class="inline-flex rounded-full bg-white/5 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400" data-autosave-status>Sin guardar</span>
                                 </div>
-                                <p class="mt-2 text-sm leading-7 text-slate-500">Tu avance se guarda en este navegador para que no pierdas informacion mientras avanzas.</p>
+                                <p class="mt-2 text-sm leading-7 text-slate-400">Tu avance se guarda en este navegador para que no pierdas informacion mientras avanzas.</p>
                             </div>
-                            <div class="rounded-2xl bg-white p-4 shadow-sm">
+                            <div class="rounded-2xl bg-[#12131a] p-4 shadow-sm">
                                 <span class="text-xs font-bold uppercase tracking-[0.2em] text-primary">Paso actual</span>
                                 <div class="mt-3 grid gap-2">
-                                    <strong class="text-base font-bold text-slate-900" data-current-step-title>Identidad del vehiculo</strong>
-                                    <span class="text-sm text-slate-500" data-current-step-meta>Paso 1 de 5</span>
+                                    <strong class="text-base font-bold text-white" data-current-step-title>Identidad del vehiculo</strong>
+                                    <span class="text-sm text-slate-400" data-current-step-meta>Paso 1 de 5</span>
                                 </div>
                             </div>
                         </div>
@@ -142,19 +147,19 @@
                             <p class="text-sm leading-7 text-white/90" data-sidebar-tip>Usa el nombre comercial correcto de la version y una descripcion breve pero confiable.</p>
                         </div>
 
-                        <div class="grid gap-3 rounded-2xl border border-outline-variant/20 bg-white px-5 py-5">
+                        <div class="grid gap-3 rounded-2xl border border-white/10 bg-[#12131a] px-5 py-5">
                             <span class="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Carga inteligente</span>
-                            <p class="text-sm leading-7 text-slate-500" data-sidebar-loader>Cuando llegues a fotos u ubicacion veras aqui el estado de carga, compresion o validacion.</p>
+                            <p class="text-sm leading-7 text-slate-400" data-sidebar-loader>Cuando llegues a fotos u ubicacion veras aqui el estado de carga, compresion o validacion.</p>
                         </div>
                     </aside>
 
-                    <section class="rounded-[28px] border border-outline-variant/25 bg-white p-5 shadow-[0_24px_80px_rgba(15,23,42,0.08)] sm:p-7 lg:min-h-[calc(100vh-8.5rem)]">
+                    <section class="rounded-[28px] border border-white/10 bg-[#0d1117] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.35)] sm:p-7 lg:min-h-[calc(100vh-8.5rem)]">
                         @if (session('status'))
-                            <div class="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm font-medium text-emerald-700">{{ session('status') }}</div>
+                            <div class="mb-5 rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-4 text-sm font-medium text-emerald-200">{{ session('status') }}</div>
                         @endif
 
                         @if ($errors->any())
-                            <div class="mb-5 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-4 text-sm text-orange-700">
+                            <div class="mb-5 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-4 text-sm text-rose-200">
                                 <strong class="block font-bold">Revisa estos campos antes de continuar.</strong>
                                 <ul class="mt-2 list-disc space-y-1 pl-5">
                                     @foreach ($errors->all() as $error)
@@ -163,13 +168,12 @@
                                 </ul>
                             </div>
                         @endif
-                        <div class="mb-5 flex flex-col gap-4 border-b border-outline-variant/20 pb-5 sm:flex-row sm:items-end sm:justify-between">
+                        <div class="mb-5 flex flex-col gap-4 border-b border-white/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
                             <div>
                                 <span class="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Journey seller</span>
-                                <h2 class="mt-2 font-headline text-3xl font-extrabold tracking-tight text-slate-900">Completa la publicacion de tu auto</h2>
-                                <p class="mt-2 max-w-2xl text-sm leading-7 text-slate-500">Disenado para que cualquier persona publique rapido, con buena informacion y sin registrarse al inicio.</p>
+                                <h2 class="mt-2 font-headline text-3xl font-extrabold tracking-tight text-white">Completa la publicacion de tu auto</h2>
+                                <p class="mt-2 max-w-2xl text-sm leading-7 text-slate-400">Disenado para que cualquier persona publique rapido, con buena informacion y sin registrarse al inicio.</p>
                             </div>
-                            <span class="inline-flex rounded-full bg-slate-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Cuenta al final</span>
                         </div>
 
                         <form method="POST" action="{{ route('seller.onboarding.store') }}" class="seller-onboarding" enctype="multipart/form-data" data-wizard data-autosave-key="seller-onboarding-draft" data-usd-to-crc="{{ (float) data_get($exchangeQuote, 'usd_to_crc', 0) }}">
@@ -183,239 +187,223 @@
                             <script type="application/json" id="cr-location-tree">@json($locationTree)</script>
 
                             <div class="grid gap-5">
-                                <section class="wizard-step rounded-[24px] border border-outline-variant/20 bg-slate-50 p-5 sm:p-6" data-step-panel data-step-title="Identidad del vehiculo">
+                                <section class="wizard-step rounded-[24px] border border-white/10 bg-white/5 p-5 sm:p-6" data-step-panel data-step-title="Identidad del vehiculo">
                                     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                         <div>
                                             <span class="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Paso 1</span>
-                                            <h3 class="mt-2 font-headline text-2xl font-extrabold tracking-tight text-slate-900">Identidad del auto</h3>
-                                            <p class="mt-2 text-sm leading-7 text-slate-500">Define correctamente el vehiculo para mejorar su relevancia en busquedas y comparaciones.</p>
+                                            <h3 class="mt-2 font-headline text-2xl font-extrabold tracking-tight text-white">Identidad del auto</h3>
+                                            <p class="mt-2 text-sm leading-7 text-slate-400">Define correctamente el vehiculo para mejorar su relevancia en busquedas y comparaciones.</p>
                                         </div>
-                                        <span class="inline-flex rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Base del anuncio</span>
+                                        <span class="inline-flex rounded-full bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Base del anuncio</span>
                                     </div>
 
                                     <div class="mb-5 grid gap-4 md:grid-cols-2">
-                                        <div class="rounded-2xl bg-white p-4 shadow-sm"><span class="text-xs font-bold uppercase tracking-[0.2em] text-primary">Importante</span><p class="mt-2 text-sm leading-7 text-slate-500">La seleccion de modelo se filtra automaticamente segun la marca para mantener consistencia.</p></div>
-                                        <div class="rounded-2xl bg-white p-4 shadow-sm"><span class="text-xs font-bold uppercase tracking-[0.2em] text-primary">Consejo</span><p class="mt-2 text-sm leading-7 text-slate-500">Una buena descripcion acelera los contactos porque responde dudas antes del chat o la llamada.</p></div>
+                                        <div class="rounded-2xl bg-[#12131a] p-4 shadow-sm"><span class="text-xs font-bold uppercase tracking-[0.2em] text-primary">Importante</span><p class="mt-2 text-sm leading-7 text-slate-400">La seleccion de modelo se filtra automaticamente segun la marca para mantener consistencia.</p></div>
+                                        <div class="rounded-2xl bg-[#12131a] p-4 shadow-sm"><span class="text-xs font-bold uppercase tracking-[0.2em] text-primary">Consejo</span><p class="mt-2 text-sm leading-7 text-slate-400">Una buena descripcion acelera los contactos porque responde dudas antes del chat o la llamada.</p></div>
                                     </div>
 
                                     <div class="grid gap-4 md:grid-cols-2">
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Marca</span><select class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" name="vehicle_make_id" required data-make-select><option value="">Selecciona</option>@foreach ($makes as $make)<option value="{{ $make->id }}" @selected(old('vehicle_make_id', data_get($prefill, 'vehicle_make_id')) == $make->id)>{{ $make->name }}</option>@endforeach</select></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Modelo</span><select class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" name="vehicle_model_id" required data-model-select><option value="">Selecciona</option>@foreach ($makes as $make) @foreach ($make->models as $model)<option value="{{ $model->id }}" @selected(old('vehicle_model_id', data_get($prefill, 'vehicle_model_id')) == $model->id) data-make="{{ $make->id }}">{{ $model->name }}</option>@endforeach @endforeach</select></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Año</span><select class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" name="year" required>@foreach ($years as $year)<option value="{{ $year }}" @selected((int) old('year', data_get($prefill, 'year', date('Y'))) === (int) $year)>{{ $year }}</option>@endforeach</select></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Version</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="trim" value="{{ old('trim', data_get($prefill, 'trim')) }}" placeholder="Ej. Limited, EX, Sport" /></label>
-                                        <label class="grid gap-2 md:col-span-2"><span class="text-sm font-semibold text-slate-800">Descripcion del anuncio</span><textarea class="min-h-[160px] rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm leading-7 text-slate-700 shadow-sm" rows="5" name="description" required placeholder="Describe estado general, mantenimientos, extras, historial y por que vale la pena tu auto.">{{ old('description') }}</textarea></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Marca</span><select class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" name="vehicle_make_id" required data-make-select><option value="">Selecciona</option>@foreach ($makes as $make)<option value="{{ $make->id }}" @selected(old('vehicle_make_id', data_get($prefill, 'vehicle_make_id')) == $make->id)>{{ $make->name }}</option>@endforeach</select></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Modelo</span><select class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" name="vehicle_model_id" required data-model-select><option value="">Selecciona</option>@foreach ($makes as $make) @foreach ($make->models as $model)<option value="{{ $model->id }}" @selected(old('vehicle_model_id', data_get($prefill, 'vehicle_model_id')) == $model->id) data-make="{{ $make->id }}">{{ $model->name }}</option>@endforeach @endforeach</select></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Año</span><select class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" name="year" required>@foreach ($years as $year)<option value="{{ $year }}" @selected((int) old('year', data_get($prefill, 'year', date('Y'))) === (int) $year)>{{ $year }}</option>@endforeach</select></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Version</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="text" name="trim" value="{{ old('trim', data_get($prefill, 'trim')) }}" placeholder="Ej. Limited, EX, Sport" /></label>
+                                        <label class="grid gap-2 md:col-span-2"><span class="text-sm font-semibold text-slate-100">Descripcion del anuncio</span><textarea class="min-h-[160px] rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm leading-7 text-slate-200 shadow-sm placeholder:text-slate-500" rows="5" name="description" required placeholder="Describe estado general, mantenimientos, extras, historial y por que vale la pena tu auto.">{{ old('description') }}</textarea></label>
                                     </div>
 
                                     <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                        <p class="text-sm text-slate-500">Primero dejamos bien armada la identidad del auto.</p>
+                                        <p class="text-sm text-slate-400">Primero dejamos bien armada la identidad del auto.</p>
                                         <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl bg-secondary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary-container" data-wizard-next>Siguiente: especificaciones</button>
                                     </div>
                                 </section>
-                                <section class="wizard-step rounded-[24px] border border-outline-variant/20 bg-slate-50 p-5 sm:p-6" data-step-panel data-step-title="Especificaciones y precio" hidden>
+                                <section class="wizard-step rounded-[24px] border border-white/10 bg-white/5 p-5 sm:p-6" data-step-panel data-step-title="Especificaciones y precio" hidden>
                                     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                         <div>
                                             <span class="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Paso 2</span>
-                                            <h3 class="mt-2 font-headline text-2xl font-extrabold tracking-tight text-slate-900">Especificaciones y precio</h3>
-                                            <p class="mt-2 text-sm leading-7 text-slate-500">Normalizamos la informacion clave para que el anuncio sea claro, comparable y confiable.</p>
+                                            <h3 class="mt-2 font-headline text-2xl font-extrabold tracking-tight text-white">Especificaciones y precio</h3>
+                                            <p class="mt-2 text-sm leading-7 text-slate-400">Normalizamos la informacion clave para que el anuncio sea claro, comparable y confiable.</p>
                                         </div>
-                                        <span class="inline-flex rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Estandarizado</span>
+                                        <span class="inline-flex rounded-full bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Estandarizado</span>
                                     </div>
 
                                     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Condicion</span><select class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" name="condition" required>@foreach ($vehicleConfig['conditions'] as $value => $label)<option value="{{ $value }}" @selected(old('condition', data_get($prefill, 'condition', 'used')) === $value)>{{ $label }}</option>@endforeach</select></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Carroceria</span><select class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" name="body_type" required><option value="">Selecciona</option>@foreach ($vehicleConfig['body_types'] as $bodyType)<option value="{{ $bodyType }}" @selected(old('body_type', data_get($prefill, 'body_type')) === $bodyType)>{{ $bodyType }}</option>@endforeach</select></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Combustible</span><select class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" name="fuel_type" required><option value="">Selecciona</option>@foreach ($vehicleConfig['fuel_types'] as $fuelType)<option value="{{ $fuelType }}" @selected(old('fuel_type', data_get($prefill, 'fuel_type')) === $fuelType)>{{ $fuelType }}</option>@endforeach</select></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Transmision</span><select class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" name="transmission" required><option value="">Selecciona</option>@foreach ($vehicleConfig['transmissions'] as $transmission)<option value="{{ $transmission }}" @selected(old('transmission', data_get($prefill, 'transmission')) === $transmission)>{{ $transmission }}</option>@endforeach</select></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Traccion</span><select class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" name="drivetrain"><option value="">No especificar</option>@foreach ($vehicleConfig['drivetrains'] as $drivetrain)<option value="{{ $drivetrain }}" @selected(old('drivetrain', data_get($prefill, 'drivetrain')) === $drivetrain)>{{ $drivetrain }}</option>@endforeach</select></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Kilometraje</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="number" name="mileage" min="0" step="1" value="{{ old('mileage', data_get($prefill, 'mileage')) }}" placeholder="Ej. 82000" /><small class="text-sm text-slate-500">Ingresa los kilometros reales del odometro.</small></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Motor</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="engine" value="{{ old('engine') }}" placeholder="Ej. 2.0 Turbo, V6" /><small class="text-sm text-slate-500">Describe el motor tal como lo reconoce el mercado.</small></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Tamaño motor</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="number" step="0.1" name="engine_size" value="{{ old('engine_size', data_get($prefill, 'engine_size')) }}" placeholder="2.5" /><small class="text-sm text-slate-500">Formato en litros. Ejemplo: 1.8, 2.0, 3.5.</small></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Color exterior</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="exterior_color" value="{{ old('exterior_color') }}" /></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Color interior</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="interior_color" value="{{ old('interior_color') }}" /></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Puertas</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="number" name="doors" value="{{ old('doors') }}" min="1" max="8" /></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Asientos</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="number" name="seats" value="{{ old('seats') }}" min="1" max="20" /></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">VIN</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="vin" value="{{ old('vin') }}" placeholder="Opcional por ahora" /></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Placa</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="plate_number" value="{{ old('plate_number') }}" placeholder="Opcional" /></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Condicion</span><select class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" name="condition" required>@foreach ($vehicleConfig['conditions'] as $value => $label)<option value="{{ $value }}" @selected(old('condition', data_get($prefill, 'condition', 'used')) === $value)>{{ $label }}</option>@endforeach</select></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Carroceria</span><select class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" name="body_type" required><option value="">Selecciona</option>@foreach ($vehicleConfig['body_types'] as $bodyType)<option value="{{ $bodyType }}" @selected(old('body_type', data_get($prefill, 'body_type')) === $bodyType)>{{ $bodyType }}</option>@endforeach</select></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Combustible</span><select class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" name="fuel_type" required><option value="">Selecciona</option>@foreach ($vehicleConfig['fuel_types'] as $fuelType)<option value="{{ $fuelType }}" @selected(old('fuel_type', data_get($prefill, 'fuel_type')) === $fuelType)>{{ $fuelType }}</option>@endforeach</select></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Transmision</span><select class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" name="transmission" required><option value="">Selecciona</option>@foreach ($vehicleConfig['transmissions'] as $transmission)<option value="{{ $transmission }}" @selected(old('transmission', data_get($prefill, 'transmission')) === $transmission)>{{ $transmission }}</option>@endforeach</select></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Traccion</span><select class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" name="drivetrain"><option value="">No especificar</option>@foreach ($vehicleConfig['drivetrains'] as $drivetrain)<option value="{{ $drivetrain }}" @selected(old('drivetrain', data_get($prefill, 'drivetrain')) === $drivetrain)>{{ $drivetrain }}</option>@endforeach</select></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Kilometraje</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="number" name="mileage" min="0" step="1" value="{{ old('mileage', data_get($prefill, 'mileage')) }}" placeholder="Ej. 82000" /></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Motor</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="text" name="engine" value="{{ old('engine') }}" placeholder="Ej. 2.0 Turbo, V6" /></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Tamaño motor</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="number" step="0.1" name="engine_size" value="{{ old('engine_size', data_get($prefill, 'engine_size')) }}" placeholder="2.5" /></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Color exterior</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="text" name="exterior_color" value="{{ old('exterior_color') }}" /></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Color interior</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="text" name="interior_color" value="{{ old('interior_color') }}" /></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Puertas</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="number" name="doors" value="{{ old('doors') }}" min="1" max="8" /></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Asientos</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="number" name="seats" value="{{ old('seats') }}" min="1" max="20" /></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">VIN</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="text" name="vin" value="{{ old('vin') }}" placeholder="Opcional por ahora" /></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Placa</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="text" name="plate_number" value="{{ old('plate_number') }}" placeholder="Opcional" /></label>
                                         <input type="hidden" name="currency" value="CRC" />
-                                        <label class="grid gap-2 md:col-span-2 xl:col-span-3"><span class="text-sm font-semibold text-slate-800">Precio en colones (CRC)</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="number" step="1" name="price" value="{{ old('price', data_get($prefill, 'price')) }}" required data-price-input placeholder="18500000" /><small class="text-sm text-slate-500" data-price-preview>El precio oficial se mostrara en colones. Debajo veras una referencia pequena en dolares.</small></label>
+                                        <label class="grid gap-2 md:col-span-2 xl:col-span-3"><span class="text-sm font-semibold text-slate-100">Precio en colones (CRC)</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="number" step="1" name="price" value="{{ old('price', data_get($prefill, 'price')) }}" required data-price-input placeholder="18500000" /><small class="text-sm text-slate-400" data-price-preview>El precio oficial se mostrara en colones. Debajo veras una referencia pequena en dolares.</small></label>
                                     </div>
 
                                     <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                        <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-outline-variant/30 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:text-primary" data-wizard-prev>Volver</button>
+                                        <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#12131a] px-5 py-3 text-sm font-bold text-white transition hover:border-primary hover:bg-white/5 hover:text-white" data-wizard-prev>Volver</button>
                                         <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl bg-secondary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary-container" data-wizard-next>Siguiente: extras y fotos</button>
                                     </div>
                                 </section>
 
-                                <section class="wizard-step rounded-[24px] border border-outline-variant/20 bg-slate-50 p-5 sm:p-6" data-step-panel data-step-title="Extras y fotos" hidden>
+                                <section class="wizard-step rounded-[24px] border border-white/10 bg-white/5 p-5 sm:p-6" data-step-panel data-step-title="Extras y fotos" hidden>
                                     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                         <div>
                                             <span class="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Paso 3</span>
-                                            <h3 class="mt-2 font-headline text-2xl font-extrabold tracking-tight text-slate-900">Extras y fotografias</h3>
-                                            <p class="mt-2 text-sm leading-7 text-slate-500">Marca solo lo que realmente tiene el auto y sube fotos claras en el orden que mejor convierte.</p>
+                                            <h3 class="mt-2 font-headline text-2xl font-extrabold tracking-tight text-white">Extras y fotografias</h3>
+                                            <p class="mt-2 text-sm leading-7 text-slate-400">Marca solo lo que realmente tiene el auto y sube fotos claras en el orden que mejor convierte.</p>
                                         </div>
-                                        <span class="inline-flex rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Mas confianza</span>
+                                        <span class="inline-flex rounded-full bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Mas confianza</span>
                                     </div>
 
                                     <div class="mb-5 grid gap-4 lg:grid-cols-3">
-                                        <div class="rounded-2xl bg-white p-4 shadow-sm"><strong class="block text-sm font-bold text-slate-900">Obligatorias</strong><p class="mt-2 text-sm leading-7 text-slate-500">Frontal, trasera, laterales e interiores principales.</p></div>
-                                        <div class="rounded-2xl bg-white p-4 shadow-sm"><strong class="block text-sm font-bold text-slate-900">Recomendadas</strong><p class="mt-2 text-sm leading-7 text-slate-500">Tablero, motor, baul, asientos traseros y aros.</p></div>
-                                        <div class="rounded-2xl bg-white p-4 shadow-sm"><strong class="block text-sm font-bold text-slate-900">Compresion</strong><p class="mt-2 text-sm leading-7 text-slate-500">Reducimos peso antes del envio para acelerar el proceso.</p></div>
+                                        <div class="rounded-2xl bg-[#12131a] p-4 shadow-sm"><strong class="block text-sm font-bold text-white">Obligatorias</strong><p class="mt-2 text-sm leading-7 text-slate-400">Frontal, trasera, laterales e interiores principales.</p></div>
+                                        <div class="rounded-2xl bg-[#12131a] p-4 shadow-sm"><strong class="block text-sm font-bold text-white">Recomendadas</strong><p class="mt-2 text-sm leading-7 text-slate-400">Tablero, motor, baul, asientos traseros y aros.</p></div>
+                                        
                                     </div>
-                                    <div class="rounded-[24px] border border-outline-variant/20 bg-white p-5 shadow-sm">
-                                        <div class="mb-4"><span class="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Checklist</span><h4 class="mt-2 font-headline text-xl font-extrabold tracking-tight text-slate-900">Extras configurables</h4></div>
-                                        <div class="feature-option-groups">
-                                            @forelse ($featureOptions as $category => $options)
-                                                <div class="feature-option-group">
-                                                    <div class="feature-option-group__header">
-                                                        <div>
-                                                            <h3>{{ str($category)->replace('-', ' ')->title() }}</h3>
-                                                            <p>{{ $options->count() }} opciones disponibles</p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="feature-option-grid">
-                                                        @foreach ($options as $option)
-                                                            <label class="feature-option-card border-outline-variant/20 bg-slate-50">
-                                                                <div class="feature-option-card__top">
-                                                                    <input type="checkbox" name="features[]" value="{{ $option->slug }}" @checked(in_array($option->slug, old('features', []), true)) />
-                                                                    <span>{{ $option->name }}</span>
-                                                                </div>
-                                                                @if ($option->description)
-                                                                    <small>{{ $option->description }}</small>
-                                                                @endif
-                                                            </label>
-                                                        @endforeach
-                                                    </div>
-                                                </div>
+                                    <div class="rounded-[24px] border border-white/10 bg-[#12131a] p-5 shadow-sm">
+                                        <div class="mb-4"><span class="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Checklist</span><h4 class="mt-2 font-headline text-xl font-extrabold tracking-tight text-white">Extras configurables</h4></div>
+                                        <div class="feature-option-list">
+                                            @forelse ($featureOptions as $option)
+                                                <label class="feature-option-check">
+                                                    <input type="checkbox" name="features[]" value="{{ $option->slug }}" @checked(in_array($option->slug, old('features', []), true)) />
+                                                    <span>{{ $option->name }}</span>
+                                                </label>
                                             @empty
-                                                <p class="text-sm text-slate-500">Todavia no hay extras configurables. Puedes agregarlos desde el admin.</p>
+                                                <p class="text-sm text-slate-400">Todavia no hay caracteristicas configuradas. Puedes agregarlas desde el admin.</p>
                                             @endforelse
                                         </div>
                                     </div>
 
-                                    <div class="mt-5 rounded-[24px] border border-outline-variant/20 bg-white p-5 shadow-sm" data-photo-sequence>
+                                    <div class="mt-5 rounded-[24px] border border-white/10 bg-[#12131a] p-5 shadow-sm" data-photo-sequence>
                                         <div class="mb-4 flex items-center justify-between gap-3">
                                             <div>
                                                 <span class="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Carga guiada</span>
-                                                <h4 class="mt-2 font-headline text-xl font-extrabold tracking-tight text-slate-900">Sube una foto por vez</h4>
+                                                <h4 class="mt-2 font-headline text-xl font-extrabold tracking-tight text-white">Sube una foto por vez</h4>
                                             </div>
-                                            <span class="inline-flex rounded-full bg-slate-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500" data-photo-sequence-meta>Foto 1 de 6</span>
+                                            <span class="inline-flex rounded-full bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400" data-photo-sequence-meta>Foto 1 de 6</span>
                                         </div>
 
                                         <div class="grid gap-4">
                                             <div class="photo-sequence-panel" data-photo-panel data-photo-required="true" data-photo-title="Fotografia frontal">
-                                                <label class="seller-photo-card grid gap-3 rounded-2xl border border-outline-variant/20 bg-slate-50 p-4">
-                                                    <span class="text-sm font-semibold text-slate-800">Fotografia frontal</span>
-                                                    <input class="rounded-xl border border-outline-variant/20 bg-white px-3 py-3 text-sm" type="file" name="photo_front" accept="image/*" required data-compress-image data-photo-input />
-                                                    <small class="text-sm text-slate-500" data-file-hint>Obligatoria. Mejor en horizontal y con el auto completo.</small>
+                                                <label class="seller-photo-card grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                                                    <span class="text-sm font-semibold text-slate-100">Fotografia frontal</span>
+                                                    <input class="rounded-xl border border-white/10 bg-[#12131a] px-3 py-3 text-sm text-white" type="file" name="photo_front" accept="image/*" required data-compress-image data-photo-input />
+                                                    <small class="text-sm text-slate-400" data-file-hint>Obligatoria. Mejor en horizontal y con el auto completo.</small>
                                                 </label>
                                             </div>
 
                                             <div class="photo-sequence-panel" data-photo-panel data-photo-required="true" data-photo-title="Fotografia trasera" hidden>
-                                                <label class="seller-photo-card grid gap-3 rounded-2xl border border-outline-variant/20 bg-slate-50 p-4">
-                                                    <span class="text-sm font-semibold text-slate-800">Fotografia trasera</span>
-                                                    <input class="rounded-xl border border-outline-variant/20 bg-white px-3 py-3 text-sm" type="file" name="photo_rear" accept="image/*" required data-compress-image data-photo-input />
-                                                    <small class="text-sm text-slate-500" data-file-hint>Obligatoria. Intenta mostrar compuerta, bumper y luces.</small>
+                                                <label class="seller-photo-card grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                                                    <span class="text-sm font-semibold text-slate-100">Fotografia trasera</span>
+                                                    <input class="rounded-xl border border-white/10 bg-[#12131a] px-3 py-3 text-sm text-white" type="file" name="photo_rear" accept="image/*" required data-compress-image data-photo-input />
+                                                    <small class="text-sm text-slate-400" data-file-hint>Obligatoria. Intenta mostrar compuerta, bumper y luces.</small>
                                                 </label>
                                             </div>
 
                                             <div class="photo-sequence-panel" data-photo-panel data-photo-required="true" data-photo-title="Lateral izquierda" hidden>
-                                                <label class="seller-photo-card grid gap-3 rounded-2xl border border-outline-variant/20 bg-slate-50 p-4">
-                                                    <span class="text-sm font-semibold text-slate-800">Lateral izquierda</span>
-                                                    <input class="rounded-xl border border-outline-variant/20 bg-white px-3 py-3 text-sm" type="file" name="photo_left" accept="image/*" required data-compress-image data-photo-input />
-                                                    <small class="text-sm text-slate-500" data-file-hint>Obligatoria. Toma el costado completo del vehiculo.</small>
+                                                <label class="seller-photo-card grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                                                    <span class="text-sm font-semibold text-slate-100">Lateral izquierda</span>
+                                                    <input class="rounded-xl border border-white/10 bg-[#12131a] px-3 py-3 text-sm text-white" type="file" name="photo_left" accept="image/*" required data-compress-image data-photo-input />
+                                                    <small class="text-sm text-slate-400" data-file-hint>Obligatoria. Toma el costado completo del vehiculo.</small>
                                                 </label>
                                             </div>
 
                                             <div class="photo-sequence-panel" data-photo-panel data-photo-required="true" data-photo-title="Lateral derecha" hidden>
-                                                <label class="seller-photo-card grid gap-3 rounded-2xl border border-outline-variant/20 bg-slate-50 p-4">
-                                                    <span class="text-sm font-semibold text-slate-800">Lateral derecha</span>
-                                                    <input class="rounded-xl border border-outline-variant/20 bg-white px-3 py-3 text-sm" type="file" name="photo_right" accept="image/*" required data-compress-image data-photo-input />
-                                                    <small class="text-sm text-slate-500" data-file-hint>Obligatoria. Evita reflejos fuertes o cortes.</small>
+                                                <label class="seller-photo-card grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                                                    <span class="text-sm font-semibold text-slate-100">Lateral derecha</span>
+                                                    <input class="rounded-xl border border-white/10 bg-[#12131a] px-3 py-3 text-sm text-white" type="file" name="photo_right" accept="image/*" required data-compress-image data-photo-input />
+                                                    <small class="text-sm text-slate-400" data-file-hint>Obligatoria. Evita reflejos fuertes o cortes.</small>
                                                 </label>
                                             </div>
 
                                             <div class="photo-sequence-panel" data-photo-panel data-photo-required="true" data-photo-title="Interior del conductor" hidden>
-                                                <label class="seller-photo-card grid gap-3 rounded-2xl border border-outline-variant/20 bg-slate-50 p-4">
-                                                    <span class="text-sm font-semibold text-slate-800">Interior del conductor</span>
-                                                    <input class="rounded-xl border border-outline-variant/20 bg-white px-3 py-3 text-sm" type="file" name="photo_driver_interior" accept="image/*" required data-compress-image data-photo-input />
-                                                    <small class="text-sm text-slate-500" data-file-hint>Obligatoria. Muestra asiento, puerta y tablero lateral.</small>
+                                                <label class="seller-photo-card grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                                                    <span class="text-sm font-semibold text-slate-100">Interior del conductor</span>
+                                                    <input class="rounded-xl border border-white/10 bg-[#12131a] px-3 py-3 text-sm text-white" type="file" name="photo_driver_interior" accept="image/*" required data-compress-image data-photo-input />
+                                                    <small class="text-sm text-slate-400" data-file-hint>Obligatoria. Muestra asiento, puerta y tablero lateral.</small>
                                                 </label>
                                             </div>
 
                                             <div class="photo-sequence-panel" data-photo-panel data-photo-required="true" data-photo-title="Interior del copiloto" hidden>
-                                                <label class="seller-photo-card grid gap-3 rounded-2xl border border-outline-variant/20 bg-slate-50 p-4">
-                                                    <span class="text-sm font-semibold text-slate-800">Interior del copiloto</span>
-                                                    <input class="rounded-xl border border-outline-variant/20 bg-white px-3 py-3 text-sm" type="file" name="photo_passenger_interior" accept="image/*" required data-compress-image data-photo-input />
-                                                    <small class="text-sm text-slate-500" data-file-hint>Obligatoria. Cierra las 6 fotos base del anuncio.</small>
+                                                <label class="seller-photo-card grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                                                    <span class="text-sm font-semibold text-slate-100">Interior del copiloto</span>
+                                                    <input class="rounded-xl border border-white/10 bg-[#12131a] px-3 py-3 text-sm text-white" type="file" name="photo_passenger_interior" accept="image/*" required data-compress-image data-photo-input />
+                                                    <small class="text-sm text-slate-400" data-file-hint>Obligatoria. Cierra las 6 fotos base del anuncio.</small>
                                                 </label>
                                             </div>
 
-                                            <div class="rounded-2xl border border-outline-variant/20 bg-slate-50 p-4" data-photo-optional-entry hidden>
+                                            <div class="rounded-2xl border border-white/10 bg-white/5 p-4" data-photo-optional-entry hidden>
                                                 <span class="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Fotos opcionales</span>
-                                                <h5 class="mt-2 text-lg font-bold text-slate-900">Puedes subir mas fotografias</h5>
-                                                <p class="mt-2 text-sm leading-7 text-slate-500">Si quieres mostrar un par de detalles extra, puedes seguir. Si no, pasa directo al siguiente paso.</p>
+                                                <h5 class="mt-2 text-lg font-bold text-white">Puedes subir mas fotografias</h5>
+                                                <p class="mt-2 text-sm leading-7 text-slate-400">Si quieres mostrar un par de detalles extra, puedes seguir. Si no, pasa directo al siguiente paso.</p>
                                                 <div class="mt-4 flex flex-col gap-3 sm:flex-row">
                                                     <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-primary-container" data-photo-optional-open>Si, subir mas fotos</button>
-                                                    <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-outline-variant/30 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:text-primary" data-photo-optional-skip>No, continuar</button>
+                                                    <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#12131a] px-5 py-3 text-sm font-bold text-white transition hover:border-primary hover:bg-white/5 hover:text-white" data-photo-optional-skip>No, continuar</button>
                                                 </div>
                                             </div>
 
                                             <div class="photo-sequence-panel" data-photo-panel data-photo-optional="true" data-photo-title="Foto adicional 1" hidden>
-                                                <label class="seller-photo-card grid gap-3 rounded-2xl border border-outline-variant/20 bg-slate-50 p-4">
-                                                    <span class="text-sm font-semibold text-slate-800">Foto adicional 1</span>
-                                                    <input class="rounded-xl border border-outline-variant/20 bg-white px-3 py-3 text-sm" type="file" name="photo_extra_1" accept="image/*" data-compress-image data-photo-input />
-                                                    <small class="text-sm text-slate-500" data-file-hint>Opcional. Extras, golpes leves o closeups importantes.</small>
+                                                <label class="seller-photo-card grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                                                    <span class="text-sm font-semibold text-slate-100">Foto adicional 1</span>
+                                                    <input class="rounded-xl border border-white/10 bg-[#12131a] px-3 py-3 text-sm text-white" type="file" name="photo_extra_1" accept="image/*" data-compress-image data-photo-input />
+                                                    <small class="text-sm text-slate-400" data-file-hint>Opcional. Extras, golpes leves o closeups importantes.</small>
                                                 </label>
                                             </div>
 
                                             <div class="photo-sequence-panel" data-photo-panel data-photo-optional="true" data-photo-title="Foto adicional 2" hidden>
-                                                <label class="seller-photo-card grid gap-3 rounded-2xl border border-outline-variant/20 bg-slate-50 p-4">
-                                                    <span class="text-sm font-semibold text-slate-800">Foto adicional 2</span>
-                                                    <input class="rounded-xl border border-outline-variant/20 bg-white px-3 py-3 text-sm" type="file" name="photo_extra_2" accept="image/*" data-compress-image data-photo-input />
-                                                    <small class="text-sm text-slate-500" data-file-hint>Opcional. Puedes dejarla vacia si ya terminaste.</small>
+                                                <label class="seller-photo-card grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                                                    <span class="text-sm font-semibold text-slate-100">Foto adicional 2</span>
+                                                    <input class="rounded-xl border border-white/10 bg-[#12131a] px-3 py-3 text-sm text-white" type="file" name="photo_extra_2" accept="image/*" data-compress-image data-photo-input />
+                                                    <small class="text-sm text-slate-400" data-file-hint>Opcional. Puedes dejarla vacia si ya terminaste.</small>
                                                 </label>
                                             </div>
                                         </div>
 
                                         <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                            <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-outline-variant/30 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:text-primary" data-photo-prev>Foto anterior</button>
+                                            <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#12131a] px-5 py-3 text-sm font-bold text-white transition hover:border-primary hover:bg-white/5 hover:text-white" data-photo-prev>Foto anterior</button>
                                             <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-primary-container" data-photo-next>Foto siguiente</button>
                                         </div>
                                     </div>
 
                                     <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                        <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-outline-variant/30 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:text-primary" data-wizard-prev>Volver</button>
+                                        <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#12131a] px-5 py-3 text-sm font-bold text-white transition hover:border-primary hover:bg-white/5 hover:text-white" data-wizard-prev>Volver</button>
                                         <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl bg-secondary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary-container" data-wizard-next>Siguiente: ubicacion</button>
                                     </div>
                                 </section>
 
-                                <section class="wizard-step rounded-[24px] border border-outline-variant/20 bg-slate-50 p-5 sm:p-6" data-step-panel data-step-title="Ubicacion en Costa Rica" hidden>
+                                <section class="wizard-step rounded-[24px] border border-white/10 bg-white/5 p-5 sm:p-6" data-step-panel data-step-title="Ubicacion en Costa Rica" hidden>
                                     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                         <div>
                                             <span class="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Paso 4</span>
-                                            <h3 class="mt-2 font-headline text-2xl font-extrabold tracking-tight text-slate-900">Ubica tu auto en Costa Rica</h3>
-                                            <p class="mt-2 text-sm leading-7 text-slate-500">Este marketplace solo publica autos ubicados en Costa Rica. Usa el mapa para dejar el punto bien claro.</p>
+                                            <h3 class="mt-2 font-headline text-2xl font-extrabold tracking-tight text-white">Ubica tu auto en Costa Rica</h3>
+                                            <p class="mt-2 text-sm leading-7 text-slate-400">Este marketplace solo publica autos ubicados en Costa Rica. Usa el mapa para dejar el punto bien claro.</p>
                                         </div>
-                                        <span class="inline-flex rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Google Maps</span>
+                                        <span class="inline-flex rounded-full bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Google Maps</span>
                                     </div>
                                     <div class="mb-5 grid gap-4 md:grid-cols-2">
-                                        <div class="rounded-2xl bg-white p-4 shadow-sm"><strong class="block text-sm font-bold text-slate-900">Pais permitido</strong><p class="mt-2 text-sm leading-7 text-slate-500">Solo aceptamos ubicaciones dentro de Costa Rica.</p></div>
-                                        <div class="rounded-2xl bg-white p-4 shadow-sm"><strong class="block text-sm font-bold text-slate-900">Sugerencia</strong><p class="mt-2 text-sm leading-7 text-slate-500">Busca por distrito, canton o punto conocido para que el comprador entienda mejor la zona.</p></div>
+                                        <div class="rounded-2xl bg-[#12131a] p-4 shadow-sm"><strong class="block text-sm font-bold text-white">Pais permitido</strong><p class="mt-2 text-sm leading-7 text-slate-400">Solo aceptamos ubicaciones dentro de Costa Rica.</p></div>
+                                        <div class="rounded-2xl bg-[#12131a] p-4 shadow-sm"><strong class="block text-sm font-bold text-white">Sugerencia</strong><p class="mt-2 text-sm leading-7 text-slate-400">Busca por distrito, canton o punto conocido para que el comprador entienda mejor la zona.</p></div>
                                     </div>
 
                                     <div class="grid gap-4 md:grid-cols-2">
-                                        <label class="grid gap-2 md:col-span-2"><span class="text-sm font-semibold text-slate-800">Direccion o punto de referencia</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="map_search" value="{{ old('location_label') }}" placeholder="Ej. Barrio Los Yoses, cerca del parque, San Pedro" data-map-search required /></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Provincia</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="province" value="{{ old('province', data_get($prefill, 'province', '')) }}" list="province-list" placeholder="Escribe o selecciona una provincia" data-location-province autocomplete="off" /><datalist id="province-list"></datalist></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Canton</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="canton" value="{{ old('canton', data_get($prefill, 'canton', '')) }}" list="canton-list" placeholder="Selecciona primero una provincia" data-location-canton autocomplete="off" /><datalist id="canton-list"></datalist></label>
-                                        <label class="grid gap-2 md:col-span-2"><span class="text-sm font-semibold text-slate-800">Distrito</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="district" value="{{ old('district', data_get($prefill, 'district', data_get($prefill, 'city', ''))) }}" list="district-list" placeholder="Selecciona primero un canton" data-location-district autocomplete="off" /><datalist id="district-list"></datalist><small class="text-sm text-slate-500">La ruta correcta en Costa Rica es: provincia, luego canton y despues distrito.</small></label>
-                                        <div class="grid gap-2 md:col-span-2"><span class="text-sm font-semibold text-slate-800">Mapa</span><div class="map-canvas rounded-[24px] border border-outline-variant/20 bg-white" data-map-canvas></div></div>
+                                        <label class="grid gap-2 md:col-span-2"><span class="text-sm font-semibold text-slate-100">Direccion o punto de referencia</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="text" name="map_search" value="{{ old('location_label') }}" placeholder="Ej. Barrio Los Yoses, cerca del parque, San Pedro" data-map-search required /></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Provincia</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="text" name="province" value="{{ old('province', data_get($prefill, 'province', '')) }}" list="province-list" placeholder="Escribe o selecciona una provincia" data-location-province autocomplete="off" /><datalist id="province-list"></datalist></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Canton</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="text" name="canton" value="{{ old('canton', data_get($prefill, 'canton', '')) }}" list="canton-list" placeholder="Selecciona primero una provincia" data-location-canton autocomplete="off" /><datalist id="canton-list"></datalist></label>
+                                        <label class="grid gap-2 md:col-span-2"><span class="text-sm font-semibold text-slate-100">Distrito</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="text" name="district" value="{{ old('district', data_get($prefill, 'district', data_get($prefill, 'city', ''))) }}" list="district-list" placeholder="Selecciona primero un canton" data-location-district autocomplete="off" /><datalist id="district-list"></datalist><small class="text-sm text-slate-400">La ruta correcta en Costa Rica es: provincia, luego canton y despues distrito.</small></label>
+                                        <label class="grid gap-2 md:col-span-2"><span class="text-sm font-semibold text-slate-100">WhatsApp de contacto</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="text" name="contact_phone" value="{{ old('contact_phone', auth()->user()?->whatsapp_phone ?: auth()->user()?->phone) }}" placeholder="Ej. 8888-8888" /><small class="text-sm text-slate-400">Este numero se usara en el boton de WhatsApp del anuncio para contactar al vendedor.</small></label>
+                                        <div class="grid gap-2 md:col-span-2"><span class="text-sm font-semibold text-slate-100">Mapa</span><div class="map-canvas rounded-[24px] border border-white/10 bg-[#12131a]" data-map-canvas></div></div>
                                     </div>
                                     @if ($googleMapsKey)
                                         <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ $googleMapsKey }}&libraries=places"></script>
                                     @endif
 
                                     <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                        <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-outline-variant/30 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:text-primary" data-wizard-prev>Volver</button>
+                                        <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#12131a] px-5 py-3 text-sm font-bold text-white transition hover:border-primary hover:bg-white/5 hover:text-white" data-wizard-prev>Volver</button>
                                         @if ($currentUser)
                                             <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-xl bg-secondary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary-container" data-submit-onboarding>Publicar con mi cuenta</button>
                                         @else
@@ -425,23 +413,22 @@
                                 </section>
 
                                 @unless ($currentUser)
-                                <section class="wizard-step rounded-[24px] border border-outline-variant/20 bg-slate-50 p-5 sm:p-6" data-step-panel data-step-title="Cuenta seller" hidden>
+                                <section class="wizard-step rounded-[24px] border border-white/10 bg-white/5 p-5 sm:p-6" data-step-panel data-step-title="Cuenta seller" hidden>
                                     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                         <div>
                                             <span class="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Paso 5</span>
-                                            <h3 class="mt-2 font-headline text-2xl font-extrabold tracking-tight text-slate-900">Crea tu cuenta seller al final</h3>
-                                            <p class="mt-2 text-sm leading-7 text-slate-500">Aqui terminamos. Se crea tu cuenta y tu auto queda listo para administrarse desde tu dashboard seller.</p>
+                                            <h3 class="mt-2 font-headline text-2xl font-extrabold tracking-tight text-white">Crea tu cuenta seller al final</h3>
+                                            <p class="mt-2 text-sm leading-7 text-slate-400">Aqui terminamos. Se crea tu cuenta y tu auto queda listo para administrarse desde tu dashboard seller.</p>
                                         </div>
-                                        <span class="inline-flex rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Cierre rapido</span>
+                                        <span class="inline-flex rounded-full bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Cierre rapido</span>
                                     </div>
 
                                     <div class="grid gap-4 md:grid-cols-2">
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Nombre completo</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="seller_name" value="{{ old('seller_name') }}" required /></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Correo electronico</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="email" name="contact_email" value="{{ old('contact_email') }}" placeholder="Opcional si usas telefono" /></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Telefono</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="text" name="contact_phone" value="{{ old('contact_phone') }}" placeholder="Opcional si usas correo" /></label>
-                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-800">Contrasena</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="password" name="password" required /></label>
-                                        <label class="grid gap-2 md:col-span-2"><span class="text-sm font-semibold text-slate-800">Confirmar contrasena</span><input class="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm" type="password" name="password_confirmation" required /></label>
-                                        <label class="inline-flex items-center gap-3 rounded-2xl border border-outline-variant/20 bg-white px-4 py-4 text-sm text-slate-700 md:col-span-2"><input type="checkbox" name="accept_terms" value="1" required class="h-4 w-4 accent-[var(--color-secondary)]" /> <span>Acepto terminos y confirmo que el auto esta en Costa Rica.</span></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Nombre completo</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="text" name="seller_name" value="{{ old('seller_name') }}" required /></label>
+                                        <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Correo electronico</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="email" name="contact_email" value="{{ old('contact_email') }}" placeholder="Opcional si usas telefono" /></label>
+                                                                                <label class="grid gap-2"><span class="text-sm font-semibold text-slate-100">Contrasena</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="password" name="password" required /></label>
+                                        <label class="grid gap-2 md:col-span-2"><span class="text-sm font-semibold text-slate-100">Confirmar contrasena</span><input class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm" type="password" name="password_confirmation" required /></label>
+                                        <label class="inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm text-slate-100 md:col-span-2"><input type="checkbox" name="accept_terms" value="1" required class="h-4 w-4 accent-[var(--color-secondary)] bg-[#12131a]" /> <span>Acepto terminos y confirmo que el auto esta en Costa Rica.</span></label>
                                     </div>
 
                                     <div class="mt-6 rounded-2xl bg-primary px-5 py-5 text-white">
@@ -455,7 +442,7 @@
                                     </div>
 
                                     <div class="mt-6 flex justify-start">
-                                        <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-outline-variant/30 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:text-primary" data-wizard-prev>Volver</button>
+                                        <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#12131a] px-5 py-3 text-sm font-bold text-white transition hover:border-primary hover:bg-white/5 hover:text-white" data-wizard-prev>Volver</button>
                                     </div>
                                 </section>
                                 @endunless

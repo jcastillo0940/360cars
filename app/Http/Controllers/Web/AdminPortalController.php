@@ -170,15 +170,17 @@ class AdminPortalController extends Controller
 
     public function settings(Request $request)
     {
+        $featureOptions = VehicleFeatureOption::query()
+            ->orderBy('category')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
         return view('portal.admin.settings', $this->sharedData($request) + [
             'plans' => Plan::query()->where('is_active', true)->orderBy('price')->get(),
             'paymentMethods' => $this->paymentMethods(),
-            'featureOptions' => VehicleFeatureOption::query()
-                ->orderBy('category')
-                ->orderBy('sort_order')
-                ->orderBy('name')
-                ->get()
-                ->groupBy('category'),
+            'featureOptions' => $featureOptions,
+            'featureCategories' => $featureOptions->pluck('category')->filter()->unique()->values(),
         ]);
     }
 
@@ -319,6 +321,38 @@ class AdminPortalController extends Controller
 
         return redirect()->to(route('admin.settings').'#features')->with('status', 'Estado del extra actualizado.');
     }
+
+    public function updateFeatureOption(Request $request, VehicleFeatureOption $featureOption): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:100', Rule::unique('vehicle_feature_options', 'name')->ignore($featureOption->id)],
+            'category' => ['required', 'string', 'max:60'],
+            'description' => ['nullable', 'string', 'max:160'],
+            'sort_order' => ['nullable', 'integer', 'min:0', 'max:9999'],
+        ]);
+
+        $featureOption->update([
+            'name' => $data['name'],
+            'slug' => Str::slug($data['name']),
+            'category' => Str::slug($data['category']),
+            'description' => $data['description'] ?: null,
+            'sort_order' => $data['sort_order'] ?? 0,
+        ]);
+
+        return redirect()->to(route('admin.settings').'#features')->with('status', 'Característica actualizada correctamente.');
+    }
+
+    public function destroyFeatureOption(VehicleFeatureOption $featureOption): RedirectResponse
+    {
+        if (Vehicle::query()->whereJsonContains('features', $featureOption->slug)->exists()) {
+            return redirect()->to(route('admin.settings').'#features')->with('status', 'No puedes eliminar esta característica porque ya está en uso en uno o más vehículos.');
+        }
+
+        $featureOption->delete();
+
+        return redirect()->to(route('admin.settings').'#features')->with('status', 'Característica eliminada correctamente.');
+    }
+
 
     public function updatePaymentMethods(Request $request): RedirectResponse
     {

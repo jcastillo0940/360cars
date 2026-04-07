@@ -24,31 +24,8 @@ class DatabaseSeeder extends Seeder
             CatalogSeeder::class,
             CostaRicaLocationsSeeder::class,
             PlanSeeder::class,
+            VehicleFeatureOptionSeeder::class,
         ]);
-
-        foreach ([
-            ['Camara de retroceso', 'seguridad', 'Mejora visibilidad al parquear.', 10],
-            ['Sensores de parqueo', 'seguridad', 'Asistencia para maniobras urbanas.', 20],
-            ['Apple CarPlay', 'tecnologia', 'Integracion con iPhone.', 30],
-            ['Android Auto', 'tecnologia', 'Integracion con Android.', 40],
-            ['Bluetooth', 'tecnologia', 'Audio y llamadas manos libres.', 50],
-            ['Sunroof', 'confort', 'Techo corredizo o panoramico.', 60],
-            ['Asientos de cuero', 'confort', 'Tapiceria premium.', 70],
-            ['Control crucero', 'confort', 'Ayuda en viajes largos.', 80],
-            ['Llave inteligente', 'confort', 'Ingreso y arranque sin llave.', 90],
-            ['Airbags', 'seguridad', 'Equipo de seguridad pasiva.', 100],
-        ] as [$name, $category, $description, $sortOrder]) {
-            VehicleFeatureOption::updateOrCreate(
-                ['slug' => Str::slug($name)],
-                [
-                    'name' => $name,
-                    'category' => $category,
-                    'description' => $description,
-                    'sort_order' => $sortOrder,
-                    'is_active' => true,
-                ],
-            );
-        }
 
         $seller = User::updateOrCreate(
             ['email' => 'seller@360cars.local'],
@@ -193,7 +170,7 @@ class DatabaseSeeder extends Seeder
                     'plan_priority_weight' => 80,
                     'visibility_bucket' => 'featured',
                 ],
-                'features' => ['camara-de-retroceso', 'sensores-de-parqueo', 'apple-carplay', 'asientos-de-cuero'],
+                'features' => ['camara-de-retroceso', 'sensores-de-retroceso', 'bluetooth', 'tapiceria-de-cuero'],
             ],
             [
                 'owner_id' => $dealer->id,
@@ -224,7 +201,7 @@ class DatabaseSeeder extends Seeder
                     'plan_priority_weight' => 90,
                     'visibility_bucket' => 'priority',
                 ],
-                'features' => ['camara-de-retroceso', 'apple-carplay', 'android-auto'],
+                'features' => ['camara-de-retroceso', 'bluetooth', 'frenos-abs'],
             ],
             [
                 'owner_id' => $seller->id,
@@ -255,7 +232,7 @@ class DatabaseSeeder extends Seeder
                     'plan_priority_weight' => 70,
                     'visibility_bucket' => 'priority',
                 ],
-                'features' => ['camara-de-retroceso', 'bluetooth', 'control-crucero'],
+                'features' => ['camara-de-retroceso', 'bluetooth', 'cruise-control'],
             ],
             [
                 'owner_id' => $admin->id,
@@ -286,7 +263,7 @@ class DatabaseSeeder extends Seeder
                     'plan_priority_weight' => 78,
                     'visibility_bucket' => 'featured',
                 ],
-                'features' => ['camara-de-retroceso', 'android-auto', 'asientos-de-cuero', 'sunroof'],
+                'features' => ['camara-de-retroceso', 'bluetooth', 'tapiceria-de-cuero', 'sunroof-techo-panoramico'],
             ],
             [
                 'owner_id' => $dealer->id,
@@ -317,7 +294,7 @@ class DatabaseSeeder extends Seeder
                     'plan_priority_weight' => 88,
                     'visibility_bucket' => 'priority',
                 ],
-                'features' => ['camara-de-retroceso', 'llave-inteligente', 'asientos-de-cuero'],
+                'features' => ['camara-de-retroceso', 'llave-inteligente-boton-de-arranque', 'tapiceria-de-cuero'],
             ],
         ];
 

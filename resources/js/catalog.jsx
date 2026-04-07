@@ -88,6 +88,7 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
         make: filters.make || '',
         model: filters.model || '',
         city: filters.city || '',
+        features: filters.features || [],
         min_price: Number(filters.min_price || priceRange.min),
         max_price: Number(filters.max_price || priceRange.max),
         min_year: Number(filters.min_year || yearRange.min),
@@ -117,6 +118,15 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
         setLocalFilters((current) => ({ ...current, [key]: value }));
     };
 
+    const toggleFeature = (slug) => {
+        setLocalFilters((current) => ({
+            ...current,
+            features: current.features.includes(slug)
+                ? current.features.filter((item) => item !== slug)
+                : [...current.features, slug],
+        }));
+    };
+
     const handleSubmit = (event) => {
         event.preventDefault();
         const params = new URLSearchParams();
@@ -125,6 +135,10 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
             if (key === 'max_price' && Number(value) >= priceRange.max) return;
             if (key === 'min_year' && Number(value) <= yearRange.min) return;
             if (key === 'max_year' && Number(value) >= yearRange.max) return;
+            if (key === 'features') {
+                value.forEach((feature) => params.append('features[]', String(feature)));
+                return;
+            }
             if (value !== '' && value !== null && value !== undefined) params.set(key, String(value));
         });
         window.location.href = `${catalogUrl}${params.toString() ? `?${params.toString()}` : ''}`;
@@ -135,6 +149,7 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
             make: '',
             model: '',
             city: '',
+            features: [],
             min_price: priceRange.min,
             max_price: priceRange.max,
             min_year: yearRange.min,
@@ -282,6 +297,26 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
                                         {filterOptions.cities.map((item) => <option key={item} value={item}>{item}</option>)}
                                     </select>
                                 </label>
+
+                                <div className="rounded-2xl border border-outline-variant/30 bg-white p-4">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Características</span>
+                                        <strong className="text-xs font-extrabold text-primary">{localFilters.features.length || 'Todas'}</strong>
+                                    </div>
+                                    <div className="mt-4 grid gap-3">
+                                        {filterOptions.features.map((feature) => (
+                                            <label key={feature.slug} className="inline-flex items-center gap-3 rounded-xl border border-outline-variant/20 bg-slate-50 px-3 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary hover:text-primary">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={localFilters.features.includes(feature.slug)}
+                                                    onChange={() => toggleFeature(feature.slug)}
+                                                    className="h-4 w-4 accent-[var(--color-secondary)]"
+                                                />
+                                                <span>{feature.name}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
 
                                 <RangeControl
                                     label="Precio"
