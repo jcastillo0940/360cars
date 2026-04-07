@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Icon, PublicFooter, PublicTopBar } from './public-shell';
 
@@ -29,9 +29,9 @@ function ResultPanel({ result, shareUrl, isDark }) {
         <section className={`rounded-[28px] border p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] sm:p-8 ${isDark ? 'border-white/10 bg-[#0b1118]' : 'border-outline-variant/25 bg-white'}`}>
             <div className="flex flex-col gap-4 border-b border-outline-variant/20 pb-6 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                    <span className="inline-flex rounded-full bg-primary-fixed px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary">EvaluaciÃ³n lista</span>
+                    <span className="inline-flex rounded-full bg-primary-fixed px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary">Evaluación lista</span>
                     <h2 className={`mt-4 font-headline text-3xl font-extrabold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>{result.title}</h2>
-                    <p className={`mt-2 max-w-2xl text-sm ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>Calculamos un valor sugerido con depreciaciÃ³n, comparables publicados y demanda estimada para Costa Rica.</p>
+                    <p className={`mt-2 max-w-2xl text-sm ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>Calculamos un valor sugerido con depreciación, comparables publicados y demanda estimada para Costa Rica.</p>
                 </div>
                 <div className={`rounded-2xl border px-5 py-4 ${isDark ? 'border-white/10 bg-white/5' : 'border-outline-variant/20 bg-slate-50'}`}>
                     <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Confianza</span>
@@ -41,8 +41,8 @@ function ResultPanel({ result, shareUrl, isDark }) {
 
             <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
                 <ResultPrice label="Precio sugerido" primary={result.suggestedPrice} secondary={result.suggestedPriceSecondary} isDark={isDark} />
-                <ResultPrice label="Rango mÃ­nimo" primary={result.minPrice} secondary={result.minPriceSecondary} isDark={isDark} />
-                <ResultPrice label="Rango mÃ¡ximo" primary={result.maxPrice} secondary={result.maxPriceSecondary} isDark={isDark} />
+                <ResultPrice label="Rango mínimo" primary={result.minPrice} secondary={result.minPriceSecondary} isDark={isDark} />
+                <ResultPrice label="Rango máximo" primary={result.maxPrice} secondary={result.maxPriceSecondary} isDark={isDark} />
             </div>
 
             <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_0.8fr]">
@@ -50,7 +50,7 @@ function ResultPanel({ result, shareUrl, isDark }) {
                     <div className="mb-4 flex items-center justify-between gap-3">
                         <div>
                             <span className="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Lectura del mercado</span>
-                            <h3 className={`mt-2 font-headline text-2xl font-extrabold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Lo que estÃ¡ moviendo el valor</h3>
+                            <h3 className={`mt-2 font-headline text-2xl font-extrabold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Lo que está moviendo el valor</h3>
                         </div>
                         <span className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] ${isDark ? 'bg-[#0f1722] text-slate-300' : 'bg-white text-slate-500'}`}>Costa Rica</span>
                     </div>
@@ -79,8 +79,8 @@ function ResultPanel({ result, shareUrl, isDark }) {
                     <div className={`rounded-2xl border p-5 shadow-sm ${isDark ? 'border-white/10 bg-white/5' : 'border-outline-variant/20 bg-white'}`}>
                         <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Ficha usada</span>
                         <div className={`mt-4 space-y-3 text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                            <div className="flex items-center justify-between gap-3"><span>CondiciÃ³n</span><strong>{result.snapshot.condition === 'new' ? 'Nuevo' : 'Usado'}</strong></div>
-                            <div className="flex items-center justify-between gap-3"><span>CarrocerÃ­a</span><strong>{result.snapshot.body_type}</strong></div>
+                            <div className="flex items-center justify-between gap-3"><span>Condición</span><strong>{result.snapshot.condition === 'new' ? 'Nuevo' : 'Usado'}</strong></div>
+                            <div className="flex items-center justify-between gap-3"><span>Carrocería</span><strong>{result.snapshot.body_type}</strong></div>
                             <div className="flex items-center justify-between gap-3"><span>Combustible</span><strong>{result.snapshot.fuel_type}</strong></div>
                             <div className="flex items-center justify-between gap-3"><span>Transmisión</span><strong>{result.snapshot.transmission}</strong></div>
                             <div className="flex items-center justify-between gap-3"><span>Ciudad</span><strong>{result.snapshot.city}</strong></div>
@@ -90,12 +90,12 @@ function ResultPanel({ result, shareUrl, isDark }) {
 
                     <div className={`rounded-2xl border p-5 text-white shadow-sm ${isDark ? 'border-secondary/30 bg-secondary/90' : 'border-outline-variant/20 bg-slate-900'}`}>
                         <span className={`text-xs font-bold uppercase tracking-[0.2em] ${isDark ? 'text-white/80' : 'text-white/60'}`}>Siguiente paso</span>
-                        <h3 className="mt-2 font-headline text-2xl font-extrabold tracking-tight">Convierte esta evaluaciÃ³n en anuncio</h3>
-                        <p className={`mt-3 text-sm leading-6 ${isDark ? 'text-white' : 'text-white/80'}`}>Puedes compartir la valuaciÃ³n o pasar directo al flujo de venta con varios datos ya prellenados.</p>
+                        <h3 className="mt-2 font-headline text-2xl font-extrabold tracking-tight">Convierte esta evaluación en anuncio</h3>
+                        <p className={`mt-3 text-sm leading-6 ${isDark ? 'text-white' : 'text-white/80'}`}>Puedes compartir la valuación o pasar directo al flujo de venta con varios datos ya prellenados.</p>
                         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                             <button type="button" onClick={handleShare} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/15">
                                 <Icon name="ios_share" className="text-[18px]" />
-                                {copied ? 'Enlace copiado' : 'Compartir evaluaciÃ³n'}
+                                {copied ? 'Enlace copiado' : 'Compartir evaluación'}
                             </button>
                             <a href={result.sellUrl} className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white transition ${isDark ? 'bg-slate-950 hover:bg-black' : 'bg-secondary hover:bg-secondary-container'}`}>
                                 <Icon name="directions_car" className="text-[18px]" />
@@ -137,16 +137,16 @@ function ValuationPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, aut
                         <div className="grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
                             <div className="pt-4">
                                 <span className="inline-flex rounded-full bg-primary-fixed px-4 py-2 text-[11px] font-bold uppercase tracking-[0.24em] text-primary">Tasador inteligente</span>
-                                <h1 className={`mt-6 max-w-2xl font-headline text-4xl font-extrabold tracking-tight sm:text-6xl ${isDark ? 'text-white' : 'text-slate-900'}`}>Descubre cuÃ¡nto podrÃ­as pedir por tu auto.</h1>
+                                <h1 className={`mt-6 max-w-2xl font-headline text-4xl font-extrabold tracking-tight sm:text-6xl ${isDark ? 'text-white' : 'text-slate-900'}`}>Descubre cuánto podrías pedir por tu auto.</h1>
                                 <p className={`mt-5 max-w-xl text-base leading-8 sm:text-lg ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Completa la ficha, recibe un rango de precio en colones y si te convence, pasa directo a venderlo con los datos ya adelantados.</p>
                                 <div className="mt-8 grid gap-4 sm:grid-cols-2">
                                     <div className={`rounded-2xl border p-5 shadow-sm ${isDark ? 'border-white/10 bg-white/5' : 'border-outline-variant/20 bg-white/80'}`}>
                                         <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Lo que recibes</span>
-                                        <p className={`mt-2 text-sm leading-6 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Un precio sugerido, un rango mÃ­nimo y mÃ¡ximo, y una lectura simple del mercado de Costa Rica.</p>
+                                        <p className={`mt-2 text-sm leading-6 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Un precio sugerido, un rango mínimo y máximo, y una lectura simple del mercado de Costa Rica.</p>
                                     </div>
                                     <div className={`rounded-2xl border p-5 shadow-sm ${isDark ? 'border-white/10 bg-white/5' : 'border-outline-variant/20 bg-white/80'}`}>
                                         <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Si te convence</span>
-                                        <p className={`mt-2 text-sm leading-6 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Comparte la evaluaciÃ³n o pasa directo a publicar el auto con varios datos ya adelantados.</p>
+                                        <p className={`mt-2 text-sm leading-6 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Comparte la evaluación o pasa directo a publicar el auto con varios datos ya adelantados.</p>
                                     </div>
                                 </div>
                             </div>
@@ -157,7 +157,7 @@ function ValuationPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, aut
                                 <section className={`rounded-[28px] border p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] sm:p-8 ${isDark ? 'border-white/10 bg-[#0b1118]' : 'border-outline-variant/25 bg-white'}`}>
                                     <div className="mb-6 flex flex-col gap-3 border-b border-outline-variant/20 pb-6 sm:flex-row sm:items-center sm:justify-between">
                                         <div>
-                                            <span className="text-xs font-bold uppercase tracking-[0.2em] text-secondary">ValuaciÃ³n guiada</span>
+                                            <span className="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Valuación guiada</span>
                                             <h2 className={`mt-2 font-headline text-3xl font-extrabold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Completa la ficha del auto</h2>
                                         </div>
                                         <div className={`inline-flex rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] ${isDark ? 'bg-white/5 text-slate-300' : 'bg-slate-50 text-slate-500'}`}>3 min aprox.</div>
@@ -184,9 +184,9 @@ function ValuationPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, aut
                                         </div>
 
                                         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                            <label className="flex flex-col gap-2"><span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">AÃ±o</span><select name="year" required className="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm outline-none transition focus:border-primary">{vehicleConfig.years.map((year) => <option key={year} value={year}>{year}</option>)}</select></label>
-                                            <label className="flex flex-col gap-2"><span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">CondiciÃ³n</span><select name="condition" required className="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm outline-none transition focus:border-primary">{Object.entries(vehicleConfig.conditions).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-                                            <label className="flex flex-col gap-2"><span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">CarrocerÃ­a</span><select name="body_type" required className="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm outline-none transition focus:border-primary"><option value="">Selecciona</option>{vehicleConfig.bodyTypes.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+                                            <label className="flex flex-col gap-2"><span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Año</span><select name="year" required className="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm outline-none transition focus:border-primary">{vehicleConfig.years.map((year) => <option key={year} value={year}>{year}</option>)}</select></label>
+                                            <label className="flex flex-col gap-2"><span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Condición</span><select name="condition" required className="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm outline-none transition focus:border-primary">{Object.entries(vehicleConfig.conditions).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+                                            <label className="flex flex-col gap-2"><span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Carrocería</span><select name="body_type" required className="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm outline-none transition focus:border-primary"><option value="">Selecciona</option>{vehicleConfig.bodyTypes.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
                                             <label className="flex flex-col gap-2"><span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Combustible</span><select name="fuel_type" required className="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm outline-none transition focus:border-primary"><option value="">Selecciona</option>{vehicleConfig.fuelTypes.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
                                             <label className="flex flex-col gap-2"><span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Transmisión</span><select name="transmission" required className="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm outline-none transition focus:border-primary"><option value="">Selecciona</option>{vehicleConfig.transmissions.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
                                             <label className="flex flex-col gap-2"><span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Tracción</span><select name="drivetrain" className="rounded-2xl border border-outline-variant/30 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-sm outline-none transition focus:border-primary"><option value="">No especificar</option>{vehicleConfig.drivetrains.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
@@ -204,9 +204,9 @@ function ValuationPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, aut
                                             <small className="text-sm text-slate-500">El sistema devolverá el valor en CRC como precio principal y una referencia pequeña en USD.</small>
                                         </label>
 
-                                        <div className="flex flex-col gap-4 rounded-2xl bg-secondary px-5 py-5 text-white sm:flex-row sm:items-center sm:justify-between">
+                                        <div className="flex flex-col gap-4 rounded-2xl bg-secondary px-5 py-5 text-slate-950 sm:flex-row sm:items-center sm:justify-between">
                                             <div>
-                                                <span className="text-xs font-bold uppercase tracking-[0.2em] text-white">Resultado</span>
+                                                <span className="text-xs font-black uppercase tracking-[0.22em] text-slate-950">Resultado</span>
                                                 <p className="mt-2 text-sm font-medium text-white">Recibirás un rango de mercado, una lectura de depreciación y un enlace para compartir la evaluación.</p>
                                             </div>
                                             <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white transition hover:bg-black"><Icon name="query_stats" className="text-[18px]" />Calcular valuación</button>

@@ -51,7 +51,7 @@
                 <tbody>
                 @forelse ($recentVehicles as $vehicle)
                     <tr>
-                        <td><strong>{{ $vehicle->title }}</strong><span>{{ $vehicle->make?->name }} Â· {{ $vehicle->model?->name }}</span></td>
+                        <td><strong>{{ $vehicle->title }}</strong><span>{{ $vehicle->make?->name }} · {{ $vehicle->model?->name }}</span></td>
                         <td><span class="status-badge {{ $vehicle->status === 'published' ? 'status-badge--success' : 'status-badge--warn' }}">{{ $vehicle->status }}</span></td>
                         <td>{{ \App\Support\VehiclePricePresenter::present((float) $vehicle->price, $vehicle->currency, $exchangeQuote)['primary_formatted'] }}</td>
                         <td>{{ $vehicle->lead_count }}</td>
@@ -66,7 +66,7 @@
     <article class="dashboard-panel">
         <div class="panel-heading"><div><p class="portal-kicker">Plan</p><h2>Capacidades actuales</h2></div></div>
         <div class="catalog-stack">
-            <article class="catalog-block"><div class="catalog-block__header"><div><strong>{{ $currentPlan->name }}</strong><p>{{ $currentPlan->description }}</p></div><span class="status-badge">Activo</span></div><p class="empty-copy">{{ $currentPlan->photo_limit ?? 'Ilimitadas' }} fotos Â· {{ $currentPlan->max_active_listings ?? 'Ilimitadas' }} publicaciones Â· {{ $currentPlan->allows_video ? 'video' : 'sin video' }} Â· {{ $currentPlan->allows_360 ? '360' : 'sin 360' }}</p></article>
+            <article class="catalog-block"><div class="catalog-block__header"><div><strong>{{ $currentPlan->name }}</strong><p>{{ $currentPlan->description }}</p></div><span class="status-badge">Activo</span></div><p class="empty-copy">{{ $currentPlan->photo_limit ?? 'Ilimitadas' }} fotos · {{ $currentPlan->max_active_listings ?? 'Ilimitadas' }} publicaciones · {{ $currentPlan->allows_video ? 'video' : 'sin video' }} · {{ $currentPlan->allows_360 ? '360' : 'sin 360' }}</p></article>
         </div>
     </article>
 </section>
@@ -96,7 +96,7 @@
                         <span class="mini-bars__bar mini-bars__bar--yellow" style="height: {{ $item['lead_height'] }}%"></span>
                     </div>
                     <strong>{{ $item['label'] }}</strong>
-                    <small>{{ $item['views'] }} vistas Â· {{ $item['leads'] }} leads</small>
+                    <small>{{ $item['views'] }} vistas · {{ $item['leads'] }} leads</small>
                 </div>
             @empty
                 <div class="empty-state"><strong>Aun no hay suficiente actividad.</strong><p>Cuando tus anuncios reciban vistas y leads, el panel lo mostrara aqui.</p></div>

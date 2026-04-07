@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Icon, PriceStack, PublicFooter, PublicTopBar, formatCRC } from './public-shell';
 
@@ -58,7 +58,7 @@ function VehicleCard({ car, paid = false }) {
                     <p className="mt-1 text-xs text-slate-500">{car.meta}</p>
                     <div className="mt-4 flex items-center justify-between gap-3">
                         <PriceStack primary={car.price} secondary={car.priceSecondary} />
-                        {paid ? <span className="rounded-full bg-primary-fixed px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Cuenta paga</span> : null}
+                        {paid ? <span className="rounded-full bg-primary-fixed px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Destacado</span> : null}
                     </div>
                 </div>
             </a>
