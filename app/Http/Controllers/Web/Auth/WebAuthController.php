@@ -7,9 +7,15 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use App\Services\Valuation\ValuationSettingsService;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 
 class WebAuthController extends Controller
 {
@@ -141,6 +147,83 @@ class WebAuthController extends Controller
         $request->session()->regenerate();
 
         return redirect()->route($this->redirectRoute($user))->with('status', 'Cuenta creada correctamente.');
+    }
+
+    public function forgotPassword()
+    {
+        if (Auth::check()) {
+            return redirect()->route($this->redirectRoute(Auth::user()));
+        }
+
+        return view('auth.forgot-password', [
+            'publicTheme' => (string) $this->valuationSettings->get('frontend.public_theme', 'light'),
+        ]);
+    }
+
+    public function sendResetLink(Request $request): RedirectResponse
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $status = Password::sendResetLink([
+            'email' => strtolower((string) $credentials['email']),
+        ]);
+
+        if ($status !== Password::RESET_LINK_SENT) {
+            return back()->withErrors([
+                'email' => __($status),
+            ])->onlyInput('email');
+        }
+
+        return back()->with('status', 'Te enviamos un enlace para rest?blecer tu contraseña.');
+    }
+
+    public function resetPassword(string $token, Request $request)
+    {
+        if (Auth::check()) {
+            return redirect()->route($this->redirectRoute(Auth::user()));
+        }
+
+        return view('auth.reset-password', [
+            'token' => $token,
+            'email' => (string) $request->query('email', ''),
+            'publicTheme' => (string) $this->valuationSettings->get('frontend.public_theme', 'light'),
+        ]);
+    }
+
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'token' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'confirmed', PasswordRule::min(8)->letters()->mixedCase()->numbers()],
+        ]);
+
+        $status = Password::reset(
+            [
+                'email' => strtolower((string) $data['email']),
+                'password' => $data['password'],
+                'password_confirmation' => $data['password_confirmation'],
+                'token' => $data['token'],
+            ],
+            function (User $user, string $password): void {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                    'remember_token' => Str::random(60),
+                ])->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        if ($status !== Password::PASSWORD_RESET) {
+            return back()->withErrors([
+                'email' => __($status),
+            ])->withInput($request->except('password', 'password_confirmation'));
+        }
+
+        return redirect()->route('login')->with('status', 'Tu contraseña fue actualizada correctamente.');
     }
 
     public function destroy(): RedirectResponse

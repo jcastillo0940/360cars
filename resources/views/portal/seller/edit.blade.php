@@ -1,6 +1,6 @@
 ﻿@extends('layouts.portal')
 
-@section('title', 'Editar anuncio seller | Movikaa')
+@section('title', 'Editar anuncio vendedor | Movikaa')
 @section('portal-eyebrow', 'Seller edit')
 @section('portal-title', 'Editar publicacion')
 @section('portal-copy', 'Ajusta precio, visibilidad, descripcion y media desde una vista dedicada que te deja trabajar el anuncio como una ficha comercial completa.')
@@ -12,13 +12,13 @@
 
 @section('sidebar')
 <nav class="portal-nav">
-    <a href="{{ route('seller.dashboard') }}">Overview</a>
+    <a href="{{ route('seller.dashboard') }}">Resumen</a>
     <a href="{{ route('seller.listings') }}" class="is-active">Publicaciones</a>
     <a href="{{ route('seller.onboarding.create') }}">Nuevo anuncio</a>
     <a href="{{ route('seller.media') }}">Media</a>
     <a href="{{ route('seller.messages') }}">Mensajes</a>
-    <a href="{{ route('seller.billing') }}">Billing</a>
-    <a href="{{ route('buyer.dashboard') }}">Actividad buyer</a>
+    <a href="{{ route('seller.billing') }}">Pagos</a>
+    <a href="{{ route('buyer.dashboard') }}">Actividad comprador</a>
 </nav>
 <div class="portal-note-card">
     <span class="portal-kicker">Editando</span>
@@ -29,7 +29,7 @@
 @endsection
 
 @section('content')
-    @include('portal.seller._form')
+    @include('portal.vendedor._form')
 
     <section class="dashboard-panel">
         <div class="panel-heading">

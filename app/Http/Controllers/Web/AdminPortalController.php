@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\NewsPost;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Transaction;
@@ -170,18 +171,180 @@ class AdminPortalController extends Controller
 
     public function settings(Request $request)
     {
+        return view('portal.admin.settings', $this->sharedData($request) + [
+            'paymentMethods' => $this->paymentMethods(),
+        ]);
+    }
+
+    public function features(Request $request)
+    {
         $featureOptions = VehicleFeatureOption::query()
             ->orderBy('category')
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
 
-        return view('portal.admin.settings', $this->sharedData($request) + [
-            'plans' => Plan::query()->where('is_active', true)->orderBy('price')->get(),
-            'paymentMethods' => $this->paymentMethods(),
+        return view('portal.admin.features', $this->sharedData($request) + [
             'featureOptions' => $featureOptions,
             'featureCategories' => $featureOptions->pluck('category')->filter()->unique()->values(),
+            'featureStats' => [
+                'total' => $featureOptions->count(),
+                'active' => $featureOptions->where('is_active', true)->count(),
+                'categories' => $featureOptions->pluck('category')->filter()->unique()->count(),
+            ],
         ]);
+    }
+
+    public function plans(Request $request)
+    {
+        $plans = Plan::query()->orderBy('price')->get();
+
+        return view('portal.admin.plans', $this->sharedData($request) + [
+            'plans' => $plans,
+            'planStats' => [
+                'total' => $plans->count(),
+                'active' => $plans->where('is_active', true)->count(),
+                'paid' => $plans->where('price', '>', 0)->count(),
+            ],
+        ]);
+    }
+
+    public function news(Request $request)
+    {
+        $search = trim($request->string('q')->toString());
+        $status = $request->string('status')->toString();
+
+        $posts = NewsPost::query()
+            ->with('author')
+            ->when($search !== '', function ($query) use ($search): void {
+                $query->where(function ($builder) use ($search): void {
+                    $builder->where('title', 'like', '%'.$search.'%')
+                        ->orWhere('slug', 'like', '%'.$search.'%')
+                        ->orWhere('excerpt', 'like', '%'.$search.'%');
+                });
+            })
+            ->when($status !== '', fn ($query) => $query->where('status', $status))
+            ->orderByDesc('is_featured')
+            ->orderByDesc('published_at')
+            ->latest()
+            ->paginate(12)
+            ->withQueryString();
+
+        return view('portal.admin.news.index', $this->sharedData($request) + [
+            'newsPosts' => $posts,
+            'newsFilters' => [
+                'q' => $search,
+                'status' => $status,
+            ],
+            'newsStats' => [
+                'total' => NewsPost::query()->count(),
+                'published' => NewsPost::query()->where('status', 'published')->count(),
+                'featured' => NewsPost::query()->where('is_featured', true)->count(),
+            ],
+        ]);
+    }
+
+    public function createNews(Request $request)
+    {
+        return view('portal.admin.news.create', $this->sharedData($request));
+    }
+
+    public function storeNews(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:180'],
+            'slug' => ['nullable', 'string', 'max:180', 'unique:news_posts,slug'],
+            'excerpt' => ['nullable', 'string'],
+            'content' => ['required', 'string'],
+            'cover_image_url' => ['nullable', 'url', 'max:2048'],
+            'status' => ['required', Rule::in(['draft', 'published'])],
+            'is_featured' => ['nullable', 'boolean'],
+            'published_at' => ['nullable', 'date'],
+            'meta_title' => ['nullable', 'string', 'max:180'],
+            'meta_description' => ['nullable', 'string'],
+        ]);
+
+        $post = NewsPost::create([
+            'user_id' => auth()->id(),
+            'title' => $data['title'],
+            'slug' => $this->uniqueNewsSlug($data['slug'] ?? $data['title']),
+            'excerpt' => $data['excerpt'] ?? null,
+            'content' => $data['content'],
+            'cover_image_url' => $data['cover_image_url'] ?? null,
+            'status' => $data['status'],
+            'is_featured' => (bool) ($data['is_featured'] ?? false),
+            'published_at' => $data['status'] === 'published' ? ($data['published_at'] ?? now()) : null,
+            'meta_title' => $data['meta_title'] ?? null,
+            'meta_description' => $data['meta_description'] ?? null,
+        ]);
+
+        return redirect()->to(route('admin.news.edit', $post).'#editor')->with('status', 'Artículo creado correctamente.');
+    }
+
+    public function editNews(Request $request, NewsPost $newsPost)
+    {
+        return view('portal.admin.news.edit', $this->sharedData($request) + [
+            'newsPost' => $newsPost,
+        ]);
+    }
+
+    public function updateNews(Request $request, NewsPost $newsPost): RedirectResponse
+    {
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:180'],
+            'slug' => ['nullable', 'string', 'max:180', Rule::unique('news_posts', 'slug')->ignore($newsPost->id)],
+            'excerpt' => ['nullable', 'string'],
+            'content' => ['required', 'string'],
+            'cover_image_url' => ['nullable', 'url', 'max:2048'],
+            'status' => ['required', Rule::in(['draft', 'published'])],
+            'is_featured' => ['nullable', 'boolean'],
+            'published_at' => ['nullable', 'date'],
+            'meta_title' => ['nullable', 'string', 'max:180'],
+            'meta_description' => ['nullable', 'string'],
+        ]);
+
+        $publishedAt = $data['status'] === 'published'
+            ? ($data['published_at'] ?? $newsPost->published_at ?? now())
+            : null;
+
+        $newsPost->update([
+            'title' => $data['title'],
+            'slug' => $this->uniqueNewsSlug($data['slug'] ?? $data['title'], $newsPost->id),
+            'excerpt' => $data['excerpt'] ?? null,
+            'content' => $data['content'],
+            'cover_image_url' => $data['cover_image_url'] ?? null,
+            'status' => $data['status'],
+            'is_featured' => (bool) ($data['is_featured'] ?? false),
+            'published_at' => $publishedAt,
+            'meta_title' => $data['meta_title'] ?? null,
+            'meta_description' => $data['meta_description'] ?? null,
+        ]);
+
+        return redirect()->to(route('admin.news.edit', $newsPost).'#editor')->with('status', 'Artículo actualizado correctamente.');
+    }
+
+    public function destroyNews(NewsPost $newsPost): RedirectResponse
+    {
+        $newsPost->delete();
+
+        return redirect()->to(route('admin.news').'#news-list')->with('status', 'Artículo eliminado correctamente.');
+    }
+
+    private function uniqueNewsSlug(string $value, ?int $ignoreId = null): string
+    {
+        $base = Str::slug($value) ?: 'artículo';
+        $slug = $base;
+        $suffix = 2;
+
+        while (NewsPost::query()
+            ->when($ignoreId, fn ($query) => $query->whereKeyNot($ignoreId))
+            ->where('slug', $slug)
+            ->exists()) {
+            $slug = $base.'-'.$suffix;
+            $suffix++;
+        }
+
+        return $slug;
     }
 
     private function sharedData(Request $request): array
@@ -232,6 +395,32 @@ class AdminPortalController extends Controller
 
         return redirect()->to(route('admin.catalog').'#catalog-create')->with('status', 'Marca creada correctamente.');
     }
+
+    public function storeCatalogEntry(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'make_name' => ['required', 'string', 'max:100', Rule::unique('vehicle_makes', 'name')],
+            'model_name' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $make = VehicleMake::create([
+            'name' => $data['make_name'],
+            'slug' => Str::slug($data['make_name']),
+            'is_active' => true,
+        ]);
+
+        if (! empty($data['model_name'])) {
+            VehicleModel::create([
+                'vehicle_make_id' => $make->id,
+                'name' => $data['model_name'],
+                'slug' => Str::slug($data['model_name']),
+                'is_active' => true,
+            ]);
+        }
+
+        return redirect()->to(route('admin.catalog').'#catalog-list')->with('status', empty($data['model_name']) ? 'Marca creada correctamente.' : 'Marca y modelo creados correctamente.');
+    }
+
 
     public function toggleCatalogMake(VehicleMake $vehicleMake): RedirectResponse
     {
@@ -310,7 +499,7 @@ class AdminPortalController extends Controller
             'is_active' => true,
         ]);
 
-        return redirect()->to(route('admin.settings').'#features')->with('status', 'Extra configurable creado correctamente.');
+        return redirect()->to(route('admin.features').'#features')->with('status', 'Extra configurable creado correctamente.');
     }
 
     public function toggleFeatureOption(VehicleFeatureOption $featureOption): RedirectResponse
@@ -319,7 +508,7 @@ class AdminPortalController extends Controller
             'is_active' => ! $featureOption->is_active,
         ]);
 
-        return redirect()->to(route('admin.settings').'#features')->with('status', 'Estado del extra actualizado.');
+        return redirect()->to(route('admin.features').'#features')->with('status', 'Estado del extra actualizado.');
     }
 
     public function updateFeatureOption(Request $request, VehicleFeatureOption $featureOption): RedirectResponse
@@ -339,18 +528,18 @@ class AdminPortalController extends Controller
             'sort_order' => $data['sort_order'] ?? 0,
         ]);
 
-        return redirect()->to(route('admin.settings').'#features')->with('status', 'Característica actualizada correctamente.');
+        return redirect()->to(route('admin.features').'#features')->with('status', 'Característica actualizada correctamente.');
     }
 
     public function destroyFeatureOption(VehicleFeatureOption $featureOption): RedirectResponse
     {
         if (Vehicle::query()->whereJsonContains('features', $featureOption->slug)->exists()) {
-            return redirect()->to(route('admin.settings').'#features')->with('status', 'No puedes eliminar esta característica porque ya está en uso en uno o más vehículos.');
+            return redirect()->to(route('admin.features').'#features')->with('status', 'No puedes eliminar est? característica porque ya está en uso en uno o más vehículos.');
         }
 
         $featureOption->delete();
 
-        return redirect()->to(route('admin.settings').'#features')->with('status', 'Característica eliminada correctamente.');
+        return redirect()->to(route('admin.features').'#features')->with('status', 'Característica eliminada correctamente.');
     }
 
 
@@ -398,8 +587,8 @@ class AdminPortalController extends Controller
         return redirect()->to(route('admin.settings').'#public-theme')->with(
             'status',
             $data['public_theme'] === 'dark'
-                ? 'Tema oscuro activado para el home publico.'
-                : 'Tema claro activado para el home publico.'
+                ? 'Tema oscuro activado para el home público.'
+                : 'Tema claro activado para el home público.'
         );
     }
 

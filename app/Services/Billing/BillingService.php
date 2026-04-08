@@ -189,7 +189,7 @@ class BillingService
 
         if (! $transaction->user || ! $transaction->plan) {
             throw ValidationException::withMessages([
-                'transaction' => ['La transaccion no tiene usuario o plan asociado.'],
+                'transaction' => ['La transacción no tiene usuario o plan asociado.'],
             ]);
         }
 

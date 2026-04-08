@@ -1,18 +1,21 @@
-@extends('layouts.portal')
+﻿@extends('layouts.portal')
 
-@section('title', 'Pagos admin | Movikaa')
-@section('portal-eyebrow', 'Admin pagos')
-@section('portal-title', 'Monitoreo comercial y verificacion')
+@section('title', 'Pagos | Movikaa')
+@section('portal-eyebrow', 'Administración')
+@section('portal-title', 'Monitoreo comercial y verificación')
 @section('portal-copy', 'Supervisa solicitudes de pago, pagos confirmados y activa manualmente los planes cuando el cobro llegue por medios offline.')
 
 @section('header-actions')
-    <a href="{{ route('admin.settings') }}#payment-methods" class="button button--ghost">Metodos de pago</a>
+    <a href="{{ route('admin.settings') }}#payment-methods" class="button button--ghost">Métodos de pago</a>
 @endsection
 
 @section('sidebar')
 <nav class="portal-nav">
-    <a href="{{ route('admin.dashboard') }}">Overview</a>
-    <a href="{{ route('admin.catalog') }}">Catalogo</a>
+    <a href="{{ route('admin.dashboard') }}">Resumen</a>
+    <a href="{{ route('admin.catalog') }}">Catálogo</a>
+    <a href="{{ route('admin.features') }}">Características</a>
+    <a href="{{ route('admin.plans') }}">Planes</a>
+    <a href="{{ route('admin.news') }}">Noticias</a>
     <a href="{{ route('admin.payments') }}" class="is-active">Pagos</a>
     <a href="{{ route('admin.users') }}">Usuarios</a>
     <a href="{{ route('admin.settings') }}">Ajustes</a>
@@ -22,7 +25,7 @@
 @section('content')
 <section class="dashboard-grid">
     <article class="metric-card"><span>Transacciones pagadas</span><strong>{{ $paidTransactionsCount }}</strong><p>Flujo comercial confirmado.</p></article>
-    <article class="metric-card"><span>GMV</span><strong>${{ number_format($gmv, 0) }}</strong><p>Total acumulado por planes seller.</p></article>
+    <article class="metric-card"><span>GMV</span><strong>${{ number_format($gmv, 0) }}</strong><p>Total acumulado por planes del vendedor.</p></article>
     <article class="metric-card"><span>Suscripciones activas</span><strong>{{ $activeSubscriptions->total() }}</strong><p>Usuarios con plan vigente.</p></article>
 </section>
 
@@ -38,11 +41,11 @@
     </form>
 </section>
 
-<section class="dashboard-panel" id="transactions">
-    <div class="panel-heading"><div><p class="portal-kicker">Billing</p><h2>Pagos y solicitudes recientes</h2></div><span class="status-badge">{{ $latestTransactions->total() }} pagos</span></div>
+<section class="dashboard-panel">
+    <div class="panel-heading"><div><p class="portal-kicker">Pagos</p><h2>Pagos y solicitudes recientes</h2></div><span class="status-badge">{{ $latestTransactions->total() }} registros</span></div>
     <div class="table-shell">
         <table class="portal-table">
-            <thead><tr><th>Referencia</th><th>Usuario</th><th>Plan</th><th>Estado</th><th>Monto</th><th>Metodo</th><th>Acciones</th></tr></thead>
+            <thead><tr><th>Referencia</th><th>Usuario</th><th>Plan</th><th>Estado</th><th>Monto</th><th>Método</th><th>Acciones</th></tr></thead>
             <tbody>
             @forelse ($latestTransactions as $transaction)
                 <tr>
@@ -58,7 +61,7 @@
                                 <form method="POST" action="{{ route('admin.payments.approve', $transaction) }}">@csrf @method('PATCH')<button type="submit" class="text-link">Aprobar</button></form>
                                 <form method="POST" action="{{ route('admin.payments.reject', $transaction) }}">@csrf @method('PATCH')<button type="submit" class="text-link">Rechazar</button></form>
                             @else
-                                <span class="status-badge">Sin accion</span>
+                                <span class="status-badge">Sin acción</span>
                             @endif
                         </div>
                     </td>

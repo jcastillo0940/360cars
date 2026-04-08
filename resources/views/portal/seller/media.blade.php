@@ -1,31 +1,31 @@
 ﻿@extends('layouts.portal')
 
-@section('title', 'Media seller | Movikaa')
+@section('title', 'Media vendedor | Movikaa')
 @section('portal-eyebrow', 'Seller media')
-@section('portal-title', 'Gestion de imagenes y galeria')
+@section('portal-title', 'Gesti?n de im?genes y galer?a')
 @section('portal-copy', 'Vista enfocada en pipeline, fotos principales y estado de procesamiento.')
 
 @section('sidebar')
 <nav class="portal-nav">
-    <a href="{{ route('seller.dashboard') }}">Overview</a>
+    <a href="{{ route('seller.dashboard') }}">Resumen</a>
     <a href="{{ route('seller.listings') }}">Publicaciones</a>
     <a href="{{ route('seller.onboarding.create') }}">Nuevo anuncio</a>
     <a href="{{ route('seller.media') }}" class="is-active">Media</a>
     <a href="{{ route('seller.messages') }}">Mensajes</a>
-    <a href="{{ route('seller.billing') }}">Billing</a>
-    <a href="{{ route('buyer.dashboard') }}">Actividad buyer</a>
+    <a href="{{ route('seller.billing') }}">Pagos</a>
+    <a href="{{ route('buyer.dashboard') }}">Actividad comprador</a>
 </nav>
 @endsection
 
 @section('content')
 <section class="dashboard-grid">
-    <article class="metric-card"><span>Vehiculos</span><strong>{{ $vehicles->count() }}</strong></article>
+    <article class="metric-card"><span>Veh?culos</span><strong>{{ $vehicles->count() }}</strong></article>
     <article class="metric-card"><span>Publicadas</span><strong>{{ $publishedCount }}</strong></article>
     <article class="metric-card"><span>En cola</span><strong>{{ $processingCount }}</strong></article>
 </section>
 
 <section class="dashboard-panel">
-    <div class="panel-heading"><div><p class="portal-kicker">Media pipeline</p><h2>Estado de imagenes</h2></div></div>
+    <div class="panel-heading"><div><p class="portal-kicker">Gesti?n de im?genes</p><h2>Estado de im?genes</h2></div></div>
     <div class="catalog-stack">
         @forelse ($vehicles as $vehicle)
             <article class="catalog-block">
@@ -43,12 +43,12 @@
                             </div>
                         </div>
                     @empty
-                        <p class="empty-copy">Sin media todavia.</p>
+                        <p class="empty-copy">Sin media todavía.</p>
                     @endforelse
                 </div>
             </article>
         @empty
-            <div class="empty-state"><strong>Sin publicaciones.</strong><p>Primero crea un anuncio para gestionar su galeria.</p></div>
+            <div class="empty-state"><strong>Sin publicaciones.</strong><p>Primero crea un anuncio para gestionar su galer?a.</p></div>
         @endforelse
     </div>
 </section>

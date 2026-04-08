@@ -14,12 +14,12 @@ async function requestJson(url, method, csrfToken, body = null) {
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
-        throw new Error(payload.message || 'No fue posible completar la accion.');
+        throw new Error(payload.message || 'No fue posible completar la acción.');
     }
     return payload;
 }
 
-function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authUser, valuationUrl, publicTheme = 'light', vehicle, relatedVehicles, engagement, endpoints, footerLinks }) {
+function VehicleShowPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, loginUrl, authUser, valuationUrl, publicTheme = 'light', vehicle, relatedVehicles, engagement, endpoints, footerLinks }) {
     const [activeImage, setActiveImage] = useState(vehicle.media[0]?.url || vehicle.primary_image);
     const [favorited, setFavorited] = useState((engagement.favoriteVehicleIds || []).includes(vehicle.id));
     const [compared, setCompared] = useState((engagement.comparisonVehicleIds || []).includes(vehicle.id));
@@ -46,15 +46,15 @@ function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, a
         }
 
         const composed = [
-            `Hola ${vehicle.seller_name}, me interesa ${vehicle.title}.`,
+            `Hola ${vehicle.vendedor_name}, me interesa ${vehicle.title}.`,
             guestName ? `Mi nombre es ${guestName}.` : '',
-            guestPhone ? `Mi telefono es ${guestPhone}.` : '',
+            guestPhone ? `Mi teléfono es ${guestPhone}.` : '',
             message || '',
         ].filter(Boolean).join(' ');
 
         const [baseUrl] = vehicle.whatsapp_url.split('?text=');
         return `${baseUrl}?text=${encodeURIComponent(composed)}`;
-    }, [vehicle.whatsapp_url, vehicle.seller_name, vehicle.title, guestName, guestPhone, message]);
+    }, [vehicle.whatsapp_url, vehicle.vendedor_name, vehicle.title, guestName, guestPhone, message]);
 
     const ensureBuyer = () => {
         if (!engagement.authenticated) {
@@ -79,21 +79,13 @@ function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, a
     const contactSeller = async (event) => {
         event.preventDefault();
 
-        if (!engagement.authenticated) {
-            if (whatsappHref) {
-                setMessageState('Te llevamos a WhatsApp para contactar al vendedor directamente.');
-                window.open(whatsappHref, '_blank', 'noopener,noreferrer');
-                return;
-            }
-
-            setMessageState('Completa tu inicio de sesion para enviar un mensaje interno al vendedor.');
-            window.location.href = `${endpoints.loginUrl}?redirect=${encodeURIComponent(currentPath)}`;
+        if (whatsappHref) {
+            setMessageState('Te llevamos a WhatsApp para contactar al vendedor directamente.');
+            window.open(whatsappHref, '_blank', 'noopener,noreferrer');
             return;
         }
 
-        const payload = await requestJson(endpoints.contactTemplate.replace('__VEHICLE__', String(vehicle.id)), 'POST', endpoints.csrfToken, { body: message });
-        setMessageState(payload.sent ? 'Mensaje enviado al vendedor y guardado en tu dashboard.' : 'No fue posible enviar el mensaje.');
-        if (payload.sent) setMessage('');
+        setMessageState('Este vehículo no tiene un WhatsApp configurado todavía.');
     };
 
     return (
@@ -101,6 +93,7 @@ function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, a
             <PublicTopBar
                 homeUrl={homeUrl}
                 catalogUrl={catalogUrl}
+                brandsUrl={brandsUrl}
                 valuationUrl={valuationUrl}
                 sellUrl={sellUrl}
                 accountUrl={accountUrl}
@@ -131,9 +124,6 @@ function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, a
                             <div className="rounded-[2rem] bg-white p-6 shadow-xl sm:p-8">
                                 <div className="flex flex-wrap items-center gap-3">
                                     <span className="rounded-full bg-primary-fixed px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-primary">{vehicle.publication_tier}</span>
-                                    {vehicle.is_paid ? <span className="rounded-full bg-secondary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-secondary">{vehicle.plan_name}</span> : null}
-                                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">{vehicle.visibility_bucket}</span>
-                                    {vehicle.price_badge ? <span className="rounded-full bg-secondary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-secondary">{vehicle.price_badge}</span> : null}
                                 </div>
                                 <h1 className="mt-4 font-headline text-4xl font-extrabold tracking-tight text-slate-950">{vehicle.title}</h1>
                                 <p className="mt-3 text-base text-slate-500">{vehicle.city || 'Costa Rica'} | {vehicle.published_label}</p>
@@ -144,16 +134,16 @@ function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, a
                                             <Icon name="favorite" className="text-[22px]" />
                                         </button>
                                         <button type="button" onClick={toggleCompare} className={`rounded-full p-3 transition-colors ${compared ? 'bg-secondary text-white' : 'bg-secondary/12 text-secondary hover:bg-secondary hover:text-white'}`}>
-                                            <Icon name="balance" className="text-[22px]" />
+                                            <Icon name="compare_arrows" className="text-[22px]" />
                                         </button>
                                     </div>
                                 </div>
-                                <p className="mt-6 text-sm leading-7 text-slate-600">{vehicle.description || 'Vehiculo publicado en Movikaa, listo para contacto directo y validacion comercial.'}</p>
+                                <p className="mt-6 text-sm leading-7 text-slate-600">{vehicle.description || 'Vehículo publicado en Movikaa, listo para contacto directo y validación comercial.'}</p>
                             </div>
 
                             <div className="rounded-[2rem] bg-white p-6 shadow-xl sm:p-8">
                                 <div className="mb-5 flex items-center justify-between">
-                                    <h2 className="font-headline text-2xl font-extrabold tracking-tight">Ficha tecnica</h2>
+                                    <h2 className="font-headline text-2xl font-extrabold tracking-tight">Ficha técnica</h2>
                                     <Icon name="verified" className="text-[24px] text-primary" />
                                 </div>
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -175,7 +165,7 @@ function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, a
                                 <div className="mb-5 flex items-center justify-between">
                                     <div>
                                         <h2 className="font-headline text-2xl font-extrabold tracking-tight">Contactar vendedor</h2>
-                                        <p className="mt-2 text-sm text-slate-500">{engagement.authenticated ? 'Envia un mensaje interno desde tu cuenta.' : 'Si aun no tienes cuenta, puedes escribir por WhatsApp o usar el correo del anuncio para continuar.'}</p>
+                                        <p className="mt-2 text-sm text-slate-500">Escribe directo por WhatsApp y continúa la conversación con el vendedor fuera de la plataforma.</p>
                                         <p className="mt-2 text-sm text-slate-400">{vehicle.contact_phone ? `WhatsApp: ${vehicle.contact_phone}` : 'Sin WhatsApp configurado'}{vehicle.contact_email ? ` | Correo: ${vehicle.contact_email}` : ''}</p>
                                     </div>
                                     <Icon name="chat" className="text-[24px] text-primary" />
@@ -184,17 +174,17 @@ function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, a
                                 {!engagement.authenticated ? (
                                     <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                                         <input value={guestName} onChange={(event) => setGuestName(event.target.value)} type="text" placeholder="Tu nombre" className="w-full rounded-2xl border border-outline-variant/30 bg-slate-50 px-4 py-4 text-sm outline-none focus:border-primary" />
-                                        <input value={guestPhone} onChange={(event) => setGuestPhone(event.target.value)} type="text" placeholder="Tu telefono" className="w-full rounded-2xl border border-outline-variant/30 bg-slate-50 px-4 py-4 text-sm outline-none focus:border-primary" />
+                                        <input value={guestPhone} onChange={(event) => setGuestPhone(event.target.value)} type="text" placeholder="Tu teléfono" className="w-full rounded-2xl border border-outline-variant/30 bg-slate-50 px-4 py-4 text-sm outline-none focus:border-primary" />
                                     </div>
                                 ) : null}
 
-                                <textarea value={message} onChange={(event) => setMessage(event.target.value)} rows={5} placeholder="Hola, me interesa este vehiculo. Me gustaria conocer disponibilidad, historial y opciones de financiamiento." className="w-full rounded-2xl border border-outline-variant/30 bg-slate-50 px-4 py-4 text-sm outline-none focus:border-primary"></textarea>
+                                <textarea value={message} onChange={(event) => setMessage(event.target.value)} rows={5} placeholder="Hola, me interesa este vehículo. Me gustaría conocer disponibilidad, historial y opciones de financiamiento." className="w-full rounded-2xl border border-outline-variant/30 bg-slate-50 px-4 py-4 text-sm outline-none focus:border-primary"></textarea>
                                 <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                    <button type="submit" className="inline-flex items-center justify-center rounded-2xl bg-secondary px-5 py-4 font-headline text-lg font-extrabold text-white transition-colors hover:bg-secondary-container">{engagement.authenticated ? 'Enviar mensaje' : 'Contactar ahora'}</button>
+                                    <button type="submit" className="inline-flex items-center justify-center rounded-2xl bg-secondary px-5 py-4 font-headline text-lg font-extrabold text-white transition-colors hover:bg-secondary-container">Abrir WhatsApp</button>
                                     {whatsappHref ? (
                                         <a href={whatsappHref} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-2xl border border-secondary bg-secondary/12 px-5 py-4 font-headline text-lg font-extrabold text-secondary transition-colors hover:bg-secondary hover:text-white">WhatsApp directo</a>
                                     ) : (
-                                        <a href={`${loginUrl}?redirect=${encodeURIComponent(currentPath)}`} className="inline-flex items-center justify-center rounded-2xl border border-secondary bg-secondary/12 px-5 py-4 font-headline text-lg font-extrabold text-secondary transition-colors hover:bg-secondary hover:text-white">Iniciar sesion</a>
+                                        <a href={`${loginUrl}?redirect=${encodeURIComponent(currentPath)}`} className="inline-flex items-center justify-center rounded-2xl border border-secondary bg-secondary/12 px-5 py-4 font-headline text-lg font-extrabold text-secondary transition-colors hover:bg-secondary hover:text-white">Iniciar sesión</a>
                                     )}
                                 </div>
                                 {messageState ? <p className="mt-4 text-sm text-slate-500">{messageState}</p> : null}
@@ -207,19 +197,15 @@ function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, a
                     <div className="mb-8 flex items-end justify-between gap-4">
                         <div>
                             <p className="text-xs font-bold uppercase tracking-[0.24em] text-secondary">Sugerencias</p>
-                            <h2 className="mt-2 font-headline text-3xl font-extrabold tracking-tight">Tambien podria interesarte</h2>
+                            <h2 className="mt-2 font-headline text-3xl font-extrabold tracking-tight">También podría interesarte</h2>
                         </div>
-                        <a href={catalogUrl} className="text-sm font-bold text-primary hover:underline">Explorar mas</a>
+                        <a href={catalogUrl} className="text-sm font-bold text-primary hover:underline">Explorar más</a>
                     </div>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
                         {relatedVehicles.map((item) => (
                             <a key={item.id} href={item.url} className="group overflow-hidden rounded-2xl border border-outline-variant/20 bg-white transition-all hover:-translate-y-1 hover:shadow-2xl">
                                 <img src={item.primary_image} alt={item.title} className="h-52 w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                                 <div className="p-5">
-                                    <div className="mb-2 flex flex-wrap gap-2">
-                                        {item.is_paid ? <span className="rounded-full bg-secondary/10 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-secondary">{item.plan_name}</span> : null}
-                                        <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{item.visibility_bucket}</span>
-                                    </div>
                                     <p className="text-xs font-bold uppercase tracking-[0.2em] text-secondary">{item.make} {item.model}</p>
                                     <h3 className="mt-2 font-headline text-xl font-extrabold tracking-tight text-slate-950">{item.title}</h3>
                                     <div className="mt-4 flex items-center justify-between gap-3">
@@ -236,6 +222,7 @@ function VehicleShowPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, a
             <PublicFooter
                 homeUrl={homeUrl}
                 catalogUrl={catalogUrl}
+                brandsUrl={brandsUrl}
                 valuationUrl={valuationUrl}
                 sellUrl={sellUrl}
                 loginUrl={loginUrl || accountUrl}
@@ -251,8 +238,6 @@ const element = document.getElementById('vehicle-show-react');
 if (element) {
     createRoot(element).render(<VehicleShowPage {...JSON.parse(element.dataset.props || '{}')} />);
 }
-
-
 
 
 

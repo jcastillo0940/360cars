@@ -26,12 +26,13 @@ class PublicCatalogController extends Controller
         $filters = [
             'make' => $request->string('make')->toString(),
             'model' => $request->string('model')->toString(),
-            'city' => $request->string('city')->toString(),
+            'province' => $request->string('province')->toString(),
             'features' => collect($request->input('features', []))->filter()->map(fn ($feature) => (string) $feature)->values()->all(),
             'min_price' => $request->integer('min_price') ?: null,
             'max_price' => $request->integer('max_price') ?: null,
             'min_year' => $request->integer('min_year') ?: null,
             'max_year' => $request->integer('max_year') ?: null,
+            'offers' => $request->boolean('offers'),
         ];
 
         $query = $this->publishedVehiclesQuery();
@@ -44,8 +45,12 @@ class PublicCatalogController extends Controller
             $query->whereHas('model', fn ($modelQuery) => $modelQuery->where('name', $filters['model']));
         }
 
-        if ($filters['city'] !== '') {
-            $query->where('city', $filters['city']);
+        if ($filters['province'] !== '') {
+            $query->where(function ($provinceQuery) use ($filters): void {
+                $provinceQuery
+                    ->where('province', $filters['province'])
+                    ->orWhere('state', $filters['province']);
+            });
         }
 
         if ($filters['features'] !== []) {
@@ -72,6 +77,10 @@ class PublicCatalogController extends Controller
             $query->where('year', '<=', $filters['max_year']);
         }
 
+        if ($filters['offers']) {
+            $query->whereNotNull('original_price')->whereColumn('original_price', '>', 'price');
+        }
+
         $vehicles = $query->paginate(9)->withQueryString();
         $exchangeQuote = $this->exchangeRateService->latest();
         $filterOptions = $this->filterOptions();
@@ -79,6 +88,7 @@ class PublicCatalogController extends Controller
         return view('catalog.index', [
             'props' => [
                 'homeUrl' => route('home'),
+                'brandsUrl' => route('brands.index'),
                 'accountUrl' => $this->resolveAccountUrl(),
                 'sellUrl' => $this->resolveSellUrl(),
                 'catalogUrl' => route('catalog.index'),
@@ -121,6 +131,7 @@ class PublicCatalogController extends Controller
         return view('catalog.show', [
             'props' => [
                 'homeUrl' => route('home'),
+                'brandsUrl' => route('brands.index'),
                 'accountUrl' => $this->resolveAccountUrl(),
                 'sellUrl' => $this->resolveSellUrl(),
                 'catalogUrl' => route('catalog.index'),
@@ -179,7 +190,7 @@ class PublicCatalogController extends Controller
             'makes' => $makes->pluck('name')->all(),
             'models' => $vehicles->pluck('model.name')->filter()->unique()->sort()->values()->all(),
             'modelsByMake' => $modelsByMake,
-            'cities' => $vehicles->pluck('city')->filter()->unique()->sort()->values()->all(),
+            'provinces' => $vehicles->map(fn ($vehicle) => $vehicle->province ?: $vehicle->state)->filter()->unique()->sort()->values()->all(),
             'features' => $featureOptions->map(fn (VehicleFeatureOption $feature) => [
                 'name' => $feature->name,
                 'slug' => $feature->slug,
@@ -190,8 +201,8 @@ class PublicCatalogController extends Controller
                 'step' => 500000,
             ],
             'yearRange' => [
-                'min' => (int) ($vehicles->min('year') ?: 2000),
-                'max' => (int) ($vehicles->max('year') ?: now()->year),
+                'min' => (int) min(1950, (int) ($vehicles->min('year') ?: 1950)),
+                'max' => (int) max(now()->year + 1, (int) ($vehicles->max('year') ?: now()->year + 1)),
                 'step' => 1,
             ],
         ];
@@ -305,7 +316,7 @@ class PublicCatalogController extends Controller
             ->values()
             ->map(function ($item) use ($vehicle): array {
                 $url = $item->path ? Storage::disk($item->disk ?: 'public')->url($item->path) : null;
-                $thumb = data_get($item->conversions, 'thumb_path');
+                $thumb = data_get($item->conversions, 'thumb');
                 $thumbUrl = $thumb ? Storage::disk($item->disk ?: 'public')->url($thumb) : $url;
 
                 return [
@@ -335,6 +346,7 @@ class PublicCatalogController extends Controller
             'price_secondary' => $pricing['secondary_formatted'],
             'price_raw' => $pricing['primary_raw'],
             'city' => $vehicle->city,
+            'province' => $vehicle->province ?: $vehicle->state,
             'description' => $vehicle->description,
             'body_type' => $vehicle->body_type,
             'fuel_type' => $vehicle->fuel_type,
@@ -348,7 +360,7 @@ class PublicCatalogController extends Controller
             'features' => collect($vehicle->features)->filter()->values(),
             'media' => $media,
             'primary_image' => $media->first()['url'] ?? 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1400&q=80',
-            'published_label' => optional($vehicle->published_at)->diffForHumans() ?? 'Recien publicado',
+            'published_label' => optional($vehicle->published_at)->diffForHumans() ?? 'Recién publicado',
             'visibility_bucket' => data_get($vehicle->metadata, 'visibility_bucket', 'standard'),
             'plan_name' => data_get($vehicle->metadata, 'plan_name', 'Basico'),
             'is_paid' => (bool) data_get($vehicle->metadata, 'plan_is_paid', false),

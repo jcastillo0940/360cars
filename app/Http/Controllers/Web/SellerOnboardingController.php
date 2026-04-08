@@ -69,14 +69,12 @@ class SellerOnboardingController extends Controller
                 'vehicle_make_id' => $request->query('vehicle_make_id'),
                 'vehicle_model_id' => $request->query('vehicle_model_id'),
                 'year' => $request->query('year'),
-                'trim' => $request->query('trim'),
                 'condition' => $request->query('condition'),
                 'body_type' => $request->query('body_type'),
                 'fuel_type' => $request->query('fuel_type'),
                 'transmission' => $request->query('transmission'),
                 'drivetrain' => $request->query('drivetrain'),
                 'mileage' => $request->query('mileage'),
-                'engine_size' => $request->query('engine_size'),
                 'price' => $request->query('price'),
                 'city' => $request->query('city'),
                 'province' => $request->query('province'),
@@ -140,7 +138,7 @@ class SellerOnboardingController extends Controller
 
             $make = VehicleMake::findOrFail($data['vehicle_make_id']);
             $model = $make->models()->findOrFail($data['vehicle_model_id']);
-            $title = trim($make->name.' '.$model->name.' '.$data['year'].' '.($data['trim'] ?? ''));
+            $title = trim($make->name.' '.$model->name.' '.$data['year']);
 
             $vehicle = Vehicle::create([
                 'user_id' => $user->id,
@@ -152,7 +150,6 @@ class SellerOnboardingController extends Controller
                 'plate_number' => $data['plate_number'] ?? null,
                 'condition' => $data['condition'],
                 'year' => $data['year'],
-                'trim' => $data['trim'] ?? null,
                 'body_type' => $data['body_type'],
                 'fuel_type' => $data['fuel_type'],
                 'transmission' => $data['transmission'],
@@ -160,11 +157,9 @@ class SellerOnboardingController extends Controller
                 'mileage' => $data['mileage'] ?? null,
                 'mileage_unit' => 'km',
                 'engine' => $data['engine'] ?? null,
-                'engine_size' => $data['engine_size'] ?? null,
                 'exterior_color' => $data['exterior_color'] ?? null,
                 'interior_color' => $data['interior_color'] ?? null,
                 'doors' => $data['doors'] ?? null,
-                'seats' => $data['seats'] ?? null,
                 'price' => $data['price'],
                 'currency' => 'CRC',
                 'city' => $data['district'] ?? $data['city'],

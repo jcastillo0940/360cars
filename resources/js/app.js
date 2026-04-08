@@ -89,15 +89,135 @@ tabGroups.forEach((group) => {
     });
 });
 
+const createDraftPhotoStore = (storageKey) => {
+    if (!storageKey || !('indexedDB' in window)) {
+        return {
+            getAll: async () => ({}),
+            set: async () => {},
+            remove: async () => {},
+            clear: async () => {},
+        };
+    }
+
+    const dbName = 'movikaa-autosave';
+    const storeName = 'draft-files';
+
+    const open = () => new Promise((resolve, reject) => {
+        const request = window.indexedDB.open(dbName, 1);
+
+        request.onupgradeneeded = () => {
+            const db = request.result;
+            if (!db.objectStoreNames.contains(storeName)) {
+                db.createObjectStore(storeName, { keyPath: 'key' });
+            }
+        };
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+
+    return {
+        getAll: async () => {
+            const db = await open();
+
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(storeName, 'readonly');
+                const store = transaction.objectStore(storeName);
+                const request = store.getAll();
+
+                request.onsuccess = () => {
+                    const entries = {};
+                    (request.result || []).forEach((item) => {
+                        if (String(item.key).startsWith(`${storageKey}:`)) {
+                            entries[String(item.key).replace(`${storageKey}:`, '')] = item.file;
+                        }
+                    });
+                    db.close();
+                    resolve(entries);
+                };
+
+                request.onerror = () => {
+                    db.close();
+                    reject(request.error);
+                };
+            });
+        },
+        set: async (name, file) => {
+            const db = await open();
+
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(storeName, 'readwrite');
+                transaction.objectStore(storeName).put({ key: `${storageKey}:${name}`, file });
+                transaction.oncomplete = () => {
+                    db.close();
+                    resolve();
+                };
+                transaction.onerror = () => {
+                    db.close();
+                    reject(transaction.error);
+                };
+            });
+        },
+        remove: async (name) => {
+            const db = await open();
+
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(storeName, 'readwrite');
+                transaction.objectStore(storeName).delete(`${storageKey}:${name}`);
+                transaction.oncomplete = () => {
+                    db.close();
+                    resolve();
+                };
+                transaction.onerror = () => {
+                    db.close();
+                    reject(transaction.error);
+                };
+            });
+        },
+        clear: async () => {
+            const db = await open();
+
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(storeName, 'readwrite');
+                const store = transaction.objectStore(storeName);
+                const request = store.getAllKeys();
+
+                request.onsuccess = () => {
+                    (request.result || [])
+                        .filter((key) => String(key).startsWith(`${storageKey}:`))
+                        .forEach((key) => store.delete(key));
+                };
+
+                request.onerror = () => {
+                    db.close();
+                    reject(request.error);
+                };
+
+                transaction.oncomplete = () => {
+                    db.close();
+                    resolve();
+                };
+                transaction.onerror = () => {
+                    db.close();
+                    reject(transaction.error);
+                };
+            });
+        },
+    };
+};
+
 const createAutosaveManager = (form, statusNode) => {
     const storageKey = form.dataset.autosaveKey;
+    const photoStore = createDraftPhotoStore(storageKey);
 
     if (!storageKey || !('localStorage' in window)) {
         return {
-            restore: () => {},
-            save: () => {},
-            clear: () => {},
+            restore: async () => {},
+            save: async () => {},
+            clear: async () => {},
             stamp: () => {},
+            savePhoto: async () => {},
+            removePhoto: async () => {},
         };
     }
 
@@ -105,6 +225,25 @@ const createAutosaveManager = (form, statusNode) => {
         if (!statusNode) return;
         statusNode.textContent = message;
         statusNode.dataset.state = tone;
+    };
+
+    const updatePhotoDraftStatus = (restoredCount = null) => {
+        const draftNode = form.querySelector('[data-photo-draft-status]');
+        if (!draftNode) return;
+
+        const inputs = Array.from(form.querySelectorAll('input[type="file"][data-photo-input]'));
+        const attachedCount = inputs.filter((input) => input.files?.length).length;
+
+        if (attachedCount > 0) {
+            draftNode.hidden = false;
+            draftNode.textContent = restoredCount && restoredCount > 0
+                ? `Recuperamos ${restoredCount} foto${restoredCount === 1 ? '' : 's'} del borrador. Ya quedaron cargadas en este paso.`
+                : `Tienes ${attachedCount} foto${attachedCount === 1 ? '' : 's'} lista${attachedCount === 1 ? '' : 's'} en este borrador.`;
+            return;
+        }
+
+        draftNode.hidden = true;
+        draftNode.textContent = 'No hay fotos restauradas todavía.';
     };
 
     const getPayload = () => {
@@ -134,6 +273,7 @@ const createAutosaveManager = (form, statusNode) => {
                 if (field.checked) {
                     payload[field.name] = field.value;
                 }
+                autosave?.removePhoto(input);
                 return;
             }
 
@@ -143,7 +283,7 @@ const createAutosaveManager = (form, statusNode) => {
         return payload;
     };
 
-    const restore = () => {
+    const restore = async () => {
         try {
             const raw = window.localStorage.getItem(storageKey);
             if (!raw) return;
@@ -180,6 +320,20 @@ const createAutosaveManager = (form, statusNode) => {
                 });
             });
 
+            const files = await photoStore.getAll();
+            const restoredEntries = Object.entries(files);
+            restoredEntries.forEach(([name, file]) => {
+                const input = form.querySelector(`input[type="file"][name="${window.CSS?.escape ? window.CSS.escape(name) : name}"]`);
+                if (!input || !file) return;
+
+                const transfer = new DataTransfer();
+                transfer.items.add(file);
+                input.files = transfer.files;
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+
+            updatePhotoDraftStatus(restoredEntries.length);
+
             if (draft.savedAt) {
                 setStatus(`Borrador restaurado. Ultimo guardado ${draft.savedAt}.`, 'restored');
             }
@@ -190,7 +344,7 @@ const createAutosaveManager = (form, statusNode) => {
 
     let timer = null;
 
-    const save = () => {
+    const save = async () => {
         try {
             const savedAt = new Date().toLocaleTimeString('es-CR', {
                 hour: '2-digit',
@@ -210,20 +364,43 @@ const createAutosaveManager = (form, statusNode) => {
 
     const stamp = () => {
         window.clearTimeout(timer);
-        timer = window.setTimeout(save, 250);
+        timer = window.setTimeout(() => {
+            save();
+        }, 250);
     };
 
-    const clear = () => {
+    const clear = async () => {
         window.localStorage.removeItem(storageKey);
+        await photoStore.clear();
+        updatePhotoDraftStatus(0);
         setStatus('Borrador local limpiado porque el envio termino.', 'done');
+    };
+
+    const savePhoto = async (input) => {
+        if (!input?.name) return;
+        const file = input.files?.[0];
+
+        if (!file) {
+            await photoStore.remove(input.name);
+            updatePhotoDraftStatus();
+            return;
+        }
+
+        await photoStore.set(input.name, file);
+        updatePhotoDraftStatus();
+    };
+
+    const removePhoto = async (input) => {
+        if (!input?.name) return;
+        await photoStore.remove(input.name);
+        updatePhotoDraftStatus();
     };
 
     form.addEventListener('input', stamp);
     form.addEventListener('change', stamp);
 
-    return { restore, save, clear, stamp };
+    return { restore, save, clear, stamp, savePhoto, removePhoto };
 };
-
 const makeFileFromBlob = (blob, originalFile) => {
     const extension = originalFile.name.includes('.') ? originalFile.name.split('.').pop() : 'jpg';
     const baseName = originalFile.name.replace(/\.[^.]+$/, '');
@@ -284,7 +461,7 @@ const compressImageFile = (file, { maxWidth = 1920, quality = 0.84 } = {}) => ne
     reader.readAsDataURL(file);
 });
 
-const wirePhotoHints = (wizard) => {
+const wirePhotoHints = (wizard, autosave = null) => {
     const photoInputs = wizard.querySelectorAll('[data-photo-input]');
     const sidebarLoader = document.querySelector('[data-sidebar-loader]');
 
@@ -296,7 +473,7 @@ const wirePhotoHints = (wizard) => {
             const preview = document.createElement('div');
             preview.className = 'seller-photo-preview';
             preview.dataset.photoPreview = 'true';
-            preview.innerHTML = '<span class="material-symbols-outlined">image</span><strong>Vista previa</strong><small>Aun no has seleccionado una foto.</small>';
+            preview.innerHTML = '<span class="material-symbols-outlined">image</span><strong>Vista previa</strong><small>Aún no has seleccionado una foto.</small>';
             card.insertBefore(preview, input);
         }
 
@@ -309,7 +486,7 @@ const wirePhotoHints = (wizard) => {
                 if (preview) {
                     preview.classList.remove('has-image');
                     preview.style.backgroundImage = '';
-                    preview.innerHTML = '<span class="material-symbols-outlined">image</span><strong>Vista previa</strong><small>Aun no has seleccionado una foto.</small>';
+                    preview.innerHTML = '<span class="material-symbols-outlined">image</span><strong>Vista previa</strong><small>Aún no has seleccionado una foto.</small>';
                 }
                 return;
             }
@@ -319,13 +496,14 @@ const wirePhotoHints = (wizard) => {
                 hint.textContent = `Preparando ${file.name}...`;
             }
             if (sidebarLoader) {
-                sidebarLoader.textContent = `Comprimiendo ${file.name} para que suba mas rapido...`;
+                sidebarLoader.textContent = `Comprimiendo ${file.name} para que suba más rápido...`;
             }
 
             const optimizedFile = await compressImageFile(file);
             const transfer = new DataTransfer();
             transfer.items.add(optimizedFile);
             input.files = transfer.files;
+            await autosave?.savePhoto(input);
 
             card.classList.remove('is-processing');
             card.classList.add('is-ready');
@@ -341,7 +519,7 @@ const wirePhotoHints = (wizard) => {
                 preview.innerHTML = `<span class="seller-photo-preview__badge">Lista</span><strong>${optimizedFile.name}</strong><small>Imagen optimizada y lista para enviarse.</small>`;
             }
             if (sidebarLoader) {
-                sidebarLoader.textContent = `${optimizedFile.name} quedo listo. Puedes seguir agregando fotos.`;
+                sidebarLoader.textContent = `${optimizedFile.name} qued? listo. Puedes seguir agregando fotos.`;
             }
         });
     });
@@ -401,7 +579,7 @@ const wirePricePreview = (wizard) => {
         const amount = Number(input.value || 0);
 
         if (!amount) {
-            preview.textContent = 'El precio oficial se mostrara en colones. Debajo veras una referencia pequena en dolares.';
+            preview.textContent = 'El precio oficial se mostrar? en colones. Debajo ver?s una referencia peque?a en d?lares.';
             return;
         }
 
@@ -467,8 +645,8 @@ const wirePhotoSequence = (wizard) => {
 
         if (stepCopy) {
             stepCopy.textContent = allReady
-                ? 'Perfecto. Ya puedes continuar a la ubicacion o agregar un par de fotos opcionales.'
-                : 'Sube frontal, trasera, laterales e interiores antes de continuar a la ubicacion.';
+                ? 'Perfecto. Ya puedes continuar a la ubicación o agregar un par de fotos opcionales.'
+                : 'Sube frontal, trasera, laterales e interiores antes de continuar a la ubicación.';
         }
     };
 
@@ -521,7 +699,7 @@ const wirePhotoSequence = (wizard) => {
         }
 
         if (sidebarLoader) {
-            sidebarLoader.textContent = `Sube ${title.toLowerCase()} y luego continua con la siguiente fotografia.`;
+            sidebarLoader.textContent = `Sube ${title.toLowerCase()} y luego contin?a con la siguiente fotograf?a.`;
         }
 
         syncStepGate();
@@ -557,7 +735,7 @@ const wirePhotoSequence = (wizard) => {
         }
 
         if (currentIndex === optionalPanels.length - 1) {
-            showOptionalEntry('Tus fotos opcionales tambien quedaron listas. Ya puedes pasar al siguiente paso.');
+            showOptionalEntry('Tus fotos opcionales también quedaron listas. Ya puedes pasar al siguiente paso.');
             return;
         }
 
@@ -627,17 +805,17 @@ if (wizard) {
     let stepIndex = panels.findIndex((panel) => !panel.hidden);
     if (stepIndex < 0) stepIndex = 0;
     const stepTips = [
-        'Usa el nombre comercial correcto de la version y una descripcion breve pero confiable.',
+        'Usa el nombre comercial correcto de la versi?n y una descripci?n breve pero confiable.',
         'Completa kilometraje, motor, combustible y precio en colones con datos exactos.',
         'Las fotos frontal, trasera, laterales e interiores suelen acelerar los contactos.',
         'Busca el punto exacto del auto dentro de Costa Rica para ubicarlo mejor.',
-        'Cierra con correo o telefono y podras manejar este y otros autos desde tu panel.',
+        'Cierra con correo o teléfono y podrás manejar este y otros autos desde tu panel.',
     ];
     const stepSummaries = [
-        'Completa los datos base del auto para arrancar bien tu publicacion.',
-        'Normaliza precio, mecanica y condicion para que el anuncio sea comparable.',
-        'Agrega extras y fotos claras para elevar confianza y conversion.',
-        'Confirma la ubicacion exacta del auto dentro de Costa Rica.',
+        'Completa los datos base del auto para arrancar bien tu publicaci?n.',
+        'Normaliza precio, mec?nica y condici?n para que el anuncio sea comparable.',
+        'Agrega extras y fotos claras para elevar confianza y conversión.',
+        'Confirma la ubicación exacta del auto dentro de Costa Rica.',
         'Termina creando tu cuenta para publicar y administrar este y futuros autos.',
     ];
 
@@ -664,17 +842,17 @@ if (wizard) {
         if (progressPercent) progressPercent.textContent = `${percent}%`;
         if (progressBar) progressBar.style.width = `${percent}%`;
         if (progressRing) {
-            progressRing.style.background = `radial-gradient(circle at center, white 54%, transparent 56%), conic-gradient(var(--color-secondary) 0 ${percent * 3.6}deg, rgba(194, 198, 212, 0.45) ${percent * 3.6}deg 360deg)`;
+            progressRing.style.background = `radial-gradient(circle at center, #0f1722 0 53%, transparent 55%), conic-gradient(var(--color-secondary) 0 ${percent * 3.6}deg, rgba(194, 198, 212, 0.28) ${percent * 3.6}deg 360deg)`;
         }
         if (currentStepTitle) currentStepTitle.textContent = currentTitle;
         if (currentStepMeta) currentStepMeta.textContent = `Paso ${stepIndex + 1} de ${totalSteps}`;
         if (sidebarTip) sidebarTip.textContent = stepTips[stepIndex] || stepTips[0];
         if (sidebarLoader) {
             sidebarLoader.textContent = stepIndex === 2
-                ? 'En este paso comprimimos fotos antes del envio para que la carga sea mas rapida.'
+                ? 'En este paso comprimimos fotos antes del envío para que la carga sea más rápida.'
                 : stepIndex === 3
-                    ? 'En este paso validamos la ubicacion dentro de Costa Rica y esperamos la respuesta del mapa.'
-                    : 'Avanza paso a paso. Aqui veras el estado de carga, compresion o validacion.';
+                    ? 'En este paso validamos la ubicación dentro de Costa Rica y esperamos la respuesta del mapa.'
+                    : 'Avanza paso a paso. Aquí verás el estado de carga, compresión o validación.';
         }
 
         if (scroll) {
@@ -726,7 +904,7 @@ if (wizard) {
         }
 
         if (statusNode) {
-            statusNode.textContent = 'Comprimiendo imagenes y enviando tu anuncio...';
+            statusNode.textContent = 'Comprimiendo im?genes y enviando tu anuncio...';
             statusNode.dataset.state = 'processing';
         }
 
@@ -743,58 +921,68 @@ if (wizard) {
             }
         }
 
-        autosave.save();
-        window.setTimeout(() => autosave.clear(), 1200);
+        await autosave.save();
+        window.setTimeout(() => {
+            autosave.clear();
+        }, 1200);
     });
 
-    autosave.restore();
     wireModelFiltering(wizard);
     wirePricePreview(wizard);
-    wirePhotoHints(wizard);
+    wirePhotoHints(wizard, autosave);
     wirePhotoSequence(wizard);
+    autosave.restore();
     syncWizard(false);
 }
 
 const mapCanvas = document.querySelector('[data-map-canvas]');
 const mapSearch = document.querySelector('[data-map-search]');
+const sidebarLoader = document.querySelector('[data-sidebar-loader]');
+const latInput = document.querySelector('[data-map-lat]');
+const lngInput = document.querySelector('[data-map-lng]');
+const cityInput = document.querySelector('[data-map-city]');
+const stateInput = document.querySelector('[data-map-state]');
+const labelInput = document.querySelector('[data-map-label]');
+const provinceField = document.querySelector('[data-location-province]');
+const cantonField = document.querySelector('[data-location-canton]');
+const districtField = document.querySelector('[data-location-district]');
+const treeNode = document.getElementById('cr-location-tree');
+const locationTree = (() => {
+    try {
+        return JSON.parse(treeNode?.textContent || '[]');
+    } catch (error) {
+        return [];
+    }
+})();
 
-if (mapCanvas && mapSearch) {
-    const sidebarLoader = document.querySelector('[data-sidebar-loader]');
-    const latInput = document.querySelector('[data-map-lat]');
-    const lngInput = document.querySelector('[data-map-lng]');
-    const cityInput = document.querySelector('[data-map-city]');
-    const stateInput = document.querySelector('[data-map-state]');
-    const labelInput = document.querySelector('[data-map-label]');
-    const provinceField = document.querySelector('[data-location-province]');
-    const cantonField = document.querySelector('[data-location-canton]');
-    const districtField = document.querySelector('[data-location-district]');
-    const provinceList = document.getElementById('province-list');
-    const cantonList = document.getElementById('canton-list');
-    const districtList = document.getElementById('district-list');
-    const treeNode = document.getElementById('cr-location-tree');
-    const locationTree = (() => {
-        try {
-            return JSON.parse(treeNode?.textContent || '[]');
-        } catch (error) {
-            return [];
-        }
-    })();
+if (provinceField && cantonField && districtField) {
     const normalize = (value) => (value || '').trim().toLowerCase();
 
-    const setOptions = (list, values) => {
-        if (!list) return;
-        list.innerHTML = values.map((value) => `<option value="${value}"></option>`).join('');
+    const setOptions = (select, values, placeholder) => {
+        if (!select) return;
+
+        const currentValue = select.value;
+        select.innerHTML = [`<option value="">${placeholder}</option>`]
+            .concat(values.map((value) => `<option value="${value}">${value}</option>`))
+            .join('');
+
+        if (values.some((value) => normalize(value) === normalize(currentValue))) {
+            select.value = currentValue;
+        }
     };
 
     const getProvince = () => locationTree.find((province) => normalize(province.name) === normalize(provinceField?.value));
     const getCanton = () => getProvince()?.cantons?.find((canton) => normalize(canton.name) === normalize(cantonField?.value));
 
     const syncLocationSelectors = (source = null) => {
-        setOptions(provinceList, locationTree.map((province) => province.name));
+        setOptions(provinceField, locationTree.map((province) => province.name), 'Selecciona una provincia');
 
         const province = getProvince();
         const cantons = province?.cantons ?? [];
-        setOptions(cantonList, cantons.map((canton) => canton.name));
+        setOptions(cantonField, cantons.map((canton) => canton.name), province ? 'Selecciona un cantón' : 'Selecciona primero una provincia');
+        if (cantonField) {
+            cantonField.disabled = !province;
+        }
 
         if (source === 'province' && cantonField) {
             const currentCantonValid = cantons.some((canton) => normalize(canton.name) === normalize(cantonField.value));
@@ -806,7 +994,10 @@ if (mapCanvas && mapSearch) {
 
         const canton = getCanton();
         const districts = canton?.districts ?? [];
-        setOptions(districtList, districts);
+        setOptions(districtField, districts, canton ? 'Selecciona un distrito' : 'Selecciona primero un cantón');
+        if (districtField) {
+            districtField.disabled = !canton;
+        }
 
         if (source === 'canton' && districtField) {
             const currentDistrictValid = districts.some((district) => normalize(district) === normalize(districtField.value));
@@ -817,29 +1008,33 @@ if (mapCanvas && mapSearch) {
     };
 
     const syncManualLocation = () => {
-        if (labelInput) labelInput.value = mapSearch.value || '';
+        if (labelInput && mapSearch) labelInput.value = mapSearch.value || '';
         if (cityInput && districtField) cityInput.value = districtField.value || '';
         if (stateInput && provinceField) stateInput.value = provinceField.value || '';
     };
 
-    mapSearch.addEventListener('input', syncManualLocation);
-    provinceField?.addEventListener('input', () => {
+    mapSearch?.addEventListener('input', syncManualLocation);
+    provinceField?.addEventListener('change', () => {
         syncLocationSelectors('province');
         syncManualLocation();
     });
-    cantonField?.addEventListener('input', () => {
+    cantonField?.addEventListener('change', () => {
         syncLocationSelectors('canton');
         syncManualLocation();
     });
-    districtField?.addEventListener('input', syncManualLocation);
+    districtField?.addEventListener('change', syncManualLocation);
     syncLocationSelectors();
     syncManualLocation();
-
-    const bootMap = () => {
+    if (!(mapCanvas && mapSearch)) {
+        if (sidebarLoader) {
+            sidebarLoader.textContent = 'Selecciona provincia, canton y distrito para completar la ubicacion del auto.';
+        }
+    } else {
+        const bootMap = () => {
         if (!window.google?.maps?.places) {
-            mapCanvas.innerHTML = '<div class="map-canvas__fallback">Configura GOOGLE_MAPS_API_KEY para usar el mapa interactivo. Mientras tanto puedes completar manualmente provincia, canton, distrito y la referencia del auto.</div>';
+            mapCanvas.innerHTML = '<div class="map-canvas__fallback">Configura `GOOGLE_MAPS_API_KEY` para usar el mapa interactivo. Mientras tanto puedes completar manualmente provincia, cantón, distrito y la referencia del auto.</div>';
             if (sidebarLoader) {
-                sidebarLoader.textContent = 'Google Maps no esta activo. Completa referencia, provincia, canton y distrito manualmente para continuar.';
+                sidebarLoader.textContent = 'Google Maps no está activo. Completa referencia, provincia, cantón y distrito manualmente para continuar.';
             }
             return;
         }
@@ -919,27 +1114,27 @@ if (mapCanvas && mapSearch) {
 
         autocomplete.addListener('place_changed', () => {
             if (sidebarLoader) {
-                sidebarLoader.textContent = 'Ubicacion validada dentro de Costa Rica.';
+                sidebarLoader.textContent = 'Ubicación validada dentro de Costa Rica.';
             }
             syncPlace(autocomplete.getPlace());
         });
 
         if (sidebarLoader) {
-            sidebarLoader.textContent = 'Mapa cargado. Busca la direccion exacta del auto dentro de Costa Rica.';
+            sidebarLoader.textContent = 'Mapa cargado. Busca la dirección exacta del auto dentro de Costa Rica.';
         }
     };
-
-    if (window.google?.maps?.places) {
-        bootMap();
-    } else {
-        let attempts = 0;
-        const interval = window.setInterval(() => {
-            attempts += 1;
-            if (window.google?.maps?.places || attempts > 40) {
-                window.clearInterval(interval);
-                bootMap();
-            }
-        }, 400);
+        if (window.google?.maps?.places) {
+            bootMap();
+        } else {
+            let attempts = 0;
+            const interval = window.setInterval(() => {
+                attempts += 1;
+                if (window.google?.maps?.places || attempts > 40) {
+                    window.clearInterval(interval);
+                    bootMap();
+                }
+            }, 400);
+        }
     }
 }
 const sellerMakeSelect = document.querySelector('[data-seller-make-select]');

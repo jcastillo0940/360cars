@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Icon, PriceStack, PublicFooter, PublicTopBar, formatCRC } from './public-shell';
 
@@ -14,7 +14,7 @@ async function mutateVehicle(urlTemplate, vehicleId, method, csrfToken) {
 
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
-        throw new Error(payload.message || 'No fue posible completar la accion.');
+        throw new Error(payload.message || 'No fue posible completar la acción.');
     }
 
     return payload;
@@ -27,10 +27,8 @@ function VehicleCard({ vehicle, isFavorited, isCompared, onFavorite, onCompare }
                 <div className="relative h-56 overflow-hidden">
                     <img src={vehicle.primary_image} alt={vehicle.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                     <div className="absolute left-3 top-3 flex flex-wrap gap-2">
-                        {vehicle.is_featured ? <div className="rounded bg-primary px-2 py-1 text-[10px] font-bold text-white">DESTACADO</div> : null}
-                        {vehicle.is_paid ? <div className="rounded bg-secondary px-2 py-1 text-[10px] font-bold text-white">{vehicle.plan_name}</div> : null}
+                        {vehicle.is_featured ? <div className="rounded-full bg-secondary px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-950">Destacado</div> : null}
                     </div>
-                    {vehicle.price_badge ? <div className="absolute right-3 top-3 rounded bg-white/90 px-2 py-1 text-[10px] font-bold text-primary">{vehicle.price_badge}</div> : null}
                 </div>
             </a>
             <div className="p-5">
@@ -38,7 +36,6 @@ function VehicleCard({ vehicle, isFavorited, isCompared, onFavorite, onCompare }
                     <div>
                         <p className="text-xs font-bold uppercase tracking-[0.2em] text-secondary">{vehicle.make} {vehicle.model}</p>
                         <a href={vehicle.url} className="mt-2 block font-headline text-xl font-extrabold tracking-tight text-slate-900">{vehicle.title}</a>
-                        <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{vehicle.visibility_bucket}</p>
                     </div>
                     <button type="button" onClick={() => onFavorite(vehicle.id)} className={`rounded-full p-2 transition-colors ${isFavorited ? 'bg-secondary text-white' : 'bg-secondary/12 text-secondary hover:bg-secondary hover:text-white'}`}>
                         <Icon name="favorite" className="text-[18px]" />
@@ -46,8 +43,8 @@ function VehicleCard({ vehicle, isFavorited, isCompared, onFavorite, onCompare }
                 </div>
                 <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-500">
                     <span>{vehicle.year}</span>
-                    <span>{vehicle.mileage ? `${vehicle.mileage} ${vehicle.mileage_unit}` : '0 km'}</span>
-                    <span>{vehicle.city || 'Costa Rica'}</span>
+                    <span>{vehicle.mileage ? `${vehicle.mileage} ${vehicle.mileage_unit}` : 'Kilometraje no indicado'}</span>
+                    <span>{vehicle.province || vehicle.city || 'Costa Rica'}</span>
                 </div>
                 <div className="mt-5 flex items-center justify-between gap-3">
                     <PriceStack primary={vehicle.price} secondary={vehicle.price_secondary} />
@@ -81,13 +78,13 @@ function RangeControl({ label, min, max, step, valueMin, valueMax, onMinChange, 
     );
 }
 
-function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authUser, comparisonsUrl, valuationUrl, publicTheme = 'light', vehicles, filters, filterOptions, engagement, endpoints, footerLinks }) {
+function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, loginUrl, authUser, comparisonsUrl, valuationUrl, publicTheme = 'light', vehicles, filters, filterOptions, engagement, endpoints, footerLinks }) {
     const priceRange = filterOptions.priceRange || { min: 0, max: 20000000, step: 500000 };
-    const yearRange = filterOptions.yearRange || { min: 2000, max: new Date().getFullYear(), step: 1 };
+    const yearRange = filterOptions.yearRange || { min: 1950, max: new Date().getFullYear() + 1, step: 1 };
     const [localFilters, setLocalFilters] = useState({
         make: filters.make || '',
         model: filters.model || '',
-        city: filters.city || '',
+        province: filters.province || '',
         features: filters.features || [],
         min_price: Number(filters.min_price || priceRange.min),
         max_price: Number(filters.max_price || priceRange.max),
@@ -98,13 +95,13 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
     const [comparisonIds, setComparisonIds] = useState(engagement.comparisonVehicleIds || []);
     const [saveMessage, setSaveMessage] = useState('');
     const [compareMessage, setCompareMessage] = useState('');
-    const isDark = publicTheme === 'light' ? false : true;
+    const isDark = publicTheme === 'dark';
 
     const modelsByMake = filterOptions.modelsByMake || {};
     const availableModels = localFilters.make ? (modelsByMake[localFilters.make] || []) : (filterOptions.models || []);
     const stats = useMemo(() => [
         { label: 'Resultados activos', value: vehicles.meta.total },
-        { label: 'Pagina actual', value: vehicles.meta.current_page },
+        { label: 'Página actual', value: vehicles.meta.current_page },
         { label: 'Marcas disponibles', value: filterOptions.makes.length },
     ], [vehicles, filterOptions]);
 
@@ -148,7 +145,7 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
         setLocalFilters({
             make: '',
             model: '',
-            city: '',
+            province: '',
             features: [],
             min_price: priceRange.min,
             max_price: priceRange.max,
@@ -183,8 +180,8 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
                 : comparisonIds.filter((id) => id !== vehicleId);
             setComparisonIds(nextIds);
             setCompareMessage(payload.compared
-                ? `Vehiculo agregado al comparador. Llevas ${payload.comparison_count} de 4.`
-                : 'Vehiculo removido del comparador.');
+                ? `Vehículo agregado al comparador. Llevas ${payload.comparison_count} de 4.`
+                : 'Vehículo removido del comparador.');
         } catch (error) {
             setCompareMessage(error.message || 'No fue posible actualizar el comparador.');
         }
@@ -200,17 +197,17 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
                 'X-CSRF-TOKEN': endpoints.csrfToken,
             },
             body: JSON.stringify({
-                name: `Busqueda ${localFilters.make || 'general'} ${localFilters.city || ''}`.trim(),
+                name: `Búsqueda ${localFilters.make || 'general'} ${localFilters.province || ''}`.trim(),
                 filters: localFilters,
                 notification_frequency: 'instant',
             }),
         });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-            setSaveMessage(payload.message || 'No se pudo guardar la busqueda.');
+            setSaveMessage(payload.message || 'No se pudo guardar la búsqueda.');
             return;
         }
-        setSaveMessage('Busqueda guardada correctamente en tu dashboard buyer.');
+        setSaveMessage('Búsqueda guardada correctamente en tu panel comprador.');
     };
 
     return (
@@ -218,6 +215,7 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
             <PublicTopBar
                 homeUrl={homeUrl}
                 catalogUrl={catalogUrl}
+                brandsUrl={brandsUrl}
                 valuationUrl={valuationUrl}
                 sellUrl={sellUrl}
                 accountUrl={accountUrl}
@@ -230,8 +228,8 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
                     <div className="mx-auto grid max-w-screen-2xl grid-cols-1 gap-10 px-4 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
                         <div>
                             <p className="text-xs font-bold uppercase tracking-[0.24em] text-secondary">Inventario verificado</p>
-                            <h1 className={`mt-4 font-headline text-4xl font-extrabold tracking-tight sm:text-5xl ${isDark ? 'text-white' : 'text-slate-950'}`}>Encuentre el vehiculo ideal con filtros claros y resultados rapidos.</h1>
-                            <p className={`mt-5 max-w-2xl text-base sm:text-lg ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Explora el inventario, ajusta los filtros a tu ritmo y encuentra opciones claras en pocos pasos.</p>
+                            <h1 className={`mt-4 font-headline text-4xl font-extrabold tracking-tight sm:text-5xl ${isDark ? 'text-white' : 'text-slate-950'}`}>Encuentra el vehículo ideal con filtros útiles y resultados rápidos.</h1>
+                            <p className={`mt-5 max-w-2xl text-base sm:text-lg ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Filtra por marca, modelo, provincia, rango de precio, rango de año y características clave desde un solo lugar.</p>
                             <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
                                 {stats.map((item) => (
                                     <div key={item.label} className={`rounded-2xl p-5 shadow-sm backdrop-blur ${isDark ? 'border border-white/10 bg-white/5' : 'border border-white/70 bg-white/80'}`}>
@@ -245,13 +243,13 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
                             <div className="mb-6 flex items-center justify-between">
                                 <div>
                                     <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Listo para explorar</p>
-                                    <h2 className="mt-2 font-headline text-2xl font-extrabold tracking-tight">Tu busqueda se mantiene entre pantallas</h2>
+                                    <h2 className="mt-2 font-headline text-2xl font-extrabold tracking-tight">Tu búsqueda se mantiene entre pantallas</h2>
                                 </div>
                                 <Icon name="tune" className="text-[26px] text-primary" />
                             </div>
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <div className={`rounded-2xl border border-outline-variant/20 p-4 ${isDark ? 'bg-white/5' : 'bg-white'}`}><span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Rango precio</span><strong className={`mt-2 block text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>{formatCRC(localFilters.min_price)} - {formatCRC(localFilters.max_price)}</strong></div>
-                                <div className={`rounded-2xl border border-outline-variant/20 p-4 ${isDark ? 'bg-white/5' : 'bg-white'}`}><span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Rango año</span><strong className={`mt-2 block text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>{localFilters.min_year} - {localFilters.max_year}</strong></div>
+                                <div className={`rounded-2xl border border-outline-variant/20 p-4 ${isDark ? 'bg-white/5' : 'bg-white'}`}><span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Rango de precio</span><strong className={`mt-2 block text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>{formatCRC(localFilters.min_price)} - {formatCRC(localFilters.max_price)}</strong></div>
+                                <div className={`rounded-2xl border border-outline-variant/20 p-4 ${isDark ? 'bg-white/5' : 'bg-white'}`}><span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Rango de año</span><strong className={`mt-2 block text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>{localFilters.min_year} - {localFilters.max_year}</strong></div>
                             </div>
                             <div className="mt-5 flex flex-wrap items-center gap-3">
                                 <span className="rounded-full bg-secondary/12 px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-secondary">{comparisonIds.length} en comparador</span>
@@ -269,14 +267,14 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
                                 <div className="flex items-center justify-between gap-3">
                                     <div>
                                         <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Filtros</p>
-                                        <h2 className="mt-2 font-headline text-2xl font-extrabold tracking-tight">Busqueda lateral</h2>
+                                        <h2 className="mt-2 font-headline text-2xl font-extrabold tracking-tight">Encuentra mejor</h2>
                                     </div>
                                     <button type="button" onClick={clearFilters} className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 transition hover:text-primary">Limpiar</button>
                                 </div>
 
                                 <label className="block rounded-2xl border border-outline-variant/30 bg-white p-4">
                                     <span className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Marca</span>
-                                    <select value={localFilters.make} onChange={(event) => setFilter('make', event.target.value)} className="w-full border-none bg-transparent p-0 font-semibold focus:ring-0">
+                                    <select value={localFilters.make} onChange={(event) => setFilter('make', event.target.value)} className="w-full border-none bg-transparent p-0 font-semibold text-slate-900 focus:ring-0">
                                         <option value="">Todas</option>
                                         {filterOptions.makes.map((item) => <option key={item} value={item}>{item}</option>)}
                                     </select>
@@ -284,17 +282,17 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
 
                                 <label className="block rounded-2xl border border-outline-variant/30 bg-white p-4">
                                     <span className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Modelo</span>
-                                    <select value={localFilters.model} onChange={(event) => setFilter('model', event.target.value)} className="w-full border-none bg-transparent p-0 font-semibold focus:ring-0">
+                                    <select value={localFilters.model} onChange={(event) => setFilter('model', event.target.value)} className="w-full border-none bg-transparent p-0 font-semibold text-slate-900 focus:ring-0">
                                         <option value="">Todos</option>
                                         {availableModels.map((item) => <option key={item} value={item}>{item}</option>)}
                                     </select>
                                 </label>
 
                                 <label className="block rounded-2xl border border-outline-variant/30 bg-white p-4">
-                                    <span className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Ciudad</span>
-                                    <select value={localFilters.city} onChange={(event) => setFilter('city', event.target.value)} className="w-full border-none bg-transparent p-0 font-semibold focus:ring-0">
+                                    <span className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Provincia</span>
+                                    <select value={localFilters.province} onChange={(event) => setFilter('province', event.target.value)} className="w-full border-none bg-transparent p-0 font-semibold text-slate-900 focus:ring-0">
                                         <option value="">Todas</option>
-                                        {filterOptions.cities.map((item) => <option key={item} value={item}>{item}</option>)}
+                                        {filterOptions.provinces.map((item) => <option key={item} value={item}>{item}</option>)}
                                     </select>
                                 </label>
 
@@ -343,10 +341,10 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
                                 />
 
                                 <button type="submit" className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-secondary px-5 py-4 font-headline text-lg font-extrabold text-white transition-colors hover:bg-secondary-container">
-                                    <Icon name="search" className="text-[20px]" /> Buscar vehiculos
+                                    <Icon name="search" className="text-[20px]" /> Buscar vehículos
                                 </button>
                                 <button type="button" onClick={saveSearch} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-secondary bg-secondary px-5 py-3 font-headline text-sm font-bold text-white transition-colors hover:bg-secondary-container">
-                                    <Icon name="notifications_active" className="text-[18px]" /> Guardar esta busqueda
+                                    <Icon name="notifications_active" className="text-[18px]" /> Guardar est? búsqueda
                                 </button>
                                 {saveMessage ? <p className="text-sm text-slate-500">{saveMessage}</p> : null}
                             </form>
@@ -355,8 +353,8 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
                         <div>
                             <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
-                                    <p className="text-xs font-bold uppercase tracking-[0.24em] text-secondary">Catalogo publico</p>
-                                    <h2 className="mt-2 font-headline text-3xl font-extrabold tracking-tight">Vehiculos disponibles</h2>
+                                    <p className="text-xs font-bold uppercase tracking-[0.24em] text-secondary">Catálogo público</p>
+                                    <h2 className="mt-2 font-headline text-3xl font-extrabold tracking-tight">Vehículos disponibles</h2>
                                 </div>
                                 <p className="text-sm text-slate-500">Mostrando {vehicles.data.length} de {vehicles.meta.total} resultados.</p>
                             </div>
@@ -378,7 +376,7 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
                                 <div className="rounded-[2rem] border border-outline-variant/20 bg-white p-10 text-center shadow-xl">
                                     <Icon name="search_off" className="text-[42px] text-primary" />
                                     <h3 className="mt-4 font-headline text-2xl font-extrabold tracking-tight">No encontramos autos con esos filtros</h3>
-                                    <p className="mt-3 text-sm text-slate-500">Prueba ampliar el rango de precio, cambiar el año o limpiar la marca y el modelo para ver mas resultados.</p>
+                                    <p className="mt-3 text-sm text-slate-500">Prueba ampliar el rango de precio, cambiar el año o limpiar la marca, modelo y provincia para ver más resultados.</p>
                                 </div>
                             )}
                         </div>
@@ -389,6 +387,7 @@ function CatalogPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authU
             <PublicFooter
                 homeUrl={homeUrl}
                 catalogUrl={catalogUrl}
+                brandsUrl={brandsUrl}
                 valuationUrl={valuationUrl}
                 sellUrl={sellUrl}
                 loginUrl={loginUrl || accountUrl}
@@ -404,7 +403,3 @@ const element = document.getElementById('catalog-react');
 if (element) {
     createRoot(element).render(<CatalogPage {...JSON.parse(element.dataset.props || '{}')} />);
 }
-
-
-
-

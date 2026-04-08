@@ -281,7 +281,7 @@ class VehicleController extends Controller
         if ($user->hasRole('admin') || $vehicle->user_id === $user->id) {
             return;
         }
-        abort(403, 'No puedes gestionar esta publicacion.');
+        abort(403, 'No puedes gestionar est? publicacion.');
     }
 
     private function assertImageLimit($user, ?Vehicle $vehicle, int $newImagesCount): void

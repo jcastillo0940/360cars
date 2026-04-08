@@ -22,6 +22,7 @@ class BuyerPortalController extends Controller
 
         return view('portal.buyer.favorites', $data + [
             'favoritesList' => $request->user()->favorites()
+                ->whereHas('vehicle', fn ($query) => $this->scopeVisibleVehicles($query))
                 ->with(['vehicle.make', 'vehicle.model', 'vehicle.media'])
                 ->latest()
                 ->paginate(10)
@@ -63,7 +64,7 @@ class BuyerPortalController extends Controller
         $activity = [
             ['label' => 'Favoritos', 'value' => $data['savedCount']],
             ['label' => 'Comparaciones', 'value' => $data['compareCount']],
-            ['label' => 'Busquedas', 'value' => $data['searchCount']],
+            ['label' => 'Búsquedas', 'value' => $data['searchCount']],
             ['label' => 'Mensajes', 'value' => $data['conversationCount']],
         ];
 
@@ -81,12 +82,17 @@ class BuyerPortalController extends Controller
         $user = $request->user();
 
         $favorites = $user->favorites()
+            ->whereHas('vehicle', fn ($query) => $this->scopeVisibleVehicles($query))
             ->with(['vehicle.make', 'vehicle.model', 'vehicle.media'])
             ->latest()
             ->take(12)
             ->get();
 
-        $comparison = Comparison::query()->where('user_id', $user->id)->with(['vehicles.make', 'vehicles.model', 'vehicles.media'])->latest()->first();
+        $comparison = Comparison::query()
+            ->where('user_id', $user->id)
+            ->with(['vehicles' => fn ($query) => $this->scopeVisibleVehicles($query)->with(['make', 'model', 'media'])])
+            ->latest()
+            ->first();
         $savedSearches = $user->savedSearches()->latest()->take(12)->get();
         $conversations = Conversation::query()
             ->with(['vehicle'])
@@ -94,7 +100,14 @@ class BuyerPortalController extends Controller
             ->latest('last_message_at')
             ->take(12)
             ->get();
-        $vehicles = Vehicle::query()->with(['make', 'model', 'media'])->where('status', 'published')->latest()->take(6)->get();
+        $vehicles = Vehicle::query()
+            ->with(['make', 'model', 'media'])
+            ->where(function ($query): void {
+                $this->scopeVisibleVehicles($query);
+            })
+            ->latest()
+            ->take(6)
+            ->get();
         $comparisonVehicles = $comparison?->vehicles ?? collect();
 
         return [
@@ -110,6 +123,15 @@ class BuyerPortalController extends Controller
             'searchCount' => $savedSearches->count(),
             'conversationCount' => $conversations->count(),
         ];
+    }
+
+    private function scopeVisibleVehicles($query)
+    {
+        return $query
+            ->where('status', 'published')
+            ->where(function ($builder): void {
+                $builder->whereNull('expires_at')->orWhere('expires_at', '>=', now());
+            });
     }
 
     private function comparisonRecommendation(Collection $vehicles): ?array
@@ -132,39 +154,39 @@ class BuyerPortalController extends Controller
             $yearScore = $this->directScore((float) ($vehicle->year ?? $yearMin), $yearMin, $yearMax);
             $mileageValue = $vehicle->mileage !== null ? (float) $vehicle->mileage : $mileageMax;
             $mileageScore = $this->inverseScore($mileageValue, $mileageMin ?: 0, $mileageMax ?: max(1, $mileageValue));
-            $bonusScore = in_array($vehicle->fuel_type, ['Hibrido', 'Electrico', 'PHEV'], true) ? 8 : 0;
+            $bonusScore = in_array($vehicle->fuel_type, ['Híbrido', 'El?ctrico', 'PHEV'], true) ? 8 : 0;
             $leadScore = min(7, (int) $vehicle->lead_count);
             $score = (int) round(($priceScore * 0.38) + ($yearScore * 0.28) + ($mileageScore * 0.24) + $bonusScore + $leadScore);
             $reasons = [];
 
             if ((float) $vehicle->price === $priceMin) {
-                $reasons[] = 'es la opcion mas economica del grupo';
+                $reasons[] = 'es la opción más económica del grupo';
             } elseif ((float) $vehicle->price <= $averagePrice) {
                 $reasons[] = 'se mantiene por debajo del precio promedio del comparador';
             }
 
             if ((int) $vehicle->year === $yearMax) {
-                $reasons[] = 'tiene uno de los anos mas recientes';
+                $reasons[] = 'tiene uno de los años más recientes';
             }
 
             if ($vehicle->mileage !== null) {
                 if ((float) $vehicle->mileage === $mileageMin) {
-                    $reasons[] = 'tiene el kilometraje mas bajo';
+                    $reasons[] = 'tiene el kilometraje más bajo';
                 } elseif ($averageMileage > 0 && (float) $vehicle->mileage <= $averageMileage) {
-                    $reasons[] = 'su kilometraje esta por debajo del promedio';
+                    $reasons[] = 'su kilometraje está por debajo del promedio';
                 }
             }
 
-            if (in_array($vehicle->fuel_type, ['Hibrido', 'Electrico', 'PHEV'], true)) {
-                $reasons[] = 'ofrece una motorizacion mas eficiente';
+            if (in_array($vehicle->fuel_type, ['Híbrido', 'El?ctrico', 'PHEV'], true)) {
+                $reasons[] = 'ofrece una motorización más eficiente';
             }
 
             if ($vehicle->lead_count >= 3) {
-                $reasons[] = 'ya despierta interes real entre otros compradores';
+                $reasons[] = 'ya despierta interés real entre otros compradores';
             }
 
             if ($reasons === []) {
-                $reasons[] = 'mantiene un balance sano entre precio, ano y kilometraje';
+                $reasons[] = 'mantiene un balance sano entre precio, año y kilometraje';
             }
 
             return [
@@ -210,13 +232,13 @@ class BuyerPortalController extends Controller
         }
 
         if ((int) $vehicle->year === $yearMax) {
-            return 'Destaca por ano';
+            return 'Dest?ca por año';
         }
 
         if ($vehicle->mileage !== null && (float) $vehicle->mileage === $mileageMin) {
             return 'Destaca por kilometraje';
         }
 
-        return 'La opcion mas equilibrada';
+        return 'La opción más equilibrada';
     }
 }

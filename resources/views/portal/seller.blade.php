@@ -2,8 +2,8 @@
 
 @section('title', 'Seller Portal | 360Cars')
 @section('portal-eyebrow', 'Seller portal')
-@section('portal-title', 'Controla publicaciones, media, leads y plan activo.')
-@section('portal-copy', 'Backoffice pensado para publicar rapido, seguir leads, renovar anuncios gratis y convertir mejor con paquetes pagos.')
+@section('portal-title', 'Controla publicaciones, media, contactos y plan activo.')
+@section('portal-copy', 'Panel pensado para publicar rápido, seguir contactos, renovar anuncios gratis y convertir mejor con paquetes pagos.')
 
 @section('header-actions')
     <a href="#listing-form" class="button button--solid">Nueva publicacion</a>
@@ -17,17 +17,17 @@
         <a href="#inventory">Publicaciones</a>
         <a href="#visibility">Visibilidad</a>
         <a href="#media">Media</a>
-        <a href="#leads">Leads</a>
+        <a href="#contactos">Contactos</a>
         <a href="#billing">Plan y pagos</a>
-        <a href="#faq-seller">FAQ</a>
+        <a href="#faq-vendedor">Ayuda</a>
     </nav>
     <div class="portal-note">
-        <p class="muted-label">Backoffice seller</p>
+        <p class="muted-label">Panel vendedor</p>
         <p>Preparado para auth web, reglas comerciales por paquete y media async real.</p>
     </div>
     <div class="portal-note">
         <p class="muted-label">Capacidad actual</p>
-        <p>{{ $currentPlan->name }} · {{ $currentPlan->photo_limit ?? 'Sin limite' }} fotos · {{ $capabilities['remaining_active_listings'] ?? 'Ilimitadas' }} publicaciones restantes.</p>
+        <p>{{ $currentPlan->name }} · {{ $currentPlan->photo_limit ?? 'Sin limite' }} fotos · {{ $capabilities['remaining_active_listings'] ?? 'Ilimitadas' }} publicaciones rest?ntes.</p>
     </div>
 </section>
 @endsection
@@ -35,14 +35,14 @@
 @section('content')
 <section class="dashboard-grid" id="overview">
     <article class="metric-card reveal"><span>Publicaciones activas</span><strong>{{ $activeListingsCount }}</strong><p>{{ $publishedCount }} publicadas y {{ $pausedCount }} en pausa.</p></article>
-    <article class="metric-card reveal reveal--delay"><span>Leads acumulados</span><strong>{{ $leadCount }}</strong><p>Contabilizados desde tus anuncios reales.</p></article>
-    <article class="metric-card reveal reveal--delay-2"><span>Renovables gratis</span><strong>{{ $freeRenewableCount }}</strong><p>Anuncios basicos vencidos que puedes volver a posicionar por 30 dias.</p></article>
+    <article class="metric-card reveal reveal--delay"><span>Contactos acumulados</span><strong>{{ $leadCount }}</strong><p>Contabilizados desde tus anuncios reales.</p></article>
+    <article class="metric-card reveal reveal--delay-2"><span>Renovables gratis</span><strong>{{ $freeRenewableCount }}</strong><p>Anuncios b?sicos vencidos que puedes volver a posicionar por 30 dias.</p></article>
 </section>
 
 <section class="dashboard-panel dashboard-panel--hero reveal">
     <div class="panel-heading">
         <div>
-            <p class="eyebrow">Control rapido</p>
+            <p class="eyebrow">Control rápido</p>
             <h2>Todo lo importante del dia en un solo lugar.</h2>
         </div>
         <span class="pill">{{ $currentPlan->name }}</span>
@@ -55,8 +55,8 @@
         </article>
         <article class="control-card">
             <span class="muted-label">Visibilidad</span>
-            <strong>{{ $currentPlan->price > 0 ? 'Pago con prioridad' : 'Gratis estandar' }}</strong>
-            <p>{{ $currentPlan->price > 0 ? 'Tus anuncios ganan prioridad y pueden entrar en destacados del home si el plan lo permite.' : 'Tus anuncios salen en posicion estandar y a los 30 dias puedes renovarlos para reposicionarlos.' }}</p>
+            <strong>{{ $currentPlan->price > 0 ? 'Pago con prioridad' : 'Gratis est?ndar' }}</strong>
+            <p>{{ $currentPlan->price > 0 ? 'Tus anuncios ganan prioridad y pueden entrar en dest?cados del home si el plan lo permite.' : 'Tus anuncios salen en posicion est?ndar y a los 30 dias puedes renovarlos para reposicionarlos.' }}</p>
         </article>
         <article class="control-card">
             <span class="muted-label">Borradores</span>
@@ -68,7 +68,7 @@
 
 @if ($freeRenewableCount > 0)
 <section class="dashboard-panel reveal">
-    <div class="panel-heading"><div><p class="eyebrow">Renovacion gratis</p><h2>Tienes anuncios basicos listos para volver a posicionarse.</h2></div><span class="pill pill--soft">30 dias mas</span></div>
+    <div class="panel-heading"><div><p class="eyebrow">Renovacion gratis</p><h2>Tienes anuncios b?sicos listos para volver a posicionarse.</h2></div><span class="pill pill--soft">30 dias m?s</span></div>
     <div class="list-stack">
         @foreach ($expiredListings->filter(fn ($vehicle) => $vehicle->publication_tier === 'basic')->take(3) as $vehicle)
             <div class="list-row">
@@ -105,7 +105,7 @@
                 <label class="form-field form-field--wide"><span>Features separadas por coma</span><input type="text" name="features_list" value="{{ old('features_list') }}" placeholder="camara, carplay, cuero" /></label>
                 <label class="form-field form-field--wide"><span>Categorias lifestyle</span><select name="lifestyle_category_ids[]" multiple size="4">@foreach($categories as $category)<option value="{{ $category->id }}">{{ $category->name }}</option>@endforeach</select></label>
                 <label class="form-field form-field--wide"><span>Descripcion</span><textarea rows="5" name="description" required>{{ old('description') }}</textarea></label>
-                <label class="form-field form-field--wide"><span>Imagenes</span><input type="file" name="images[]" multiple accept="image/*" /></label>
+                <label class="form-field form-field--wide"><span>Im?genes</span><input type="file" name="images[]" multiple accept="image/*" /></label>
             </div>
             <div class="form-actions">
                 <label class="inline-check"><input type="checkbox" name="supports_360" value="1" /> <span>Soporta 360</span></label>
@@ -123,11 +123,11 @@
             <div><strong>Publicaciones activas</strong><p>{{ $currentPlan->max_active_listings ?? 'Ilimitadas' }}</p></div>
             <div><strong>Video</strong><p>{{ $currentPlan->allows_video ? 'Si' : 'No' }}</p></div>
             <div><strong>360</strong><p>{{ $currentPlan->allows_360 ? 'Si' : 'No' }}</p></div>
-            <div><strong>Exposicion</strong><p>{{ $currentPlan->price > 0 ? 'Prioridad superior y opcion de destacados pagos.' : 'Posicion estandar con renovacion manual cada 30 dias.' }}</p></div>
+            <div><strong>Exposicion</strong><p>{{ $currentPlan->price > 0 ? 'Prioridad superior y opcion de dest?cados pagos.' : 'Posicion est?ndar con renovacion manual cada 30 dias.' }}</p></div>
         </div>
         <div class="support-band">
-            <span class="muted-label">Suscripcion</span>
-            <p>{{ $subscription?->status ?? 'Sin suscripcion' }} · {{ optional($subscription?->ends_at)->format('d/m/Y') ?? 'Sin vencimiento' }}</p>
+            <span class="muted-label">Suscripci?n</span>
+            <p>{{ $subscription?->status ?? 'Sin suscripci?n' }} · {{ optional($subscription?->ends_at)->format('d/m/Y') ?? 'Sin vencimiento' }}</p>
         </div>
     </article>
 </section>
@@ -136,7 +136,7 @@
     <div class="panel-heading"><div><p class="eyebrow">Inventario</p><h2>CRUD real de publicaciones</h2></div></div>
     <div class="table-shell">
         <table class="portal-table">
-            <thead><tr><th>Vehiculo</th><th>Estado</th><th>Precio</th><th>Media</th><th>Leads</th><th>Acciones</th></tr></thead>
+            <thead><tr><th>Veh?culo</th><th>Estado</th><th>Precio</th><th>Media</th><th>Contactos</th><th>Acciones</th></tr></thead>
             <tbody>
                 @forelse ($vehicles as $vehicle)
                     <tr>
@@ -165,7 +165,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6">Aun no tienes publicaciones registradas.</td></tr>
+                    <tr><td colspan="6">Aún no tienes publicaciones registradas.</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -174,9 +174,9 @@
 
 <section class="panel-grid panel-grid--wide" id="media">
     <article class="dashboard-panel reveal">
-        <div class="panel-heading"><div><p class="eyebrow">Media pipeline</p><h2>Estado de imagenes</h2></div></div>
+        <div class="panel-heading"><div><p class="eyebrow">Gesti?n de im?genes</p><h2>Estado de im?genes</h2></div></div>
         <div class="progress-stack progress-stack--four">
-            <div><span>Vehiculos</span><strong>{{ $vehicles->count() }}</strong></div>
+            <div><span>Veh?culos</span><strong>{{ $vehicles->count() }}</strong></div>
             <div><span>Publicadas</span><strong>{{ $publishedCount }}</strong></div>
             <div><span>En cola</span><strong>{{ $processingCount }}</strong></div>
             <div><span>Fotos totales</span><strong>{{ $vehicles->flatMap->media->count() }}</strong></div>
@@ -199,18 +199,18 @@
     </article>
 </section>
 
-<section class="dashboard-panel reveal" id="leads">
-    <div class="panel-heading"><div><p class="eyebrow">Conversion</p><h2>Leads por anuncio</h2></div></div>
-    <div class="kanban-grid">@forelse ($vehicles->sortByDesc('lead_count')->take(3) as $vehicle)<article class="kanban-card"><span class="muted-label">{{ ucfirst($vehicle->status) }}</span><strong>{{ $vehicle->title }}</strong><p>{{ $vehicle->lead_count }} leads acumulados.</p></article>@empty<article class="kanban-card"><strong>Sin leads todavia</strong><p>Publica tu primer anuncio para empezar a mover conversion.</p></article>@endforelse</div>
+<section class="dashboard-panel reveal" id="contactos">
+    <div class="panel-heading"><div><p class="eyebrow">Conversion</p><h2>Contactos por anuncio</h2></div></div>
+    <div class="kanban-grid">@forelse ($vehicles->sortByDesc('lead_count')->take(3) as $vehicle)<article class="kanban-card"><span class="muted-label">{{ ucfirst($vehicle->status) }}</span><strong>{{ $vehicle->title }}</strong><p>{{ $vehicle->lead_count }} contactos acumulados.</p></article>@empty<article class="kanban-card"><strong>Sin contactos todavía</strong><p>Publica tu primer anuncio para empezar a mover conversión.</p></article>@endforelse</div>
 </section>
 
 <section class="dashboard-panel reveal" id="billing">
-    <div class="panel-heading"><div><p class="eyebrow">Billing center</p><h2>Planes, checkout y transacciones</h2></div></div>
+    <div class="panel-heading"><div><p class="eyebrow">Pagos center</p><h2>Planes, checkout y transacciones</h2></div></div>
     <div class="billing-summary">
         <article><span>Plan actual</span><strong>{{ $currentPlan->name }}</strong></article>
         <article><span>Estado</span><strong>{{ $subscription?->status ?? 'N/A' }}</strong></article>
         <article><span>Vence</span><strong>{{ optional($subscription?->ends_at)->format('d/m/Y') ?? 'N/A' }}</strong></article>
-        <article><span>Ultimos pagos</span><strong>{{ $transactions->where('status', 'paid')->count() }}</strong></article>
+        <article><span>Últimos pagos</span><strong>{{ $transactions->where('status', 'paid')->count() }}</strong></article>
     </div>
     <div class="panel-grid panel-grid--wide panel-grid--billing">
         <article class="dashboard-panel dashboard-panel--nested">
@@ -248,7 +248,7 @@
                                 <td>{{ $transaction->payment_method }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="5">Todavia no hay transacciones registradas.</td></tr>
+                            <tr><td colspan="5">Todav?a no hay transacciones registradas.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -257,11 +257,11 @@
     </div>
 </section>
 
-<section class="dashboard-panel reveal" id="faq-seller">
-    <div class="panel-heading"><div><p class="eyebrow">Ayuda interna</p><h2>FAQ operativo del seller</h2></div></div>
+<section class="dashboard-panel reveal" id="faq-vendedor">
+    <div class="panel-heading"><div><p class="eyebrow">Ayuda interna</p><h2>Ayuda operativo del vendedor</h2></div></div>
     <div class="accordion-stack">
-        <article class="accordion" data-accordion><button type="button" class="accordion__trigger" aria-expanded="false" data-accordion-trigger><span>Que pasa con el plan gratis a los 30 dias?</span><span class="accordion__icon">+</span></button><div class="accordion__panel" hidden data-accordion-panel><p>Tu anuncio basico mantiene visibilidad estandar por 30 dias. Cuando vence puedes renovarlo desde este panel para volver a posicionarlo gratis por otros 30 dias.</p></div></article>
-        <article class="accordion" data-accordion><button type="button" class="accordion__trigger" aria-expanded="false" data-accordion-trigger><span>Como entro a destacados del home?</span><span class="accordion__icon">+</span></button><div class="accordion__panel" hidden data-accordion-panel><p>Los anuncios de cuentas pagas con prioridad comercial alimentan la seccion de destacados del home y obtienen mejor exposicion general.</p></div></article>
+        <article class="accordion" data-accordion><button type="button" class="accordion__trigger" aria-expanded="false" data-accordion-trigger><span>Que pasa con el plan gratis a los 30 dias?</span><span class="accordion__icon">+</span></button><div class="accordion__panel" hidden data-accordion-panel><p>Tu anuncio b?sico mantiene visibilidad est?ndar por 30 dias. Cuando vence puedes renovarlo desde este panel para volver a posicionarlo gratis por otros 30 dias.</p></div></article>
+        <article class="accordion" data-accordion><button type="button" class="accordion__trigger" aria-expanded="false" data-accordion-trigger><span>Como entro a dest?cados del home?</span><span class="accordion__icon">+</span></button><div class="accordion__panel" hidden data-accordion-panel><p>Los anuncios de cuentas pagas con prioridad comercial alimentan la seccion de dest?cados del home y obtienen mejor exposicion general.</p></div></article>
     </div>
 </section>
 @endsection

@@ -3,7 +3,7 @@
 @section('title', 'Buyer Portal | 360Cars')
 @section('portal-eyebrow', 'Buyer portal')
 @section('portal-title', 'Tu centro de seguimiento para oportunidades reales.')
-@section('portal-copy', 'Favoritos, comparador, busquedas guardadas y conversaciones ya sobre la misma base publica del marketplace.')
+@section('portal-copy', 'Favoritos, comparador, búsquedas guardadas y conversaciones ya sobre la misma base publica del marketplace.')
 
 @section('header-actions')
     <a href="{{ route('catalog.index') }}" class="button button--solid">Explorar inventario</a>
@@ -14,7 +14,7 @@
         <a href="#overview" class="is-active">Resumen</a>
         <a href="#favorites">Favoritos</a>
         <a href="#compare">Comparador</a>
-        <a href="#saved-searches">Busquedas</a>
+        <a href="#saved-searches">B?squedas</a>
         <a href="#messages">Mensajes</a>
     </nav>
 @endsection
@@ -23,7 +23,7 @@
 <section class="dashboard-grid" id="overview">
     <article class="metric-card reveal"><span>Guardados</span><strong>{{ $savedCount }}</strong><p>Autos que ya marcaste para volver a revisar.</p></article>
     <article class="metric-card reveal reveal--delay"><span>Nuevas coincidencias</span><strong>{{ $matchCount }}</strong><p>Inventario publicado listo para explorar.</p></article>
-    <article class="metric-card reveal reveal--delay-2"><span>Comparaciones</span><strong>{{ $compareCount }}</strong><p>Vehiculos listos para analizar lado a lado.</p></article>
+    <article class="metric-card reveal reveal--delay-2"><span>Comparaciones</span><strong>{{ $compareCount }}</strong><p>Vehículos listos para analizar lado a lado.</p></article>
 </section>
 
 <section class="dashboard-panel reveal" id="favorites">
@@ -39,13 +39,13 @@
                 @endif
             </article>
         @empty
-            <article class="quick-card"><strong>Aun no tienes favoritos.</strong><p>Guarda autos desde el catalogo publico y apareceran aqui.</p></article>
+            <article class="quick-card"><strong>Aún no tienes favoritos.</strong><p>Guarda autos desde el catálogo público y aparecerán aquí.</p></article>
         @endforelse
     </div>
 </section>
 
 <section class="dashboard-panel reveal" id="compare">
-    <div class="panel-heading"><div><p class="eyebrow">Comparador</p><h2>Vehiculos en comparacion</h2></div></div>
+    <div class="panel-heading"><div><p class="eyebrow">Comparador</p><h2>Vehículos en comparacion</h2></div></div>
     <div class="kanban-grid">
         @forelse ($comparisonVehicles as $vehicle)
             <article class="kanban-card">
@@ -55,13 +55,13 @@
                 <a href="{{ route('catalog.show', $vehicle->slug) }}" class="button button--ghost">Ver ficha</a>
             </article>
         @empty
-            <article class="quick-card"><strong>Comparador vacio.</strong><p>Agrega hasta 4 vehiculos desde el inventario para verlos aqui.</p></article>
+            <article class="quick-card"><strong>Comparador vacio.</strong><p>Agrega hasta 4 vehículos desde el inventario para verlos aquí.</p></article>
         @endforelse
     </div>
 </section>
 
 <section class="dashboard-panel reveal" id="saved-searches">
-    <div class="panel-heading"><div><p class="eyebrow">Busquedas guardadas</p><h2>Alertas configuradas</h2></div></div>
+    <div class="panel-heading"><div><p class="eyebrow">B?squedas guardadas</p><h2>Alertas configuradas</h2></div></div>
     <div class="kanban-grid">
         @forelse ($savedSearches as $search)
             <article class="kanban-card">
@@ -75,7 +75,7 @@
                 </form>
             </article>
         @empty
-            <article class="quick-card"><strong>Sin alertas activas.</strong><p>Desde el catalogo podras guardar filtros para volver rapido.</p></article>
+            <article class="quick-card"><strong>Sin alertas activas.</strong><p>Desde el catálogo podr?s guardar filtros para volver rápido.</p></article>
         @endforelse
     </div>
 </section>
@@ -87,10 +87,10 @@
             <article class="kanban-card">
                 <span class="muted-label">{{ optional($conversation->last_message_at)->diffForHumans() ?? 'Sin actividad' }}</span>
                 <strong>{{ $conversation->subject ?: 'Consulta comercial' }}</strong>
-                <p>{{ $conversation->vehicle?->title ?: 'Conversacion general' }}</p>
+                <p>{{ $conversation->vehicle?->title ?: 'Conversaci?n general' }}</p>
             </article>
         @empty
-            <article class="quick-card"><strong>Sin mensajes todavia.</strong><p>Cuando escribas desde el detalle del vehiculo, la conversacion aparecera aqui.</p></article>
+            <article class="quick-card"><strong>Sin mensajes todavía.</strong><p>Cuando escribas desde el detalle del vehículo, la conversación aparecera aquí.</p></article>
         @endforelse
     </div>
 </section>

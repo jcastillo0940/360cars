@@ -25,20 +25,18 @@ class HomeController extends Controller
         $exchangeQuote = $this->exchangeRateService->latest();
 
         if (Schema::hasTable('vehicles')) {
-            $publishedVehicles = Vehicle::query()
-                ->with(['make', 'model', 'media'])
-                ->where('status', 'published')
-                ->where(function ($query): void {
-                    $query->whereNull('expires_at')->orWhere('expires_at', '>=', now());
-                })
-                ->latest('published_at')
-                ->latest()
-                ->take(18)
+            $publishedVehicles = $this->publishedVehiclesQuery()
+                ->take(24)
                 ->get();
         }
 
-        $featuredPaid = $publishedVehicles
-            ->filter(fn (Vehicle $vehicle) => (bool) data_get($vehicle->metadata, 'plan_is_paid', false))
+        $recentVehicles = $publishedVehicles
+            ->sortByDesc(fn (Vehicle $vehicle) => optional($vehicle->published_at)?->timestamp ?? 0)
+            ->take(6)
+            ->values()
+            ->map(fn (Vehicle $vehicle) => $this->mapVehicle($vehicle, $exchangeQuote));
+
+        $featuredVehicles = $publishedVehicles
             ->sortByDesc(fn (Vehicle $vehicle) => [
                 (int) $vehicle->is_featured,
                 (int) data_get($vehicle->metadata, 'plan_priority_weight', 0),
@@ -48,10 +46,14 @@ class HomeController extends Controller
             ->values()
             ->map(fn (Vehicle $vehicle) => $this->mapVehicle($vehicle, $exchangeQuote));
 
-        $recentVehicles = $publishedVehicles
+        $offerVehicles = $publishedVehicles
+            ->filter(fn (Vehicle $vehicle) => $vehicle->original_price && (float) $vehicle->original_price > (float) $vehicle->price)
+            ->sortByDesc(fn (Vehicle $vehicle) => ((float) $vehicle->original_price - (float) $vehicle->price))
             ->take(4)
             ->values()
-            ->map(fn (Vehicle $vehicle) => $this->mapVehicle($vehicle, $exchangeQuote));
+            ->map(fn (Vehicle $vehicle) => $this->mapVehicle($vehicle, $exchangeQuote) + [
+                'original_price' => VehiclePricePresenter::present((float) $vehicle->original_price, $vehicle->currency, $exchangeQuote)['primary_formatted'],
+            ]);
 
         $catalogMakes = collect();
 
@@ -74,23 +76,84 @@ class HomeController extends Controller
                 ->values();
         }
 
-        $cities = $publishedVehicles
-            ->pluck('city')
-            ->filter()
-            ->unique()
-            ->sort()
-            ->values();
+        $catalogProvinces = config('vehicle.provinces', []);
 
         $priceCeiling = (int) max(20000000, (int) ceil(((float) $publishedVehicles->max('price') ?: 20000000) / 500000) * 500000);
+        $yearFloor = 1950;
+        $yearCeiling = (int) max(now()->year + 1, (int) ($publishedVehicles->max('year') ?: now()->year + 1));
 
         return view('home', [
-            'featuredPaidVehicles' => $featuredPaid,
             'recentVehicles' => $recentVehicles,
+            'featuredVehicles' => $featuredVehicles,
+            'offerVehicles' => $offerVehicles,
             'catalogMakes' => $catalogMakes,
-            'catalogCities' => $cities,
+            'catalogProvinces' => $catalogProvinces,
             'catalogPriceCeiling' => $priceCeiling,
+            'catalogYearRange' => [
+                'min' => $yearFloor,
+                'max' => $yearCeiling,
+            ],
             'publicTheme' => (string) $this->valuationSettings->get('frontend.public_theme', 'light'),
         ]);
+    }
+
+    public function brands()
+    {
+        $makes = VehicleMake::query()
+            ->active()
+            ->withCount(['models' => fn ($query) => $query->active()])
+            ->orderBy('name')
+            ->get()
+            ->map(fn (VehicleMake $make) => [
+                'id' => $make->id,
+                'name' => $make->name,
+                'slug' => $make->slug,
+                'models_count' => (int) $make->models_count,
+            ])
+            ->values();
+
+        return view('brands.index', [
+            'props' => [
+                'homeUrl' => route('home'),
+                'catalogUrl' => route('catalog.index'),
+                'brandsUrl' => route('brands.index'),
+                'valuationUrl' => route('valuation.index'),
+                'sellUrl' => auth()->check() && auth()->user()->hasRole('seller', 'dealer', 'admin') ? route('seller.dashboard') : route('seller.onboarding.create'),
+                'accountUrl' => auth()->check()
+                    ? (auth()->user()->hasRole('admin')
+                        ? route('admin.dashboard')
+                        : (auth()->user()->hasRole('seller', 'dealer') ? route('seller.dashboard') : route('buyer.dashboard')))
+                    : route('login'),
+                'loginUrl' => route('login'),
+                'authUser' => auth()->check() ? [
+                    'authenticated' => true,
+                    'firstName' => trim(strtok((string) auth()->user()->name, ' ')) ?: 'Cuenta',
+                    'dashboardUrl' => auth()->user()->hasRole('admin')
+                        ? route('admin.dashboard')
+                        : (auth()->user()->hasRole('seller', 'dealer') ? route('seller.dashboard') : route('buyer.dashboard')),
+                    'buyerUrl' => route('buyer.dashboard'),
+                ] : ['authenticated' => false],
+                'publicTheme' => (string) $this->valuationSettings->get('frontend.public_theme', 'light'),
+                'makes' => $makes,
+                'footerLinks' => [
+                    'termsUrl' => route('legal.terms'),
+                    'privacyUrl' => route('legal.privacy'),
+                    'cookiesUrl' => route('legal.cookies'),
+                ],
+            ],
+        ]);
+    }
+
+    private function publishedVehiclesQuery()
+    {
+        return Vehicle::query()
+            ->with(['make', 'model', 'media'])
+            ->where('status', 'published')
+            ->where(function ($query): void {
+                $query->whereNull('expires_at')->orWhere('expires_at', '>=', now());
+            })
+            ->latest('published_at')
+            ->latest();
     }
 
     private function mapVehicle(Vehicle $vehicle, array $exchangeQuote): array
@@ -111,16 +174,15 @@ class HomeController extends Controller
             'price' => $pricing['primary_formatted'],
             'price_secondary' => $pricing['secondary_formatted'],
             'price_raw' => $pricing['primary_raw'],
-            'meta' => collect([$vehicle->fuel_type, $vehicle->body_type, $vehicle->transmission])->filter()->implode(' | '),
             'image' => $image,
             'url' => route('catalog.show', $vehicle->slug),
             'city' => $vehicle->city,
-            'published_label' => optional($vehicle->published_at)->diffForHumans() ?? 'Recien publicado',
-            'visibility_bucket' => data_get($vehicle->metadata, 'visibility_bucket', 'standard'),
-            'plan_name' => data_get($vehicle->metadata, 'plan_name', 'Basico'),
-            'is_paid' => (bool) data_get($vehicle->metadata, 'plan_is_paid', false),
+            'province' => $vehicle->province ?: $vehicle->state,
+            'published_label' => optional($vehicle->published_at)->diffForHumans() ?? 'Recién publicado',
+            'make' => $vehicle->make?->name,
+            'model' => $vehicle->model?->name,
+            'year' => $vehicle->year,
             'is_featured' => (bool) $vehicle->is_featured,
         ];
     }
 }
-

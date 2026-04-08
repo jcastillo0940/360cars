@@ -7,6 +7,7 @@ use App\Http\Requests\Vehicle\UploadVehicleMediaRequest;
 use App\Http\Requests\Vehicle\UpsertVehicleRequest;
 use App\Models\LifestyleCategory;
 use App\Models\Plan;
+use App\Models\Province;
 use App\Models\Subscription;
 use App\Models\Transaction;
 use App\Models\Vehicle;
@@ -156,6 +157,10 @@ class SellerPortalController extends Controller
                 $this->syncLifestyleCategories($vehicle, $request->input('lifestyle_category_ids', []));
             }
 
+            if (($targetStatus ?? $vehicle->status) === 'sold') {
+                $vehicle->favorites()->delete();
+            }
+
             $this->lifecycleService->applyPlanBenefits($user, $vehicle, $targetStatus);
             $queuedMediaIds = $this->queueMediaFromRequest($request, $vehicle, true);
         });
@@ -204,6 +209,13 @@ class SellerPortalController extends Controller
 
         DB::transaction(function () use ($vehicle): void {
             $this->imageProcessor->deleteAllForVehicle($vehicle);
+            $vehicle->favorites()->delete();
+            $vehicle->comparisons()->detach();
+            $vehicle->conversations()->each(function (Conversation $conversation): void {
+                $conversation->messages()->delete();
+                $conversation->participants()->detach();
+                $conversation->delete();
+            });
             $vehicle->delete();
         });
 
@@ -355,6 +367,23 @@ class SellerPortalController extends Controller
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
+        $googleMapsKey = (string) $this->settingsService->get('integrations.google_maps.key', config('services.google_maps.key'));
+        $locationTree = Province::query()
+            ->with([
+                'cantons' => fn ($query) => $query->orderBy('name'),
+                'cantons.districts' => fn ($query) => $query->orderBy('name'),
+            ])
+            ->orderBy('name')
+            ->get()
+            ->map(fn (Province $province) => [
+                'name' => $province->name,
+                'cantons' => $province->cantons->map(fn ($canton) => [
+                    'name' => $canton->name,
+                    'districts' => $canton->districts->pluck('name')->values()->all(),
+                ])->values()->all(),
+            ])
+            ->values()
+            ->all();
 
         $photoSlots = config('vehicle.photo_slots', []);
         $existingMediaBySlot = collect();
@@ -376,6 +405,9 @@ class SellerPortalController extends Controller
             'featureOptions' => $featureOptions,
             'photoSlots' => $photoSlots,
             'existingMediaBySlot' => $existingMediaBySlot,
+            'locationTree' => $locationTree,
+            'googleMapsKey' => $googleMapsKey,
+            'googleMapsEnabled' => filled($googleMapsKey),
             'editingVehiclePrice' => $vehicle ? \App\Support\VehiclePricePresenter::present((float) $vehicle->price, $vehicle->currency, $base['exchangeQuote']) : null,
         ];
     }
@@ -507,7 +539,7 @@ class SellerPortalController extends Controller
             return;
         }
 
-        abort(403, 'No puedes gestionar esta publicacion.');
+        abort(403, 'No puedes gestionar est? publicacion.');
     }
 
     private function assertImageLimit($user, ?Vehicle $vehicle, int $newImagesCount): void
@@ -579,6 +611,7 @@ class SellerPortalController extends Controller
         return $this->settingsService->get('billing.payment_methods', $defaults);
     }
 }
+
 
 
 

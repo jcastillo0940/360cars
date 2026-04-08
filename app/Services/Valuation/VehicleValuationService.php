@@ -268,9 +268,9 @@ class VehicleValuationService
 
         $insights[] = $count > 0
             ? 'Tomamos '.$count.' comparables locales y los ponderamos por similitud real con tu auto; la coincidencia promedio del set es de '.$avgFit.'%.'
-            : 'No encontramos suficientes comparables exactos y reforzamos la evaluacion con una linea base por carroceria y depreciacion local.';
-        $insights[] = 'La depreciacion considera anio, kilometraje, configuracion mecanica y senales de demanda observadas en Costa Rica.';
-        $insights[] = 'La recomendacion final combina referencia de mercado y modelo interno con una confianza de '.round($confidence).'%. A mayor dispersion del mercado, mas amplio se vuelve el rango.';
+            : 'No encontramos suficientes comparables exactos y reforzamos la evaluaci?n con una linea base por carroceria y depreciación local.';
+        $insights[] = 'La depreciación considera año, kilometraje, configuración mecanica y señales de demanda observadas en Costa Rica.';
+        $insights[] = 'La recomendacion final combina referencia de mercado y modelo interno con una confianza de '.round($confidence).'%. A mayor dispersion del mercado, m?s amplio se vuelve el rango.';
 
         if (($input['city'] ?? null) && data_get(config('valuation.city_multipliers'), $input['city'])) {
             $insights[] = 'La ubicacion en '.$input['city'].' introduce un ajuste fino de demanda dentro del rango sugerido.';
@@ -281,14 +281,14 @@ class VehicleValuationService
             $direction = $difference >= 0 ? 'por encima' : 'por debajo';
             $insights[] = 'El valor sugerido queda '.abs(round(($difference / max(1, $market['weighted_average'])) * 100)).'% '.$direction.' del promedio ponderado del mercado.';
         } else {
-            $insights[] = 'La base interna actual para '.($input['body_type'] ?? 'esta carroceria').' se uso como soporte principal del rango mostrado.';
+            $insights[] = 'La base interna actual para '.($input['body_type'] ?? 'est? carroceria').' se uso como soporte principal del rango mostrado.';
         }
 
         if (filled($input['price_reference'] ?? null)) {
             $delta = ((float) $input['price_reference']) - $suggested;
             if (abs($delta) >= 100000) {
                 $direction = $delta > 0 ? 'por encima' : 'por debajo';
-                $insights[] = 'Tu expectativa inicial esta '.abs(round(($delta / max(1, $suggested)) * 100)).'% '.$direction.' del valor sugerido por el tasador.';
+                $insights[] = 'Tu expectativa inicial est? '.abs(round(($delta / max(1, $suggested)) * 100)).'% '.$direction.' del valor sugerido por el tasador.';
             }
         }
 

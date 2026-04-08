@@ -1,4 +1,4 @@
-@extends('layouts.auth')
+﻿@extends('layouts.auth')
 
 @section('title', 'Ingresar | Movikaa')
 
@@ -23,7 +23,7 @@
             <div>
                 <p class="text-xs font-extrabold uppercase tracking-[0.24em] text-secondary">Movikaa</p>
                 <h1 class="mt-3 font-headline text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Inicia sesión</h1>
-                <p class="mt-3 text-sm leading-7 text-slate-300 sm:text-base">Ingresa con tu correo y tu contraseña para continuar.</p>
+                <p class="mt-3 text-sm leading-7 text-slate-300 sm:text-base">Ingresa con tu correo y tu contraseña para contin?ar.</p>
             </div>
 
             <form method="POST" action="{{ route('login.store') }}" class="mt-8 grid gap-5">
@@ -34,33 +34,29 @@
 
                 <label class="grid gap-2">
                     <span class="text-sm font-semibold text-slate-200">Correo electrónico</span>
-                    <input
-                        type="email"
-                        name="email"
-                        value="{{ old('email') }}"
-                        required
-                        autocomplete="email"
-                        class="min-h-14 rounded-2xl border border-white/10 bg-[#12131a] px-4 text-white shadow-sm outline-none transition placeholder:text-slate-500 focus:border-primary focus:ring-4 focus:ring-primary/15"
-                        placeholder="tu@correo.com"
-                    />
+                    <input type="email" name="email" value="{{ old('email') }}" required autocomplete="email" class="min-h-14 rounded-2xl border border-white/10 bg-[#12131a] px-4 text-white shadow-sm outline-none transition placeholder:text-slate-500 focus:border-primary focus:ring-4 focus:ring-primary/15" placeholder="tu@correo.com" />
                 </label>
 
                 <label class="grid gap-2">
-                    <span class="text-sm font-semibold text-slate-200">Contraseña</span>
-                    <input
-                        type="password"
-                        name="password"
-                        required
-                        autocomplete="current-password"
-                        class="min-h-14 rounded-2xl border border-white/10 bg-[#12131a] px-4 text-white shadow-sm outline-none transition placeholder:text-slate-500 focus:border-primary focus:ring-4 focus:ring-primary/15"
-                        placeholder="Ingresa tu contraseña"
-                    />
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="text-sm font-semibold text-slate-200">Contraseña</span>
+                        <a href="{{ route('password.request') }}" class="text-sm font-semibold text-primary transition hover:text-white">¿La olvidaste?</a>
+                    </div>
+                    <input type="password" name="password" required autocomplete="current-password" class="min-h-14 rounded-2xl border border-white/10 bg-[#12131a] px-4 text-white shadow-sm outline-none transition placeholder:text-slate-500 focus:border-primary focus:ring-4 focus:ring-primary/15" placeholder="Ingresa tu contraseña" />
                 </label>
 
                 <button type="submit" class="mt-2 inline-flex min-h-14 items-center justify-center rounded-2xl bg-secondary px-6 font-headline text-base font-extrabold text-white shadow-lg transition hover:bg-secondary-container">
                     Ingresar
                 </button>
             </form>
+
+            <div class="mt-6 grid gap-3 rounded-2xl border border-white/10 bg-[#12131a] p-4 sm:grid-cols-2">
+                <div>
+                    <p class="text-sm font-bold text-white">¿Aún no tienes cuenta?</p>
+                    <p class="mt-1 text-sm text-slate-400">Crea tu acceso y entra al flujo correcto según tu perfil.</p>
+                </div>
+                <a href="{{ route('register') }}" class="inline-flex min-h-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-5 text-sm font-bold text-white transition hover:border-primary hover:bg-white/10">Crear cuenta</a>
+            </div>
         </div>
     </div>
 </section>

@@ -1,19 +1,19 @@
 ﻿@extends('layouts.portal')
 
-@section('title', 'Planes seller | Movikaa')
-@section('portal-eyebrow', 'Planes seller')
+@section('title', 'Planes vendedor | Movikaa')
+@section('portal-eyebrow', 'Planes vendedor')
 @section('portal-title', 'Visibilidad y pagos de tus anuncios')
 @section('portal-copy', 'Elige un plan, revisa cuando vence tu ciclo actual y activa o programa el siguiente sin duplicar suscripciones activas.')
 
 @section('sidebar')
 <nav class="portal-nav">
-    <a href="{{ route('seller.dashboard') }}">Overview</a>
+    <a href="{{ route('seller.dashboard') }}">Resumen</a>
     <a href="{{ route('seller.listings') }}">Publicaciones</a>
     <a href="{{ route('seller.onboarding.create') }}">Nuevo anuncio</a>
     <a href="{{ route('seller.media') }}">Media</a>
     <a href="{{ route('seller.messages') }}">Mensajes</a>
     <a href="{{ route('seller.billing') }}" class="is-active">Planes y pagos</a>
-    <a href="{{ route('buyer.dashboard') }}">Actividad buyer</a>
+    <a href="{{ route('buyer.dashboard') }}">Actividad comprador</a>
 </nav>
 @endsection
 
@@ -29,7 +29,7 @@
                     hasta {{ $subscription->ends_at->format('d/m/Y') }}
                 @endif
             @else
-                Sin suscripcion pagada activa. Tu cuenta usa la base del plan Basico.
+                Sin suscripci?n pagada activa. Tu cuenta usa la base del plan B?sico.
             @endif
         </p>
     </article>
@@ -38,7 +38,7 @@
         <strong>{{ $scheduledPlan?->name ?? 'Sin cambio programado' }}</strong>
         <p>
             @if ($scheduledSubscription?->starts_at)
-                Entrara en vigor el {{ $scheduledSubscription->starts_at->format('d/m/Y') }}.
+                Entrar? en vigor el {{ $scheduledSubscription->starts_at->format('d/m/Y') }}.
             @else
                 No tienes otro plan pendiente para el siguiente ciclo.
             @endif
@@ -114,8 +114,8 @@
                         </div>
                         <span class="status-badge">${{ number_format((float) $selectedPlan->price, 0) }}</span>
                     </div>
-                    <div class="seller-insight-grid mt-4">
-                        <div><strong>Duracion</strong><p>{{ $selectedPlan->duration_days ? $selectedPlan->duration_days.' dias' : 'Ciclo abierto' }}</p></div>
+                    <div class="vendedor-insight-grid mt-4">
+                        <div><strong>Duraci?n</strong><p>{{ $selectedPlan->duration_days ? $selectedPlan->duration_days.' d?as' : 'Ciclo abierto' }}</p></div>
                         <div><strong>Fotos</strong><p>{{ $selectedPlan->photo_limit ?? 'Ilimitadas' }}</p></div>
                         <div><strong>Publicaciones</strong><p>{{ $selectedPlan->max_active_listings ?? 'Ilimitadas' }}</p></div>
                         <div><strong>Beneficios</strong><p>{{ $selectedPlan->allows_video ? 'Video' : 'Sin video' }} {{ $selectedPlan->allows_360 ? '+ 360' : '' }}</p></div>
@@ -127,9 +127,9 @@
                     @if ($selectedIsCurrent)
                         <p class="empty-copy">Ya tienes este plan activo. No necesitas volver a pagarlo ni activarlo.</p>
                     @elseif ($selectedIsScheduled)
-                        <p class="empty-copy">Este plan ya esta programado para entrar en vigor al finalizar tu ciclo actual.</p>
+                        <p class="empty-copy">Este plan ya est? programado para entrar en vigor al finalizar tu ciclo actual.</p>
                     @elseif ($selectedStartsLater)
-                        <p class="empty-copy">Si lo eliges ahora, quedara programado para iniciar al finalizar tu plan actual el {{ $subscription->ends_at->format('d/m/Y') }}. Nunca tendras dos planes activos al mismo tiempo.</p>
+                        <p class="empty-copy">Si lo eliges ahora, quedara programado para iniciar al finalizar tu plan actual el {{ $subscription->ends_at->format('d/m/Y') }}. Nunca tendr?s dos planes activos al mismo tiempo.</p>
                     @else
                         <p class="empty-copy">Se activara de inmediato y empezara a contar desde hoy.</p>
                     @endif
@@ -205,7 +205,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6">Todavia no hay transacciones registradas.</td></tr>
+                <tr><td colspan="6">Todav?a no hay transacciones registradas.</td></tr>
             @endforelse
             </tbody>
         </table>

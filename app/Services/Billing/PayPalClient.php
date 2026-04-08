@@ -45,7 +45,7 @@ class PayPalClient
         $clientSecret = (string) config('paypal.client_secret');
 
         if ($clientId === '' || $clientSecret === '') {
-            throw new RuntimeException('PayPal no esta configurado. Debes definir PAYPAL_CLIENT_ID y PAYPAL_CLIENT_SECRET.');
+            throw new RuntimeException('PayPal no est? configurado. Debes definir PAYPAL_CLIENT_ID y PAYPAL_CLIENT_SECRET.');
         }
 
         $response = $this->request()

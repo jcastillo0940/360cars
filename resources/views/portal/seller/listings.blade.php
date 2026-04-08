@@ -1,8 +1,8 @@
 ﻿@extends('layouts.portal')
 
-@section('title', 'Publicaciones seller | Movikaa')
-@section('portal-eyebrow', 'Seller listings')
-@section('portal-title', 'Gestion de publicaciones')
+@section('title', 'Publicaciones vendedor | Movikaa')
+@section('portal-eyebrow', 'Publicaciones')
+@section('portal-title', 'Gesti?n de publicaciones')
 @section('portal-copy', 'Filtra, pagina, prioriza y edita tu inventario desde una vista operativa pensada para trabajar con muchos anuncios sin perder tiempo.')
 
 @section('header-actions')
@@ -11,12 +11,12 @@
 
 @section('sidebar')
 <nav class="portal-nav">
-    <a href="{{ route('seller.dashboard') }}">Overview</a>
+    <a href="{{ route('seller.dashboard') }}">Resumen</a>
     <a href="{{ route('seller.listings') }}" class="is-active">Publicaciones</a>
     <a href="{{ route('seller.onboarding.create') }}">Nuevo anuncio</a>
     <a href="{{ route('seller.media') }}">Media</a>
-    <a href="{{ route('seller.billing') }}">Billing</a>
-    <a href="{{ route('buyer.dashboard') }}">Actividad buyer</a>
+    <a href="{{ route('seller.billing') }}">Pagos</a>
+    <a href="{{ route('buyer.dashboard') }}">Actividad comprador</a>
 </nav>
 @endsection
 
@@ -30,17 +30,17 @@
     <article class="seller-kpi-card">
         <span class="seller-kpi-card__label">Borradores</span>
         <strong>{{ $listingSummary['draft'] }}</strong>
-        <p>Anuncios que todavia puedes pulir antes de exponerlos.</p>
+        <p>Anuncios que todavía puedes pulir antes de exponerlos.</p>
     </article>
     <article class="seller-kpi-card">
-        <span class="seller-kpi-card__label">Leads recibidos</span>
-        <strong>{{ number_format($listingSummary['leads']) }}</strong>
+        <span class="seller-kpi-card__label">Contactos recibidos</span>
+        <strong>{{ number_format($listingSummary['contactos']) }}</strong>
         <p>Contactos acumulados desde todas tus publicaciones.</p>
     </article>
     <article class="seller-kpi-card">
         <span class="seller-kpi-card__label">Vistas acumuladas</span>
         <strong>{{ number_format($listingSummary['views']) }}</strong>
-        <p>Senal de exposicion para medir el rendimiento del inventario.</p>
+        <p>Se?al de exposici?n para medir el rendimiento del inventario.</p>
     </article>
 </section>
 
@@ -48,7 +48,7 @@
     <div class="panel-heading">
         <div>
             <p class="portal-kicker">Filtros avanzados</p>
-            <h2>Encuentra rapido el anuncio que quieres trabajar</h2>
+            <h2>Encuentra rápido el anuncio que quieres trabajar</h2>
         </div>
         <span class="status-badge">{{ $sellerListings->total() }} resultados</span>
     </div>
@@ -57,7 +57,7 @@
         <div class="seller-filter-grid">
             <label class="form-field">
                 <span>Buscar</span>
-                <input type="text" name="q" value="{{ $sellerFilters['q'] }}" placeholder="Titulo, ciudad o placa" />
+                <input type="text" name="q" value="{{ $sellerFilters['q'] }}" placeholder="T?tulo, ciudad o placa" />
             </label>
             <label class="form-field">
                 <span>Estado</span>
@@ -73,8 +73,8 @@
                 <span>Plan</span>
                 <select name="tier">
                     <option value="">Todos</option>
-                    <option value="basic" @selected($sellerFilters['tier'] === 'basic')>Basic</option>
-                    <option value="estandar" @selected($sellerFilters['tier'] === 'estandar')>Estandar</option>
+                    <option value="basic" @selected($sellerFilters['tier'] === 'basic')>B?sico</option>
+                    <option value="standard" @selected($sellerFilters['tier'] === 'standard')>Est?ndar</option>
                     <option value="premium" @selected($sellerFilters['tier'] === 'premium')>Premium</option>
                     <option value="agencia" @selected($sellerFilters['tier'] === 'agencia')>Agencia</option>
                     <option value="agencia-pro" @selected($sellerFilters['tier'] === 'agencia-pro')>Agencia Pro</option>
@@ -104,13 +104,13 @@
             <label class="form-field">
                 <span>Ordenar por</span>
                 <select name="sort">
-                    <option value="latest" @selected($sellerFilters['sort'] === 'latest')>Mas recientes</option>
+                    <option value="latest" @selected($sellerFilters['sort'] === 'latest')>M?s recientes</option>
                     <option value="price_desc" @selected($sellerFilters['sort'] === 'price_desc')>Precio mayor</option>
                     <option value="price_asc" @selected($sellerFilters['sort'] === 'price_asc')>Precio menor</option>
-                    <option value="year_desc" @selected($sellerFilters['sort'] === 'year_desc')>Año mas nuevo</option>
-                    <option value="year_asc" @selected($sellerFilters['sort'] === 'year_asc')>Año mas antiguo</option>
-                    <option value="leads_desc" @selected($sellerFilters['sort'] === 'leads_desc')>Mas leads</option>
-                    <option value="views_desc" @selected($sellerFilters['sort'] === 'views_desc')>Mas vistas</option>
+                    <option value="year_desc" @selected($sellerFilters['sort'] === 'year_desc')>Año m?s nuevo</option>
+                    <option value="year_asc" @selected($sellerFilters['sort'] === 'year_asc')>Año m?s antiguo</option>
+                    <option value="contactos_desc" @selected($sellerFilters['sort'] === 'contactos_desc')>M?s contactos</option>
+                    <option value="views_desc" @selected($sellerFilters['sort'] === 'views_desc')>M?s vistas</option>
                 </select>
             </label>
         </div>
@@ -142,7 +142,7 @@
         <table class="portal-table">
             <thead>
                 <tr>
-                    <th>Vehiculo</th>
+                    <th>Veh?culo</th>
                     <th>Estado</th>
                     <th>Precio</th>
                     <th>Rendimiento</th>
@@ -168,7 +168,7 @@
                     </td>
                     <td>
                         <span class="status-badge {{ $vehicle->status === 'published' ? 'status-badge--success' : 'status-badge--warn' }}">{{ ucfirst($vehicle->status) }}</span>
-                        <span>{{ $vehicle->city ?: 'Ubicacion pendiente' }}</span>
+                        <span>{{ $vehicle->city ?: 'Ubicaci?n pendiente' }}</span>
                     </td>
                     <td>
                         @php($price = \App\Support\VehiclePricePresenter::present((float) $vehicle->price, $vehicle->currency, $exchangeQuote))
@@ -176,7 +176,7 @@
                         <span>{{ $price['secondary_formatted'] }}</span>
                     </td>
                     <td>
-                        <strong>{{ number_format($vehicle->lead_count) }} leads</strong>
+                        <strong>{{ number_format($vehicle->lead_count) }} contactos</strong>
                         <span>{{ number_format($vehicle->view_count ?? 0) }} vistas</span>
                     </td>
                     <td>
@@ -195,12 +195,12 @@
                                 <form method="POST" action="{{ route('seller.vehicles.refresh-basic', $vehicle) }}">@csrf @method('PATCH')<button type="submit" class="text-link">Renovar gratis</button></form>
                             @endif
                             <a href="{{ route('catalog.show', $vehicle->slug) }}" class="text-link">Ver anuncio</a>
-                            <form method="POST" action="{{ route('seller.vehicles.destroy', $vehicle) }}" onsubmit="return confirm('Eliminar publicacion?');">@csrf @method('DELETE')<button type="submit" class="text-link">Eliminar</button></form>
+                            <form method="POST" action="{{ route('seller.vehicles.destroy', $vehicle) }}" onsubmit="return confirm('?Eliminar publicaci?n?');">@csrf @method('DELETE')<button type="submit" class="text-link">Eliminar</button></form>
                         </div>
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6">Aun no tienes publicaciones registradas.</td></tr>
+                <tr><td colspan="6">Aún no tienes publicaciones registradas.</td></tr>
             @endforelse
             </tbody>
         </table>

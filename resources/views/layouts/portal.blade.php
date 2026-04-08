@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', '360Cars Portal')</title>
-    <meta name="description" content="Backoffice buyer, seller y admin para 360Cars.">
+    <title>@yield('title', 'Movikaa | Panel')</title>
+    <meta name="description" content="Panel de gesti?n de Movikaa para compradores, vendedores y administraci?n.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@
                     <span class="portal-brand__mark">M</span>
                     <span>
                         <strong>Movikaa</strong>
-                        <small>Backoffice</small>
+                        <small>Panel de gesti?n</small>
                     </span>
                 </a>
                 <button class="portal-sidebar__toggle" type="button" data-sidebar-toggle aria-expanded="false" aria-controls="portal-nav">
@@ -28,7 +28,7 @@
             </div>
 
             <div class="portal-user-card">
-                <span class="portal-kicker">Sesion activa</span>
+                <span class="portal-kicker">Sesi?n activa</span>
                 <strong>{{ auth()->user()?->name }}</strong>
                 <p>{{ auth()->user()?->email }}</p>
             </div>
@@ -41,16 +41,16 @@
         <div class="portal-main">
             <header class="portal-header">
                 <div>
-                    <p class="portal-kicker">@yield('portal-eyebrow', 'Portal')</p>
-                    <h1>@yield('portal-title', 'Dashboard')</h1>
-                    <p class="portal-header__copy">@yield('portal-copy', 'Operacion diaria del marketplace conectada al backend real.')</p>
+                    <p class="portal-kicker">@yield('portal-eyebrow', 'Panel')</p>
+                    <h1>@yield('portal-title', 'Gestiona tu cuenta')</h1>
+                    <p class="portal-header__copy">@yield('portal-copy', 'Todo lo que necesitas para administrar tu actividad en Movikaa desde un solo lugar.')</p>
                 </div>
                 <div class="portal-header__actions">
                     @yield('header-actions')
-                    <a href="{{ route('home') }}" class="button button--ghost">Ir al marketplace</a>
+                    <a href="{{ route('home') }}" class="button button--ghost">Ir al sitio</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="button button--ghost">Cerrar sesion</button>
+                        <button type="submit" class="button button--ghost">Cerrar sesi?n</button>
                     </form>
                 </div>
             </header>
@@ -77,4 +77,3 @@
     </div>
 </body>
 </html>
-

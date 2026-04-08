@@ -88,7 +88,7 @@ class PublicationLifecycleService
     {
         return match ($planSlug) {
             'basico' => 'standard',
-            'estandar' => 'priority',
+            'est?ndar' => 'priority',
             'premium' => 'featured',
             'agencia' => 'dealer-boost',
             'agencia-pro' => 'maximum',

@@ -85,7 +85,7 @@ class PayPalCheckoutService
             ->firstOrFail();
 
         if ($transaction->user_id !== $user->id && ! $user->hasRole('admin')) {
-            abort(403, 'No puedes capturar esta orden de PayPal.');
+            abort(403, 'No puedes capturar est? orden de PayPal.');
         }
 
         if ($transaction->status === 'paid' && $transaction->payable_type && $transaction->payable_id) {
@@ -111,7 +111,7 @@ class PayPalCheckoutService
             ])->save();
 
             throw ValidationException::withMessages([
-                'paypal_order_id' => ['PayPal no devolvio una captura completada para esta orden.'],
+                'paypal_order_id' => ['PayPal no devolvio una captura completada para est? orden.'],
             ]);
         }
 

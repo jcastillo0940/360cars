@@ -41,8 +41,8 @@ class VehicleMediaController extends Controller
         $media = $vehicle->media()->orderBy('sort_order')->get();
         $requestedIds = $request->input('media_ids', []);
 
-        abort_unless(count($requestedIds) === $media->count(), 422, 'Debes enviar todos los ids de la galeria.');
-        abort_unless($media->pluck('id')->sort()->values()->all() === collect($requestedIds)->sort()->values()->all(), 422, 'La galeria enviada no coincide con la publicacion.');
+        abort_unless(count($requestedIds) === $media->count(), 422, 'Debes enviar todos los ids de la galer?a.');
+        abort_unless($media->pluck('id')->sort()->values()->all() === collect($requestedIds)->sort()->values()->all(), 422, 'La galer?a enviada no coincide con la publicacion.');
 
         foreach ($requestedIds as $index => $mediaId) {
             $vehicle->media()->whereKey($mediaId)->update(['sort_order' => $index + 1]);
@@ -81,7 +81,7 @@ class VehicleMediaController extends Controller
         if ($user->hasRole('admin') || $vehicle->user_id === $user->id) {
             return;
         }
-        abort(403, 'No puedes gestionar esta publicacion.');
+        abort(403, 'No puedes gestionar est? publicacion.');
     }
 
     private function ensureVehicleOwnsMedia(Vehicle $vehicle, VehicleMedia $media): void

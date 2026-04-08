@@ -61,7 +61,7 @@ class VehicleValuationController extends Controller
         $this->valuationSettings->put('valuation.ai_enabled', $enabled, 'boolean');
 
         return redirect()->to(route('admin.dashboard').'#valuation-ai')->with('status', $enabled
-            ? 'Narrativa IA activada para nuevas evaluaciones.'
+            ? 'Narrativa IA activada para nuevas evaluaci?nes.'
             : 'Narrativa IA desactivada. El tasador seguira funcionando con el algoritmo interno.');
     }
 

@@ -1,18 +1,18 @@
 ﻿@extends('layouts.portal')
 
-@section('title', 'Mensajes buyer | Movikaa')
+@section('title', 'Mensajes comprador | Movikaa')
 @section('portal-eyebrow', 'Buyer mensajes')
 @section('portal-title', 'Conversaciones con vendedores')
-@section('portal-copy', 'Bandeja dedicada para seguimiento comercial. Aqui solo contactas y das continuidad al interes.')
+@section('portal-copy', 'Bandeja dedicada para seguimiento comercial. Aquí solo contactas y das continuidad al interes.')
 
 @section('sidebar')
 <nav class="portal-nav">
-    <a href="{{ route('buyer.dashboard') }}">Overview</a>
+    <a href="{{ route('buyer.dashboard') }}">Resumen</a>
     <a href="{{ route('buyer.favorites.index') }}">Favoritos</a>
     <a href="{{ route('buyer.comparisons.index') }}">Comparador</a>
-    <a href="{{ route('buyer.searches.index') }}">Busquedas</a>
+    <a href="{{ route('buyer.searches.index') }}">B?squedas</a>
     <a href="{{ route('buyer.messages.index') }}" class="is-active">Mensajes</a>
-    <a href="{{ route('seller.dashboard') }}">Actividad seller</a>
+    <a href="{{ route('seller.dashboard') }}">Actividad vendedor</a>
 </nav>
 @endsection
 
@@ -22,10 +22,10 @@
     <div class="catalog-stack">
         @forelse ($conversationList as $conversation)
             <article class="catalog-block">
-                <div class="catalog-block__header"><div><strong>{{ $conversation->subject ?: 'Consulta comercial' }}</strong><p>{{ $conversation->vehicle?->title ?: 'Conversacion general' }}</p></div><span class="status-badge">{{ optional($conversation->last_message_at)->diffForHumans() ?? 'Sin actividad' }}</span></div>
+                <div class="catalog-block__header"><div><strong>{{ $conversation->subject ?: 'Consulta comercial' }}</strong><p>{{ $conversation->vehicle?->title ?: 'Conversaci?n general' }}</p></div><span class="status-badge">{{ optional($conversation->last_message_at)->diffForHumans() ?? 'Sin actividad' }}</span></div>
             </article>
         @empty
-            <div class="empty-state"><strong>Sin mensajes todavia.</strong><p>Cuando escribas desde el detalle del vehiculo, la conversacion aparecera aqui.</p></div>
+            <div class="empty-state"><strong>Sin mensajes todavía.</strong><p>Cuando escribas desde el detalle del vehículo, la conversación aparecera aquí.</p></div>
         @endforelse
     </div>
     <div class="pagination-shell">{{ $conversationList->links() }}</div>

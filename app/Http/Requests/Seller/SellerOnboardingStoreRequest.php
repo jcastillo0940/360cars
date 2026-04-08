@@ -58,7 +58,6 @@ class SellerOnboardingStoreRequest extends FormRequest
             'vehicle_make_id' => ['required', 'integer', 'exists:vehicle_makes,id'],
             'vehicle_model_id' => ['required', 'integer', 'exists:vehicle_models,id'],
             'year' => ['required', 'integer', 'min:1950', 'max:2100'],
-            'trim' => ['nullable', 'string', 'max:100'],
             'condition' => ['required', 'in:new,used'],
             'body_type' => ['required', 'string', 'in:'.implode(',', config('vehicle.body_types', []))],
             'fuel_type' => ['required', 'string', 'in:'.implode(',', config('vehicle.fuel_types', []))],
@@ -66,11 +65,9 @@ class SellerOnboardingStoreRequest extends FormRequest
             'drivetrain' => ['nullable', 'string', 'in:'.implode(',', config('vehicle.drivetrains', []))],
             'mileage' => ['nullable', 'integer', 'min:0'],
             'engine' => ['nullable', 'string', 'max:100'],
-            'engine_size' => ['nullable', 'numeric', 'min:0', 'max:10'],
             'exterior_color' => ['nullable', 'string', 'max:60'],
             'interior_color' => ['nullable', 'string', 'max:60'],
             'doors' => ['nullable', 'integer', 'min:1', 'max:8'],
-            'seats' => ['nullable', 'integer', 'min:1', 'max:20'],
             'price' => ['required', 'numeric', 'min:0'],
             'currency' => ['nullable', 'string', 'in:CRC'],
             'province' => ['nullable', 'string', 'max:120'],
@@ -180,11 +177,11 @@ class SellerOnboardingStoreRequest extends FormRequest
 
             if (! $hasGoogleMaps) {
                 if (! $this->filled('city')) {
-                    $validator->errors()->add('city', 'Debes indicar el distrito manualmente si Google Maps no esta configurado.');
+                    $validator->errors()->add('city', 'Debes indicar el distrito manualmente si Google Maps no est? configurado.');
                 }
 
                 if (! $this->filled('state')) {
-                    $validator->errors()->add('state', 'Debes indicar la provincia manualmente si Google Maps no esta configurado.');
+                    $validator->errors()->add('state', 'Debes indicar la provincia manualmente si Google Maps no est? configurado.');
                 }
             }
 
@@ -196,7 +193,7 @@ class SellerOnboardingStoreRequest extends FormRequest
 
                 foreach ((array) $this->input('features', []) as $feature) {
                     if (! in_array($feature, $validFeatureSlugs, true)) {
-                        $validator->errors()->add('features', 'Uno de los extras seleccionados ya no esta disponible.');
+                        $validator->errors()->add('features', 'Uno de los extras seleccionados ya no est? disponible.');
                         break;
                     }
                 }

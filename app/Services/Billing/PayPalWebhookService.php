@@ -19,7 +19,7 @@ class PayPalWebhookService
 
         if ($webhookId === '') {
             throw ValidationException::withMessages([
-                'webhook' => ['PAYPAL_WEBHOOK_ID no esta configurado.'],
+                'webhook' => ['PAYPAL_WEBHOOK_ID no est? configurado.'],
             ]);
         }
 

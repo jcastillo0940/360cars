@@ -1,16 +1,16 @@
 ﻿@extends('layouts.portal')
 
-@section('title', 'Comparador buyer | Movikaa')
+@section('title', 'Comparador comprador | Movikaa')
 @section('portal-eyebrow', 'Buyer comparador')
-@section('portal-title', 'Vehiculos en comparacion')
-@section('portal-copy', 'Revisa hasta 4 opciones lado a lado y recibe una lectura simple de cual se ve mas fuerte dentro de tu shortlist.')
+@section('portal-title', 'Vehículos en comparacion')
+@section('portal-copy', 'Revisa hasta 4 opciones lado a lado y recibe una lectura simple de cual se ve m?s fuerte dentro de tu shortlist.')
 
 @section('sidebar')
 <nav class="portal-nav">
-    <a href="{{ route('buyer.dashboard') }}">Overview</a>
+    <a href="{{ route('buyer.dashboard') }}">Resumen</a>
     <a href="{{ route('buyer.favorites.index') }}">Favoritos</a>
     <a href="{{ route('buyer.comparisons.index') }}" class="is-active">Comparador</a>
-    <a href="{{ route('buyer.searches.index') }}">Busquedas</a>
+    <a href="{{ route('buyer.searches.index') }}">B?squedas</a>
     <a href="{{ route('buyer.messages.index') }}">Mensajes</a>
     <a href="{{ route('catalog.index') }}">Volver al inventario</a>
 </nav>
@@ -21,12 +21,12 @@
     <article class="metric-card">
         <span>En comparador</span>
         <strong>{{ $comparisonVehicles->count() }}</strong>
-        <p>Hasta 4 vehiculos al mismo tiempo.</p>
+        <p>Hasta 4 vehículos al mismo tiempo.</p>
     </article>
     <article class="metric-card">
         <span>Mas nuevo</span>
         <strong>{{ $comparisonVehicles->max('year') ?: 'N/D' }}</strong>
-        <p>Referencia rapida de ano.</p>
+        <p>Referencia rápida de año.</p>
     </article>
     <article class="metric-card">
         <span>Rango de precio</span>
@@ -37,7 +37,7 @@
                 N/D
             @endif
         </strong>
-        <p>Te ayuda a ubicar las opciones rapido.</p>
+        <p>Te ayuda a ubicar las opciones rápido.</p>
     </article>
 </section>
 
@@ -71,7 +71,7 @@
         <div class="panel-heading">
             <div>
                 <p class="portal-kicker">Lectura del comparador</p>
-                <h2>Ranking rapido</h2>
+                <h2>Ranking rápido</h2>
             </div>
         </div>
         <div class="catalog-stack">
@@ -96,9 +96,9 @@
     <div class="panel-heading">
         <div>
             <p class="portal-kicker">Comparador</p>
-            <h2>Vista rapida de decision</h2>
+            <h2>Vista rápida de decisión</h2>
         </div>
-        <a href="{{ route('catalog.index') }}" class="button button--solid">Explorar mas autos</a>
+        <a href="{{ route('catalog.index') }}" class="button button--solid">Explorar m?s autos</a>
     </div>
 
     @if ($comparisonVehicles->isNotEmpty())
@@ -106,7 +106,7 @@
             <table class="portal-table comparison-table">
                 <thead>
                     <tr>
-                        <th>Vehiculo</th>
+                        <th>Veh?culo</th>
                         <th>Precio</th>
                         <th>Ano</th>
                         <th>Combustible</th>
@@ -150,8 +150,8 @@
         </div>
     @else
         <div class="empty-state">
-            <strong>Tu comparador esta vacio.</strong>
-            <p>Agrega hasta 4 vehiculos desde el inventario para revisarlos aqui lado a lado.</p>
+            <strong>Tu comparador est? vacio.</strong>
+            <p>Agrega hasta 4 vehículos desde el inventario para revisarlos aquí lado a lado.</p>
             <a href="{{ route('catalog.index') }}" class="button button--solid">Ir al inventario</a>
         </div>
     @endif

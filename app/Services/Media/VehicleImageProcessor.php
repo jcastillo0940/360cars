@@ -26,6 +26,25 @@ class VehicleImageProcessor
 
     public function dispatchMany(array $mediaIds): void
     {
+        if (app()->isLocal()) {
+            foreach ($mediaIds as $mediaId) {
+                $media = VehicleMedia::query()->find($mediaId);
+
+                if (! $media || $media->processing_status === 'complete') {
+                    continue;
+                }
+
+                try {
+                    $this->processPending($media);
+                } catch (\Throwable $exception) {
+                    $this->markFailed($media, $exception->getMessage());
+                    throw $exception;
+                }
+            }
+
+            return;
+        }
+
         foreach ($mediaIds as $mediaId) {
             ProcessVehicleImageUpload::dispatch($mediaId)
                 ->onConnection(config('media.queue_connection'))

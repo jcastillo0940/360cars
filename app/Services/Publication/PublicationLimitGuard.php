@@ -28,6 +28,10 @@ class PublicationLimitGuard
             'remaining_active_listings' => $plan->max_active_listings === null
                 ? null
                 : max($plan->max_active_listings - $activeListings, 0),
+            'max_active_listings' => $plan->max_active_listings,
+            'max_photos' => $plan->photo_limit,
+            'can_upload_video' => (bool) $plan->allows_video,
+            'can_use_360' => (bool) $plan->allows_360,
         ];
     }
 
@@ -35,7 +39,7 @@ class PublicationLimitGuard
     {
         if (! in_array($publicationTier, $this->resolver->allowedPublicationTiersFor($user), true)) {
             throw ValidationException::withMessages([
-                'publication_tier' => ['Tu plan actual no permite este nivel de publicacion.'],
+                'publication_tier' => ['Tu plan actual no permite este nivel de publicación.'],
             ]);
         }
     }
@@ -56,7 +60,7 @@ class PublicationLimitGuard
 
         if ($activeListings >= $plan->max_active_listings) {
             throw ValidationException::withMessages([
-                'status' => ['Ya alcanzaste el limite de publicaciones activas de tu plan.'],
+                'status' => ['Ya alcanzaste el límite de publicaciones activas de tu plan.'],
             ]);
         }
     }
@@ -67,7 +71,7 @@ class PublicationLimitGuard
 
         if ($plan->photo_limit !== null && $totalImages > $plan->photo_limit) {
             throw ValidationException::withMessages([
-                'images' => ["Tu plan permite un maximo de {$plan->photo_limit} fotos por publicacion."],
+                'images' => ["Tu plan permite un máximo de {$plan->photo_limit} fotos por publicación."],
             ]);
         }
     }
@@ -77,4 +81,3 @@ class PublicationLimitGuard
         return $this->resolver->resolveFor($user);
     }
 }
-

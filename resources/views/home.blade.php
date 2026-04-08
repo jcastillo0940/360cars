@@ -1,6 +1,6 @@
 @extends('layouts.marketing')
 
-@section('title', 'Movikaa | Encuentre su proximo auto en Costa Rica')
+@section('title', 'Movikaa | Encuentra tu próximo auto en Costa Rica')
 
 @section('head')
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
@@ -12,6 +12,7 @@
 @php
     $catalogUrl = route('catalog.index');
     $valuationUrl = route('valuation.index');
+    $brandsUrl = route('brands.index');
     $sellUrl = auth()->check() && auth()->user()->hasRole('seller', 'dealer', 'admin') ? route('seller.dashboard') : route('seller.onboarding.create');
     $accountUrl = auth()->check()
         ? (auth()->user()->hasRole('admin')
@@ -30,7 +31,7 @@
 
     $homeProps = [
         'homeUrl' => route('home'),
-        'buyUrl' => $catalogUrl,
+        'brandsUrl' => $brandsUrl,
         'catalogUrl' => $catalogUrl,
         'valuationUrl' => $valuationUrl,
         'sellUrl' => $sellUrl,
@@ -38,11 +39,13 @@
         'loginUrl' => route('login'),
         'authUser' => $authUser,
         'publicTheme' => $publicTheme ?? 'light',
-        'featuredPaidVehicles' => $featuredPaidVehicles,
+        'featuredVehicles' => $featuredVehicles,
         'recentVehicles' => $recentVehicles,
+        'offerVehicles' => $offerVehicles,
         'catalogMakes' => $catalogMakes,
-        'catalogCities' => $catalogCities,
+        'catalogProvinces' => $catalogProvinces,
         'catalogPriceCeiling' => $catalogPriceCeiling,
+        'catalogYearRange' => $catalogYearRange,
         'footerLinks' => [
             'termsUrl' => route('legal.terms'),
             'privacyUrl' => route('legal.privacy'),
