@@ -79,6 +79,7 @@ Route::middleware('auth')->group(function (): void {
         Route::patch('/seller/vehicles/{vehicle}/refresh-basic', [SellerPortalController::class, 'refreshBasic'])->name('seller.vehicles.refresh-basic');
         Route::delete('/seller/vehicles/{vehicle}', [SellerPortalController::class, 'destroy'])->name('seller.vehicles.destroy');
         Route::post('/seller/vehicles/{vehicle}/media', [SellerPortalController::class, 'uploadMedia'])->name('seller.vehicles.media.store');
+        Route::post('/seller/vehicles/{vehicle}/media/{media}/replace', [SellerPortalController::class, 'replaceMedia'])->name('seller.vehicles.media.replace');
         Route::patch('/seller/vehicles/{vehicle}/media/{media}/primary', [SellerPortalController::class, 'makePrimary'])->name('seller.vehicles.media.primary');
         Route::delete('/seller/vehicles/{vehicle}/media/{media}', [SellerPortalController::class, 'destroyMedia'])->name('seller.vehicles.media.destroy');
 

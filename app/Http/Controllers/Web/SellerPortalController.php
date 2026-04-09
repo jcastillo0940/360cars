@@ -251,6 +251,36 @@ class SellerPortalController extends Controller
         return back()->with('status', 'Imagen eliminada correctamente.');
     }
 
+    public function replaceMedia(Request $request, Vehicle $vehicle, VehicleMedia $media): RedirectResponse
+    {
+        $this->authorizeVehicleAccess($request, $vehicle);
+        abort_unless($media->vehicle_id === $vehicle->id, 404);
+
+        $validated = $request->validate([
+            'image' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+        ]);
+
+        $file = $validated['image'];
+        $wasPrimary = (bool) $media->is_primary;
+        $altText = $media->alt_text;
+        $sortOrder = $media->sort_order;
+
+        $replacement = $this->imageProcessor->stage($vehicle, $file, $wasPrimary);
+        $replacement->forceFill([
+            'alt_text' => $altText,
+            'sort_order' => $sortOrder,
+        ])->save();
+
+        if ($wasPrimary) {
+            $media->forceFill(['is_primary' => false])->save();
+        }
+
+        $this->imageProcessor->delete($media);
+        $this->imageProcessor->dispatchMany([$replacement->id]);
+
+        return back()->with('status', 'Fotografía reemplazada correctamente.');
+    }
+
     private function overviewData(Request $request): array
     {
         $base = $this->baseData($request);
@@ -416,9 +446,18 @@ class SellerPortalController extends Controller
     private function mediaData(Request $request): array
     {
         $base = $this->baseData($request);
+        $vehicles = $base['vehicles']->values();
+        $selectedVehicleId = $request->integer('vehicle') ?: null;
+        $selectedVehicle = $vehicles->firstWhere('id', $selectedVehicleId);
+
+        if (! $selectedVehicle) {
+            $selectedVehicle = $vehicles->first();
+        }
 
         return $base + [
-            'vehiclesWithMedia' => $base['vehicles']->filter(fn (Vehicle $vehicle) => $vehicle->media->isNotEmpty())->values(),
+            'vehiclesWithMedia' => $vehicles->filter(fn (Vehicle $vehicle) => $vehicle->media->isNotEmpty())->values(),
+            'mediaVehicles' => $vehicles,
+            'selectedMediaVehicle' => $selectedVehicle,
             'photoSlots' => config('vehicle.photo_slots', []),
         ];
     }

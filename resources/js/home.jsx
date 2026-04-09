@@ -144,19 +144,19 @@ function HomePage({
                 <section className="relative isolate flex min-h-[90vh] flex-col items-center justify-center overflow-hidden border-b border-outline-variant/5 bg-[#05070b] py-20 text-white">
                     <div className="absolute inset-0 z-0">
                         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-[#05070b]" />
-                        <img 
-                            src="/luxury_car_showroom_dark_1775669453755.png" 
-                            className="h-full w-full object-cover" 
-                            alt="Background" 
+                        <img
+                            src="/luxury_car_showroom_dark_1775669453755.png"
+                            className="h-full w-full object-cover"
+                            alt="Background"
                         />
                     </div>
 
                     <div className="relative z-10 mx-auto w-full max-w-screen-2xl px-4 text-center sm:px-6 lg:px-8">
                         <h1 className="mx-auto max-w-4xl font-headline text-5xl font-extrabold tracking-tight text-white sm:text-7xl lg:text-8xl">
-                            Encuentre su auto ideal en Costa Rica
+                            Compra y vende autos de forma inteligente
                         </h1>
                         <p className="mx-auto mt-6 max-w-2xl text-lg font-medium text-white/80 sm:text-xl">
-                            La plataforma mas completa para comprar y vender vehiculos con confianza.
+                            Compara precios, analiza opciones y encuentra el vehículo ideal para vos.
                         </p>
 
                         <div className="mx-auto mt-12 w-full max-w-5xl">
