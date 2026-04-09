@@ -630,6 +630,20 @@
     color-scheme: light;
 }
 
+.catalog-filter-select {
+    color-scheme: light;
+    appearance: auto;
+    -webkit-appearance: menulist;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+}
+
+.catalog-filter-select option,
+.catalog-filter-select optgroup {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+}
+
 .public-hero-select,
 .hero-search-select,
 .public-hero-select option,

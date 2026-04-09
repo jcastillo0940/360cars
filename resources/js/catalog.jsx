@@ -20,7 +20,7 @@ async function mutateVehicle(urlTemplate, vehicleId, method, csrfToken) {
     return payload;
 }
 
-function VehicleCard({ vehicle, isFavorited, isCompared, onFavorite, onCompare }) {
+function VehicleCard({ vehicle, isFavorited, onFavorite }) {
     return (
         <article className="group overflow-hidden rounded-2xl border border-outline-variant/20 bg-white transition-all hover:-translate-y-1 hover:shadow-2xl">
             <a href={vehicle.url} className="block">
@@ -48,9 +48,25 @@ function VehicleCard({ vehicle, isFavorited, isCompared, onFavorite, onCompare }
                 </div>
                 <div className="mt-5 flex items-center justify-between gap-3">
                     <PriceStack primary={vehicle.price} secondary={vehicle.price_secondary} />
-                    <button type="button" onClick={() => onCompare(vehicle.id)} className={`rounded-full border px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] transition-colors ${isCompared ? 'border-secondary bg-secondary text-white' : 'border-secondary/45 bg-secondary/12 text-secondary hover:border-secondary hover:bg-secondary hover:text-white'}`}>
-                        {isCompared ? 'Comparando' : 'Comparar'}
-                    </button>
+                    {vehicle.whatsapp_url ? (
+                        <a
+                            href={vehicle.whatsapp_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-2 rounded-full border border-[#25D366]/30 bg-[#25D366]/12 px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#128C7E] transition-colors hover:border-[#25D366] hover:bg-[#25D366] hover:text-white"
+                        >
+                            <Icon name="chat" className="text-[16px]" />
+                            Contactar
+                        </a>
+                    ) : (
+                        <a
+                            href={vehicle.url}
+                            className="inline-flex items-center gap-2 rounded-full border border-secondary/45 bg-secondary/12 px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-secondary transition-colors hover:border-secondary hover:bg-secondary hover:text-white"
+                        >
+                            <Icon name="visibility" className="text-[16px]" />
+                            Ver auto
+                        </a>
+                    )}
                 </div>
             </div>
         </article>
@@ -274,7 +290,7 @@ function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, logi
 
                                 <label className="block rounded-2xl border border-outline-variant/30 bg-white p-4">
                                     <span className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Marca</span>
-                                    <select value={localFilters.make} onChange={(event) => setFilter('make', event.target.value)} className="w-full border-none bg-transparent p-0 font-semibold text-slate-900 focus:ring-0">
+                                    <select value={localFilters.make} onChange={(event) => setFilter('make', event.target.value)} className="catalog-filter-select w-full border-none bg-white p-0 font-semibold text-slate-900 focus:ring-0">
                                         <option value="">Todas</option>
                                         {filterOptions.makes.map((item) => <option key={item} value={item}>{item}</option>)}
                                     </select>
@@ -282,7 +298,7 @@ function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, logi
 
                                 <label className="block rounded-2xl border border-outline-variant/30 bg-white p-4">
                                     <span className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Modelo</span>
-                                    <select value={localFilters.model} onChange={(event) => setFilter('model', event.target.value)} className="w-full border-none bg-transparent p-0 font-semibold text-slate-900 focus:ring-0">
+                                    <select value={localFilters.model} onChange={(event) => setFilter('model', event.target.value)} className="catalog-filter-select w-full border-none bg-white p-0 font-semibold text-slate-900 focus:ring-0">
                                         <option value="">Todos</option>
                                         {availableModels.map((item) => <option key={item} value={item}>{item}</option>)}
                                     </select>
@@ -290,7 +306,7 @@ function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, logi
 
                                 <label className="block rounded-2xl border border-outline-variant/30 bg-white p-4">
                                     <span className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Provincia</span>
-                                    <select value={localFilters.province} onChange={(event) => setFilter('province', event.target.value)} className="w-full border-none bg-transparent p-0 font-semibold text-slate-900 focus:ring-0">
+                                    <select value={localFilters.province} onChange={(event) => setFilter('province', event.target.value)} className="catalog-filter-select w-full border-none bg-white p-0 font-semibold text-slate-900 focus:ring-0">
                                         <option value="">Todas</option>
                                         {filterOptions.provinces.map((item) => <option key={item} value={item}>{item}</option>)}
                                     </select>
@@ -366,9 +382,7 @@ function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, logi
                                             key={vehicle.id}
                                             vehicle={vehicle}
                                             isFavorited={favoriteIds.includes(vehicle.id)}
-                                            isCompared={comparisonIds.includes(vehicle.id)}
                                             onFavorite={toggleFavorite}
-                                            onCompare={toggleCompare}
                                         />
                                     ))}
                                 </div>
