@@ -786,6 +786,20 @@ const validateStep = (panel) => {
     return true;
 };
 
+const findFirstInvalidStep = (panels) => {
+    for (let index = 0; index < panels.length; index += 1) {
+        const panel = panels[index];
+        const fields = Array.from(panel.querySelectorAll('input, select, textarea')).filter((field) => !field.disabled && field.type !== 'hidden');
+        const invalidField = fields.find((field) => !field.checkValidity());
+
+        if (invalidField) {
+            return { index, field: invalidField };
+        }
+    }
+
+    return null;
+};
+
 const wizard = document.querySelector('[data-wizard]');
 
 if (wizard) {
@@ -801,9 +815,14 @@ if (wizard) {
     const currentStepMeta = document.querySelector('[data-current-step-meta]');
     const sidebarTip = document.querySelector('[data-sidebar-tip]');
     const sidebarLoader = document.querySelector('[data-sidebar-loader]');
+    const currentStepInput = wizard.querySelector('[data-current-step-input]');
     const autosave = createAutosaveManager(wizard, statusNode);
-    let stepIndex = panels.findIndex((panel) => !panel.hidden);
+    let stepIndex = Number(wizard.dataset.initialStep ?? panels.findIndex((panel) => !panel.hidden));
+    if (Number.isNaN(stepIndex)) {
+        stepIndex = panels.findIndex((panel) => !panel.hidden);
+    }
     if (stepIndex < 0) stepIndex = 0;
+    stepIndex = Math.min(stepIndex, panels.length - 1);
     const stepTips = [
         'Usa el nombre comercial correcto de la versi?n y una descripci?n breve pero confiable.',
         'Completa kilometraje, motor, combustible y precio en colones con datos exactos.',
@@ -847,6 +866,7 @@ if (wizard) {
         if (currentStepTitle) currentStepTitle.textContent = currentTitle;
         if (currentStepMeta) currentStepMeta.textContent = `Paso ${stepIndex + 1} de ${totalSteps}`;
         if (sidebarTip) sidebarTip.textContent = stepTips[stepIndex] || stepTips[0];
+        if (currentStepInput) currentStepInput.value = String(stepIndex);
         if (sidebarLoader) {
             sidebarLoader.textContent = stepIndex === 2
                 ? 'En este paso comprimimos fotos antes del envío para que la carga sea más rápida.'
@@ -893,8 +913,16 @@ if (wizard) {
 
     wizard.addEventListener('submit', async (event) => {
         const submitButton = wizard.querySelector('[data-submit-onboarding]');
-        if (!validateStep(panels[stepIndex])) {
+        const invalidStep = findFirstInvalidStep(panels);
+
+        if (invalidStep) {
             event.preventDefault();
+            stepIndex = invalidStep.index;
+            syncWizard();
+            window.setTimeout(() => {
+                invalidStep.field.reportValidity();
+                invalidStep.field.focus();
+            }, 40);
             return;
         }
 

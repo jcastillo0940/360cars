@@ -329,9 +329,11 @@ class PublicCatalogController extends Controller
             });
 
         $pricing = VehiclePricePresenter::present((float) $vehicle->price, $vehicle->currency, $exchangeQuote);
-        $contactPhone = $vehicle->owner?->whatsapp_phone ?: $vehicle->owner?->phone;
-        $whatsAppUrl = $contactPhone
-            ? 'https://wa.me/'.$this->normalizeCostaRicaPhone($contactPhone).'?text='.rawurlencode('Hola, me interesa '.$vehicle->title.' que vi en Movikaa.')
+        $contactPhoneRaw = $vehicle->owner?->whatsapp_phone ?: $vehicle->owner?->phone;
+        $contactPhone = $vehicle->owner?->formatPhone($contactPhoneRaw) ?: $contactPhoneRaw;
+        $whatsAppNumber = $vehicle->owner?->whatsappDestination($contactPhoneRaw) ?: $this->normalizePhoneForCountry($contactPhoneRaw, $vehicle->owner?->country_code);
+        $whatsAppUrl = $whatsAppNumber
+            ? 'https://wa.me/'.$whatsAppNumber.'?text='.rawurlencode('Hola, me interesa '.$vehicle->title.' que vi en Movikaa.')
             : null;
 
         return [
@@ -370,15 +372,28 @@ class PublicCatalogController extends Controller
         ];
     }
 
-    protected function normalizeCostaRicaPhone(?string $phone): string
+    protected function normalizePhoneForCountry(?string $phone, ?string $countryCode = 'CR'): string
     {
         $digits = preg_replace('/\D+/', '', (string) $phone);
+        $codes = [
+            'CR' => '506',
+            'PA' => '507',
+            'NI' => '505',
+            'HN' => '504',
+            'SV' => '503',
+            'GT' => '502',
+            'MX' => '52',
+            'CO' => '57',
+            'US' => '1',
+            'ES' => '34',
+        ];
+        $dial = $codes[strtoupper((string) $countryCode)] ?? '506';
 
-        if (str_starts_with($digits, '506')) {
+        if (str_starts_with($digits, $dial)) {
             return $digits;
         }
 
-        return '506'.$digits;
+        return $dial.$digits;
     }
 }
 

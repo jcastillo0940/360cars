@@ -34,7 +34,7 @@
     </article>
     <article class="seller-kpi-card">
         <span class="seller-kpi-card__label">Contactos recibidos</span>
-        <strong>{{ number_format($listingSummary['contactos']) }}</strong>
+        <strong>{{ number_format($listingSummary['leads'] ?? $listingSummary['contactos'] ?? 0) }}</strong>
         <p>Contactos acumulados desde todas tus publicaciones.</p>
     </article>
     <article class="seller-kpi-card">
@@ -109,7 +109,7 @@
                     <option value="price_asc" @selected($sellerFilters['sort'] === 'price_asc')>Precio menor</option>
                     <option value="year_desc" @selected($sellerFilters['sort'] === 'year_desc')>Año m?s nuevo</option>
                     <option value="year_asc" @selected($sellerFilters['sort'] === 'year_asc')>Año m?s antiguo</option>
-                    <option value="contactos_desc" @selected($sellerFilters['sort'] === 'contactos_desc')>M?s contactos</option>
+                    <option value="leads_desc" @selected($sellerFilters['sort'] === 'leads_desc' || $sellerFilters['sort'] === 'contactos_desc')>Más contactos</option>
                     <option value="views_desc" @selected($sellerFilters['sort'] === 'views_desc')>M?s vistas</option>
                 </select>
             </label>
@@ -209,5 +209,4 @@
     <div class="pagination-shell">{{ $sellerListings->links() }}</div>
 </section>
 @endsection
-
 

@@ -24,6 +24,22 @@
                 : (auth()->user()->hasRole('seller', 'dealer') ? route('seller.dashboard') : route('buyer.dashboard')))
             : route('login');
         $firstName = auth()->check() ? trim(strtok((string) auth()->user()->name, ' ')) : null;
+        $errorKeys = array_keys($errors->getMessages());
+        $initialWizardStep = old('current_step');
+
+        if ($initialWizardStep === null && $errorKeys !== []) {
+            $initialWizardStep = match (true) {
+                collect($errorKeys)->contains(fn ($key) => in_array($key, ['vehicle_make_id', 'vehicle_model_id', 'year', 'condition', 'body_type', 'fuel_type', 'transmission', 'description'], true)) => 0,
+                collect($errorKeys)->contains(fn ($key) => in_array($key, ['drivetrain', 'mileage', 'engine', 'exterior_color', 'interior_color', 'doors', 'price', 'features', 'features.*', 'features_list', 'vin', 'plate_number'], true)) => 1,
+                collect($errorKeys)->contains(fn ($key) => str_starts_with($key, 'photo_')) => 2,
+                collect($errorKeys)->contains(fn ($key) => in_array($key, ['map_search', 'province', 'canton', 'district', 'city', 'state', 'country_code', 'latitude', 'longitude', 'location_label', 'contact_phone'], true)) => 3,
+                default => 4,
+            };
+        }
+
+        if ($initialWizardStep === null) {
+            $initialWizardStep = 0;
+        }
     @endphp
     <div class="seller-onboarding-page theme-dark bg-black text-white min-h-screen font-body">
         <nav class="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/90 backdrop-blur-md" data-topbar>
@@ -248,8 +264,10 @@
 
                             <form method="POST" action="{{ route('seller.onboarding.store') }}" class="seller-onboarding"
                                 enctype="multipart/form-data" data-wizard data-autosave-key="seller-onboarding-draft"
-                                data-usd-to-crc="{{ (float) data_get($exchangeQuote, 'usd_to_crc', 0) }}">
+                                data-usd-to-crc="{{ (float) data_get($exchangeQuote, 'usd_to_crc', 0) }}"
+                                data-initial-step="{{ (int) $initialWizardStep }}">
                                 @csrf
+                                <input type="hidden" name="current_step" value="{{ (int) $initialWizardStep }}" data-current-step-input />
                                 <input type="hidden" name="country_code" value="CR" />
                                 <input type="hidden" name="latitude" value="{{ old('latitude') }}" data-map-lat />
                                 <input type="hidden" name="longitude" value="{{ old('longitude') }}" data-map-lng />
@@ -321,7 +339,7 @@
                                                     class="text-sm font-semibold text-slate-100">Descripción del
                                                     anuncio</span><textarea
                                                     class="min-h-[160px] rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm leading-7 text-slate-200 shadow-sm placeholder:text-slate-500"
-                                                    rows="5" name="description" required
+                                                    rows="5" name="description" required minlength="20"
                                                     placeholder="Describe estado general, mantenimientos, extras, historial y por qué vale la pena tu auto.">{{ old('description') }}</textarea></label>
                                         </div>
 
@@ -844,7 +862,7 @@
                                                         class="text-sm font-semibold text-slate-100">Contraseña</span><input
                                                         class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm"
                                                         type="password" name="password" required /></label>
-                                                <label class="grid gap-2 md:col-span-2"><span
+                                                <label class="grid gap-2"><span
                                                         class="text-sm font-semibold text-slate-100">Confirmar
                                                         contraseña</span><input
                                                         class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm"

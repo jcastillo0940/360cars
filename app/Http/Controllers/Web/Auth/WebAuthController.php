@@ -122,6 +122,18 @@ class WebAuthController extends Controller
 
         return view('auth.register', [
             'publicTheme' => (string) $this->valuationSettings->get('frontend.public_theme', 'light'),
+            'countryOptions' => [
+                ['code' => 'CR', 'dial' => '+506', 'label' => 'Costa Rica', 'flag' => '????'],
+                ['code' => 'PA', 'dial' => '+507', 'label' => 'Panam?', 'flag' => '????'],
+                ['code' => 'NI', 'dial' => '+505', 'label' => 'Nicaragua', 'flag' => '????'],
+                ['code' => 'HN', 'dial' => '+504', 'label' => 'Honduras', 'flag' => '????'],
+                ['code' => 'SV', 'dial' => '+503', 'label' => 'El Salvador', 'flag' => '????'],
+                ['code' => 'GT', 'dial' => '+502', 'label' => 'Guatemala', 'flag' => '????'],
+                ['code' => 'MX', 'dial' => '+52', 'label' => 'M?xico', 'flag' => '????'],
+                ['code' => 'CO', 'dial' => '+57', 'label' => 'Colombia', 'flag' => '????'],
+                ['code' => 'US', 'dial' => '+1', 'label' => 'Estados Unidos', 'flag' => '????'],
+                ['code' => 'ES', 'dial' => '+34', 'label' => 'Espa?a', 'flag' => '????'],
+            ],
         ]);
     }
 
@@ -133,12 +145,9 @@ class WebAuthController extends Controller
             'name' => $data['name'],
             'email' => strtolower((string) $data['email']),
             'password' => $data['password'],
-            'account_type' => $data['account_type'],
+            'account_type' => 'seller',
             'phone' => $data['phone'] ?? null,
-            'whatsapp_phone' => $data['whatsapp_phone'] ?? null,
-            'agency_name' => $data['agency_name'] ?? null,
-            'company_name' => $data['company_name'] ?? null,
-            'tax_id' => $data['tax_id'] ?? null,
+            'whatsapp_phone' => $data['phone'] ?? null,
             'country_code' => strtoupper((string) ($data['country_code'] ?? 'CR')),
             'last_seen_at' => now(),
         ]);

@@ -344,6 +344,7 @@ class SellerPortalController extends Controller
             'paused' => (clone $query)->where('status', 'paused')->count(),
             'expired' => (clone $query)->whereNotNull('expires_at')->where('expires_at', '<', now())->count(),
             'leads' => (clone $query)->sum('lead_count'),
+            'contactos' => (clone $query)->sum('lead_count'),
             'views' => (clone $query)->sum('view_count'),
         ];
 

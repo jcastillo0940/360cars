@@ -38,6 +38,18 @@ use Laravel\Sanctum\HasApiTokens;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
+    private const COUNTRY_DIAL_CODES = [
+        'CR' => '506',
+        'PA' => '507',
+        'NI' => '505',
+        'HN' => '504',
+        'SV' => '503',
+        'GT' => '502',
+        'MX' => '52',
+        'CO' => '57',
+        'US' => '1',
+        'ES' => '34',
+    ];
     use HasApiTokens, HasFactory, Notifiable;
 
     protected function casts(): array
@@ -97,6 +109,43 @@ class User extends Authenticatable
         return $this->belongsToMany(Conversation::class, 'conversation_participants')
             ->withPivot(['role', 'last_read_at'])
             ->withTimestamps();
+    }
+
+    public function dialingCode(): string
+    {
+        $country = strtoupper((string) ($this->country_code ?? 'CR'));
+
+        return self::COUNTRY_DIAL_CODES[$country] ?? self::COUNTRY_DIAL_CODES['CR'];
+    }
+
+    public function formatPhone(?string $phone = null): ?string
+    {
+        $digits = preg_replace('/\D+/', '', (string) ($phone ?? $this->phone));
+        if (! $digits) {
+            return null;
+        }
+
+        $dial = $this->dialingCode();
+        if (str_starts_with($digits, $dial)) {
+            return '+'.$digits;
+        }
+
+        return '+'.$dial.' '.$digits;
+    }
+
+    public function whatsappDestination(?string $phone = null): ?string
+    {
+        $digits = preg_replace('/\D+/', '', (string) ($phone ?? $this->whatsapp_phone ?? $this->phone));
+        if (! $digits) {
+            return null;
+        }
+
+        $dial = $this->dialingCode();
+        if (str_starts_with($digits, $dial)) {
+            return $digits;
+        }
+
+        return $dial.$digits;
     }
 
     public function messages(): HasMany
