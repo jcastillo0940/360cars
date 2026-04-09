@@ -109,15 +109,16 @@ class PublicCatalogController extends Controller
 
     public function show(Vehicle $vehicle)
     {
-        abort_unless($vehicle->status === 'published' && (! $vehicle->expires_at || $vehicle->expires_at->isFuture()), 404);
-
         if (! auth()->check() || auth()->id() !== $vehicle->user_id) {
-            $vehicle->increment('view_count');
-            $vehicle->refresh();
+            if ($vehicle->status === 'published' && (! $vehicle->expires_at || $vehicle->expires_at->isFuture())) {
+                $vehicle->increment('view_count');
+                $vehicle->refresh();
+            }
         }
 
         $vehicle->load(['make', 'model', 'media', 'owner']);
         $exchangeQuote = $this->exchangeRateService->latest();
+        $isAvailable = $vehicle->status === 'published' && (! $vehicle->expires_at || $vehicle->expires_at->isFuture());
 
         $related = $this->publishedVehiclesQuery()
             ->whereKeyNot($vehicle->getKey())
@@ -125,7 +126,7 @@ class PublicCatalogController extends Controller
                 $query->where('vehicle_make_id', $vehicle->vehicle_make_id)
                     ->orWhere('body_type', $vehicle->body_type);
             })
-            ->take(4)
+            ->take($isAvailable ? 4 : 8)
             ->get();
 
         return view('catalog.show', [
@@ -140,6 +141,7 @@ class PublicCatalogController extends Controller
                 'loginUrl' => auth()->check() ? $this->resolveAccountUrl() : route('login'),
                 'authUser' => $this->authUserPayload(),
                 'publicTheme' => (string) $this->valuationSettings->get('frontend.public_theme', 'light'),
+                'isAvailable' => $isAvailable,
                 'vehicle' => $this->mapVehicle($vehicle, $exchangeQuote),
                 'relatedVehicles' => $related->map(fn (Vehicle $item) => $this->mapVehicle($item, $exchangeQuote))->values(),
                 'engagement' => $this->engagementPayload(),
@@ -375,19 +377,14 @@ class PublicCatalogController extends Controller
     protected function normalizePhoneForCountry(?string $phone, ?string $countryCode = 'CR'): string
     {
         $digits = preg_replace('/\D+/', '', (string) $phone);
-        $codes = [
-            'CR' => '506',
-            'PA' => '507',
-            'NI' => '505',
-            'HN' => '504',
-            'SV' => '503',
-            'GT' => '502',
-            'MX' => '52',
-            'CO' => '57',
-            'US' => '1',
-            'ES' => '34',
-        ];
+        $codes = \App\Models\User::dialingCodes();
         $dial = $codes[strtoupper((string) $countryCode)] ?? '506';
+
+        foreach (collect($codes)->sortByDesc(fn (string $code) => strlen($code)) as $knownCode) {
+            if (str_starts_with($digits, $knownCode)) {
+                return $digits;
+            }
+        }
 
         if (str_starts_with($digits, $dial)) {
             return $digits;
@@ -396,8 +393,6 @@ class PublicCatalogController extends Controller
         return $dial.$digits;
     }
 }
-
-
 
 
 

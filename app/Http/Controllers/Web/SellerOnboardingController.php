@@ -58,6 +58,7 @@ class SellerOnboardingController extends Controller
                 ->orderBy('sort_order')
                 ->orderBy('name')
                 ->get(),
+            'countryOptions' => User::countryOptions(),
             'vehicleConfig' => config('vehicle'),
             'googleMapsEnabled' => filled($googleMapsKey),
             'years' => range((int) date('Y') + 1, 1950),
@@ -103,7 +104,7 @@ class SellerOnboardingController extends Controller
                     'account_type' => 'seller',
                     'phone' => $data['contact_phone'] ?? null,
                     'whatsapp_phone' => $data['contact_phone'] ?? null,
-                    'country_code' => 'CR',
+                    'country_code' => strtoupper((string) ($data['contact_country_code'] ?? 'CR')),
                     'last_seen_at' => now(),
                 ]);
 
@@ -120,6 +121,10 @@ class SellerOnboardingController extends Controller
 
                 if (! empty($data['contact_phone']) && ! $user->whatsapp_phone) {
                     $updates['whatsapp_phone'] = $data['contact_phone'];
+                }
+
+                if (! empty($data['contact_country_code'])) {
+                    $updates['country_code'] = strtoupper((string) $data['contact_country_code']);
                 }
 
                 if (! empty($data['contact_email']) && ! $user->email) {
@@ -254,5 +259,4 @@ class SellerOnboardingController extends Controller
         return $slug;
     }
 }
-
 

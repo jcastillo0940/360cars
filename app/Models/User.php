@@ -118,6 +118,38 @@ class User extends Authenticatable
         return self::COUNTRY_DIAL_CODES[$country] ?? self::COUNTRY_DIAL_CODES['CR'];
     }
 
+    public static function dialingCodes(): array
+    {
+        return self::COUNTRY_DIAL_CODES;
+    }
+
+    public static function countryOptions(): array
+    {
+        return [
+            ['code' => 'CR', 'dial' => '+506', 'label' => 'Costa Rica', 'flag' => 'CR'],
+            ['code' => 'PA', 'dial' => '+507', 'label' => 'Panama', 'flag' => 'PA'],
+            ['code' => 'NI', 'dial' => '+505', 'label' => 'Nicaragua', 'flag' => 'NI'],
+            ['code' => 'HN', 'dial' => '+504', 'label' => 'Honduras', 'flag' => 'HN'],
+            ['code' => 'SV', 'dial' => '+503', 'label' => 'El Salvador', 'flag' => 'SV'],
+            ['code' => 'GT', 'dial' => '+502', 'label' => 'Guatemala', 'flag' => 'GT'],
+            ['code' => 'MX', 'dial' => '+52', 'label' => 'Mexico', 'flag' => 'MX'],
+            ['code' => 'CO', 'dial' => '+57', 'label' => 'Colombia', 'flag' => 'CO'],
+            ['code' => 'US', 'dial' => '+1', 'label' => 'Estados Unidos', 'flag' => 'US'],
+            ['code' => 'ES', 'dial' => '+34', 'label' => 'Espana', 'flag' => 'ES'],
+        ];
+    }
+
+    private static function detectDialCodeFromDigits(string $digits): ?string
+    {
+        foreach (collect(self::COUNTRY_DIAL_CODES)->sortByDesc(fn (string $code) => strlen($code)) as $dial) {
+            if (str_starts_with($digits, $dial)) {
+                return $dial;
+            }
+        }
+
+        return null;
+    }
+
     public function formatPhone(?string $phone = null): ?string
     {
         $digits = preg_replace('/\D+/', '', (string) ($phone ?? $this->phone));
@@ -125,7 +157,7 @@ class User extends Authenticatable
             return null;
         }
 
-        $dial = $this->dialingCode();
+        $dial = self::detectDialCodeFromDigits($digits) ?: $this->dialingCode();
         if (str_starts_with($digits, $dial)) {
             return '+'.$digits;
         }
@@ -140,7 +172,7 @@ class User extends Authenticatable
             return null;
         }
 
-        $dial = $this->dialingCode();
+        $dial = self::detectDialCodeFromDigits($digits) ?: $this->dialingCode();
         if (str_starts_with($digits, $dial)) {
             return $digits;
         }

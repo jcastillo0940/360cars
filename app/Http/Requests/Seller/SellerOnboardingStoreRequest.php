@@ -76,6 +76,7 @@ class SellerOnboardingStoreRequest extends FormRequest
             'city' => ['required', 'string', 'max:120'],
             'state' => ['required', 'string', 'max:120'],
             'country_code' => ['required', 'in:CR'],
+            'contact_country_code' => ['nullable', Rule::in(array_keys(\App\Models\User::dialingCodes()))],
             'latitude' => [$hasGoogleMaps ? 'nullable' : 'nullable', 'numeric', 'between:8,12'],
             'longitude' => [$hasGoogleMaps ? 'nullable' : 'nullable', 'numeric', 'between:-86,-82'],
             'location_label' => ['required', 'string', 'max:255'],

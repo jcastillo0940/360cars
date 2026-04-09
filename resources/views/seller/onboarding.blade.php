@@ -775,15 +775,31 @@
                                                 <small class="text-sm text-slate-400">La ruta correcta en Costa Rica es:
                                                     provincia, luego cantón y después distrito.</small>
                                             </label>
-                                            <label class="grid gap-2 md:col-span-2"><span
-                                                    class="text-sm font-semibold text-slate-100">WhatsApp de
-                                                    contacto</span><input
-                                                    class="rounded-2xl border border-white/10 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white shadow-sm"
-                                                    type="text" name="contact_phone"
-                                                    value="{{ old('contact_phone', auth()->user()?->whatsapp_phone ?: auth()->user()?->phone) }}"
-                                                    placeholder="Ej. 8888-8888" /><small class="text-sm text-slate-400">Este
-                                                    número se usará en el botón de WhatsApp del anuncio para contactar al
-                                                    vendedor.</small></label>
+                                            <label class="grid gap-2 md:col-span-2">
+                                                <span class="text-sm font-semibold text-slate-100">WhatsApp de
+                                                    contacto</span>
+                                                <div
+                                                    class="grid min-h-14 grid-cols-[180px_minmax(0,1fr)] overflow-hidden rounded-2xl border border-white/10 bg-[#12131a] shadow-sm focus-within:border-primary">
+                                                    <select
+                                                        name="contact_country_code"
+                                                        class="border-0 border-r border-white/10 bg-[#12131a] px-4 text-sm font-semibold text-white outline-none focus:ring-0">
+                                                        @foreach (($countryOptions ?? []) as $country)
+                                                            <option value="{{ $country['code'] }}"
+                                                                @selected(old('contact_country_code', auth()->user()?->country_code ?: 'CR') === $country['code'])>
+                                                                {{ $country['dial'] }} {{ $country['label'] }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                    <input
+                                                        class="border-0 bg-[#12131a] px-4 py-4 text-sm font-semibold text-white outline-none focus:ring-0"
+                                                        type="text" name="contact_phone"
+                                                        value="{{ old('contact_phone', auth()->user()?->whatsapp_phone ?: auth()->user()?->phone) }}"
+                                                        placeholder="Ej. 6161-0214" />
+                                                </div>
+                                                <small class="text-sm text-slate-400">Selecciona el país del WhatsApp y
+                                                    luego escribe el número. Ese dato se usará en el botón de contacto del
+                                                    anuncio.</small>
+                                            </label>
                                             @if ($googleMapsKey)
                                                 <div class="grid gap-2 md:col-span-2"><span
                                                         class="text-sm font-semibold text-slate-100">Mapa</span>

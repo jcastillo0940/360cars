@@ -18,6 +18,5 @@
 @endsection
 
 @section('content')
-    @include('portal.vendedor._form')
+    @include('portal.seller._form')
 @endsection
-

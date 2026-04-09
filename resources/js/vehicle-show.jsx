@@ -19,7 +19,7 @@ async function requestJson(url, method, csrfToken, body = null) {
     return payload;
 }
 
-function VehicleShowPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, loginUrl, authUser, valuationUrl, publicTheme = 'light', vehicle, relatedVehicles, engagement, endpoints, footerLinks }) {
+function VehicleShowPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, loginUrl, authUser, valuationUrl, publicTheme = 'light', vehicle, relatedVehicles, engagement, endpoints, footerLinks, isAvailable = true }) {
     const [activeImage, setActiveImage] = useState(vehicle.media[0]?.url || vehicle.primary_image);
     const [favorited, setFavorited] = useState((engagement.favoriteVehicleIds || []).includes(vehicle.id));
     const [compared, setCompared] = useState((engagement.comparisonVehicleIds || []).includes(vehicle.id));
@@ -102,6 +102,58 @@ function VehicleShowPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, 
                 featuredUrl={`${homeUrl}#destacados`}
             />
             <main className="pt-20">
+                {!isAvailable ? (
+                    <>
+                        <section className="mx-auto max-w-screen-2xl px-4 py-10 sm:px-6 lg:px-8">
+                            <a href={catalogUrl} className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline">
+                                <Icon name="arrow_back" className="text-[18px]" /> Volver al inventario
+                            </a>
+                            <div className="mt-6 rounded-[2rem] bg-white p-8 shadow-2xl sm:p-10">
+                                <span className="rounded-full bg-secondary/12 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-secondary">Auto no disponible</span>
+                                <h1 className="mt-4 font-headline text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">Este auto ya no está disponible.</h1>
+                                <p className="mt-4 max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">
+                                    El anuncio de {vehicle.title} fue pausado, venció o dejó de estar publicado. Pero no te dejamos en una página vacía: aquí mismo puedes seguir explorando otras opciones parecidas.
+                                </p>
+                                <div className="mt-8 flex flex-wrap gap-3">
+                                    <a href={catalogUrl} className="inline-flex items-center justify-center rounded-2xl bg-secondary px-5 py-4 font-headline text-lg font-extrabold text-white transition-colors hover:bg-secondary-container">
+                                        Ver inventario disponible
+                                    </a>
+                                    {vehicle.make ? (
+                                        <a href={`${catalogUrl}?make=${encodeURIComponent(vehicle.make)}`} className="inline-flex items-center justify-center rounded-2xl border border-secondary bg-secondary/12 px-5 py-4 font-headline text-lg font-extrabold text-secondary transition-colors hover:bg-secondary hover:text-white">
+                                            Ver más {vehicle.make}
+                                        </a>
+                                    ) : null}
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="mx-auto max-w-screen-2xl px-4 pb-16 sm:px-6 lg:px-8">
+                            <div className="mb-8 flex items-end justify-between gap-4">
+                                <div>
+                                    <p className="text-xs font-bold uppercase tracking-[0.24em] text-secondary">Otras opciones</p>
+                                    <h2 className="mt-2 font-headline text-3xl font-extrabold tracking-tight">Autos similares disponibles</h2>
+                                </div>
+                                <a href={catalogUrl} className="text-sm font-bold text-primary hover:underline">Explorar todo</a>
+                            </div>
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+                                {relatedVehicles.map((item) => (
+                                    <a key={item.id} href={item.url} className="group overflow-hidden rounded-2xl border border-outline-variant/20 bg-white transition-all hover:-translate-y-1 hover:shadow-2xl">
+                                        <img src={item.primary_image} alt={item.title} className="h-52 w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                        <div className="p-5">
+                                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-secondary">{item.make} {item.model}</p>
+                                            <h3 className="mt-2 font-headline text-xl font-extrabold tracking-tight text-slate-950">{item.title}</h3>
+                                            <div className="mt-4 flex items-center justify-between gap-3">
+                                                <PriceStack primary={item.price} secondary={item.price_secondary} />
+                                                <span className="text-xs text-slate-400">{item.city}</span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                ))}
+                            </div>
+                        </section>
+                    </>
+                ) : (
+                <>
                 <section className="mx-auto max-w-screen-2xl px-4 py-8 sm:px-6 lg:px-8">
                     <a href={catalogUrl} className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline">
                         <Icon name="arrow_back" className="text-[18px]" /> Volver al inventario
@@ -217,6 +269,8 @@ function VehicleShowPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, 
                         ))}
                     </div>
                 </section>
+                </>
+                )}
             </main>
 
             <PublicFooter
@@ -238,6 +292,4 @@ const element = document.getElementById('vehicle-show-react');
 if (element) {
     createRoot(element).render(<VehicleShowPage {...JSON.parse(element.dataset.props || '{}')} />);
 }
-
-
 

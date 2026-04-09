@@ -29,7 +29,7 @@
 @endsection
 
 @section('content')
-    @include('portal.vendedor._form')
+    @include('portal.seller._form')
 
     <section class="dashboard-panel">
         <div class="panel-heading">
@@ -51,5 +51,4 @@
         </div>
     </section>
 @endsection
-
 

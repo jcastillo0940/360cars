@@ -122,18 +122,7 @@ class WebAuthController extends Controller
 
         return view('auth.register', [
             'publicTheme' => (string) $this->valuationSettings->get('frontend.public_theme', 'light'),
-            'countryOptions' => [
-                ['code' => 'CR', 'dial' => '+506', 'label' => 'Costa Rica', 'flag' => '????'],
-                ['code' => 'PA', 'dial' => '+507', 'label' => 'Panam?', 'flag' => '????'],
-                ['code' => 'NI', 'dial' => '+505', 'label' => 'Nicaragua', 'flag' => '????'],
-                ['code' => 'HN', 'dial' => '+504', 'label' => 'Honduras', 'flag' => '????'],
-                ['code' => 'SV', 'dial' => '+503', 'label' => 'El Salvador', 'flag' => '????'],
-                ['code' => 'GT', 'dial' => '+502', 'label' => 'Guatemala', 'flag' => '????'],
-                ['code' => 'MX', 'dial' => '+52', 'label' => 'M?xico', 'flag' => '????'],
-                ['code' => 'CO', 'dial' => '+57', 'label' => 'Colombia', 'flag' => '????'],
-                ['code' => 'US', 'dial' => '+1', 'label' => 'Estados Unidos', 'flag' => '????'],
-                ['code' => 'ES', 'dial' => '+34', 'label' => 'Espa?a', 'flag' => '????'],
-            ],
+            'countryOptions' => User::countryOptions(),
         ]);
     }
 

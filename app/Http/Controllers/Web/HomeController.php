@@ -67,6 +67,7 @@ class HomeController extends Controller
                             $inner->whereNull('expires_at')->orWhere('expires_at', '>=', now());
                         });
                 }])
+                ->orderByDesc('listings_count')
                 ->orderBy('name')
                 ->get()
                 ->map(fn (VehicleMake $make) => [
@@ -115,6 +116,7 @@ class HomeController extends Controller
                         $inner->whereNull('expires_at')->orWhere('expires_at', '>=', now());
                     });
             }])
+            ->orderByDesc('listings_count')
             ->orderBy('name')
             ->get()
             ->map(fn (VehicleMake $make) => [
