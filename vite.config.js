@@ -14,6 +14,7 @@ export default defineConfig({
                 'resources/js/home.jsx',
                 'resources/js/brands.jsx',
                 'resources/js/catalog.jsx',
+                'resources/js/comparisons.jsx',
                 'resources/js/vehicle-show.jsx',
                 'resources/js/valuation.jsx',
                 'resources/js/news.jsx',

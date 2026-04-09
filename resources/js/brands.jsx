@@ -17,7 +17,7 @@ function BrandDirectory({ homeUrl, catalogUrl, brandsUrl, valuationUrl, sellUrl,
                 accountUrl={accountUrl}
                 authUser={authUser}
                 newsUrl={`${homeUrl}#noticias`}
-                featuredUrl={`${homeUrl}#destacados`}
+                featuredUrl={`${catalogUrl}?featured=1`}
             />
 
             <main className="pt-20">

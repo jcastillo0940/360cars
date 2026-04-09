@@ -1,4 +1,4 @@
-﻿@extends('layouts.portal')
+@extends('layouts.portal')
 
 @section('title', 'Publicaciones vendedor | Movikaa')
 @section('portal-eyebrow', 'Publicaciones')
@@ -9,203 +9,119 @@
     <a href="{{ route('seller.onboarding.create') }}" class="button button--solid">Nuevo anuncio</a>
 @endsection
 
-@section('sidebar')
-<nav class="portal-nav">
-    <a href="{{ route('seller.dashboard') }}">Resumen</a>
-    <a href="{{ route('seller.listings') }}" class="is-active">Publicaciones</a>
-    <a href="{{ route('seller.onboarding.create') }}">Nuevo anuncio</a>
-    <a href="{{ route('seller.media') }}">Media</a>
-    <a href="{{ route('seller.billing') }}">Pagos</a>
-    <a href="{{ route('buyer.dashboard') }}">Actividad comprador</a>
-</nav>
-@endsection
-
 @section('content')
-<section class="seller-kpi-strip">
-    <article class="seller-kpi-card">
-        <span class="seller-kpi-card__label">Inventario activo</span>
+<section class="dashboard-grid reveal">
+    <article class="metric-card">
+        <span>Inventario online</span>
         <strong>{{ $listingSummary['published'] }}</strong>
-        <p>Publicaciones visibles ahora mismo en el marketplace.</p>
+        <p>Publicaciones activas en el buscador.</p>
     </article>
-    <article class="seller-kpi-card">
-        <span class="seller-kpi-card__label">Borradores</span>
+    <article class="metric-card">
+        <span>Borradores</span>
         <strong>{{ $listingSummary['draft'] }}</strong>
-        <p>Anuncios que todavía puedes pulir antes de exponerlos.</p>
+        <p>Anuncios pendientes de completar.</p>
     </article>
-    <article class="seller-kpi-card">
-        <span class="seller-kpi-card__label">Contactos recibidos</span>
+    <article class="metric-card">
+        <span>Interesados</span>
         <strong>{{ number_format($listingSummary['leads'] ?? $listingSummary['contactos'] ?? 0) }}</strong>
-        <p>Contactos acumulados desde todas tus publicaciones.</p>
+        <p>Leads generados por todos tus autos.</p>
     </article>
-    <article class="seller-kpi-card">
-        <span class="seller-kpi-card__label">Vistas acumuladas</span>
+    <article class="metric-card">
+        <span>Exposición</span>
         <strong>{{ number_format($listingSummary['views']) }}</strong>
-        <p>Se?al de exposici?n para medir el rendimiento del inventario.</p>
+        <p>Visualizaciones totales del inventario.</p>
     </article>
 </section>
-
-<section class="dashboard-panel">
+<section class="dashboard-panel reveal reveal--delay-1">
     <div class="panel-heading">
-        <div>
-            <p class="portal-kicker">Filtros avanzados</p>
-            <h2>Encuentra rápido el anuncio que quieres trabajar</h2>
-        </div>
-        <span class="status-badge">{{ $sellerListings->total() }} resultados</span>
+        <div><p class="portal-kicker">Filtrar</p><h2>Mis Publicaciones</h2></div>
+        <span class="status-badge">{{ $sellerListings->total() }} registros</span>
     </div>
 
     <form method="GET" action="{{ route('seller.listings') }}" class="portal-form">
-        <div class="seller-filter-grid">
-            <label class="form-field">
-                <span>Buscar</span>
-                <input type="text" name="q" value="{{ $sellerFilters['q'] }}" placeholder="T?tulo, ciudad o placa" />
-            </label>
-            <label class="form-field">
-                <span>Estado</span>
+        <div class="form-grid" style="grid-template-columns: repeat(4, 1fr) auto; align-items: flex-end; gap: 1rem;">
+            <label class="form-field"><span>Búsqueda</span><input type="text" name="q" value="{{ $sellerFilters['q'] }}" placeholder="Título o placa..." /></label>
+            <label class="form-field"><span>Estado</span>
                 <select name="status">
-                    <option value="">Todos</option>
+                    <option value="">Cualquier estado</option>
                     <option value="draft" @selected($sellerFilters['status'] === 'draft')>Borrador</option>
                     <option value="published" @selected($sellerFilters['status'] === 'published')>Publicada</option>
                     <option value="paused" @selected($sellerFilters['status'] === 'paused')>Pausada</option>
-                    <option value="sold" @selected($sellerFilters['status'] === 'sold')>Vendida</option>
                 </select>
             </label>
-            <label class="form-field">
-                <span>Plan</span>
-                <select name="tier">
-                    <option value="">Todos</option>
-                    <option value="basic" @selected($sellerFilters['tier'] === 'basic')>B?sico</option>
-                    <option value="standard" @selected($sellerFilters['tier'] === 'standard')>Est?ndar</option>
-                    <option value="premium" @selected($sellerFilters['tier'] === 'premium')>Premium</option>
-                    <option value="agencia" @selected($sellerFilters['tier'] === 'agencia')>Agencia</option>
-                    <option value="agencia-pro" @selected($sellerFilters['tier'] === 'agencia-pro')>Agencia Pro</option>
-                </select>
-            </label>
-            <label class="form-field">
-                <span>Marca</span>
-                <select name="make">
-                    <option value="">Todas</option>
-                    @foreach($makes as $make)
-                        <option value="{{ $make->id }}" @selected((int) $sellerFilters['make'] === $make->id)>{{ $make->name }}</option>
-                    @endforeach
-                </select>
-            </label>
-            <label class="form-field">
-                <span>Ciudad</span>
-                <input type="text" name="city" value="{{ $sellerFilters['city'] }}" placeholder="San Jose, Heredia..." />
-            </label>
-            <label class="form-field">
-                <span>Año desde</span>
-                <input type="number" name="year_from" min="1950" max="{{ date('Y') + 1 }}" value="{{ $sellerFilters['year_from'] }}" placeholder="2018" />
-            </label>
-            <label class="form-field">
-                <span>Año hasta</span>
-                <input type="number" name="year_to" min="1950" max="{{ date('Y') + 1 }}" value="{{ $sellerFilters['year_to'] }}" placeholder="{{ date('Y') }}" />
-            </label>
-            <label class="form-field">
-                <span>Ordenar por</span>
+            <label class="form-field"><span>Orden</span>
                 <select name="sort">
-                    <option value="latest" @selected($sellerFilters['sort'] === 'latest')>M?s recientes</option>
+                    <option value="latest" @selected($sellerFilters['sort'] === 'latest')>Recientes</option>
                     <option value="price_desc" @selected($sellerFilters['sort'] === 'price_desc')>Precio mayor</option>
                     <option value="price_asc" @selected($sellerFilters['sort'] === 'price_asc')>Precio menor</option>
-                    <option value="year_desc" @selected($sellerFilters['sort'] === 'year_desc')>Año m?s nuevo</option>
-                    <option value="year_asc" @selected($sellerFilters['sort'] === 'year_asc')>Año m?s antiguo</option>
-                    <option value="leads_desc" @selected($sellerFilters['sort'] === 'leads_desc' || $sellerFilters['sort'] === 'contactos_desc')>Más contactos</option>
-                    <option value="views_desc" @selected($sellerFilters['sort'] === 'views_desc')>M?s vistas</option>
                 </select>
             </label>
-        </div>
-
-        <div class="seller-toolbar">
-            <div class="seller-toolbar__meta">
-                <span class="status-badge status-badge--success">{{ $listingSummary['published'] }} activas</span>
-                <span class="status-badge">{{ $listingSummary['paused'] }} pausadas</span>
-                <span class="status-badge">{{ $listingSummary['expired'] }} vencidas</span>
-            </div>
-            <div class="form-actions">
-                <button type="submit" class="button button--solid">Aplicar filtros</button>
-                <a href="{{ route('seller.listings') }}" class="button button--ghost">Limpiar</a>
+            <label class="form-field"><span>Ciudad</span><input type="text" name="city" value="{{ $sellerFilters['city'] }}" placeholder="Ubicación..." /></label>
+            <div style="display: flex; gap: 0.5rem;">
+                <button type="submit" class="button button--solid">Aplicar</button>
+                <a href="{{ route('seller.listings') }}" class="button button--ghost">Reset</a>
             </div>
         </div>
     </form>
 </section>
 
-<section class="dashboard-panel">
-    <div class="panel-heading">
-        <div>
-            <p class="portal-kicker">Gestion diaria</p>
-            <h2>Publicaciones</h2>
-        </div>
-        <a href="{{ route('seller.onboarding.create') }}" class="button button--ghost">Crear otro anuncio</a>
-    </div>
-
+<section class="dashboard-panel reveal reveal--delay-2">
     <div class="table-shell">
         <table class="portal-table">
             <thead>
                 <tr>
-                    <th>Veh?culo</th>
-                    <th>Estado</th>
+                    <th>Vehículo</th>
+                    <th>Estado / Ubicación</th>
                     <th>Precio</th>
-                    <th>Rendimiento</th>
-                    <th>Media</th>
-                    <th>Acciones</th>
+                    <th>Impacto</th>
+                    <th style="text-align: right;">Acciones</th>
                 </tr>
             </thead>
             <tbody>
             @forelse ($sellerListings as $vehicle)
                 <tr>
                     <td>
-                        <strong>{{ $vehicle->title }}</strong>
-                        <span>{{ $vehicle->make?->name }} · {{ $vehicle->model?->name }} · {{ $vehicle->year }}</span>
-                        <div class="seller-inline-badges">
-                            <span class="status-badge">{{ ucfirst($vehicle->publication_tier) }}</span>
-                            @if ($vehicle->is_featured)
-                                <span class="status-badge status-badge--success">Destacado</span>
-                            @endif
-                            @if ($vehicle->expires_at)
-                                <span class="status-badge">{{ $vehicle->expires_at->isPast() ? 'Vencido' : 'Vence ' . $vehicle->expires_at->format('d/m/Y') }}</span>
-                            @endif
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 48px; height: 32px; border-radius: 4px; background: var(--portal-soft); overflow: hidden;">
+                                @if($vehicle->media->where('is_primary', true)->first())
+                                    <img src="{{ asset('storage/'.$vehicle->media->where('is_primary', true)->first()->path) }}" style="width:100%; height:100%; object-fit: cover;" />
+                                @endif
+                            </div>
+                            <div>
+                                <strong>{{ $vehicle->title }}</strong>
+                                <p style="margin:0; font-size: 0.75rem; color: var(--portal-muted);">{{ $vehicle->make?->name }} · {{ $vehicle->year }} · <span style="text-transform: uppercase;">{{ $vehicle->publication_tier }}</span></p>
+                            </div>
                         </div>
                     </td>
                     <td>
                         <span class="status-badge {{ $vehicle->status === 'published' ? 'status-badge--success' : 'status-badge--warn' }}">{{ ucfirst($vehicle->status) }}</span>
-                        <span>{{ $vehicle->city ?: 'Ubicaci?n pendiente' }}</span>
+                        <p style="margin:0; font-size: 0.75rem; color: var(--portal-muted); margin-top: 2px;">{{ $vehicle->city ?: 'Sin locación' }}</p>
                     </td>
                     <td>
                         @php($price = \App\Support\VehiclePricePresenter::present((float) $vehicle->price, $vehicle->currency, $exchangeQuote))
-                        <strong>{{ $price['primary_formatted'] }}</strong>
-                        <span>{{ $price['secondary_formatted'] }}</span>
+                        <strong style="color: var(--portal-primary);">{{ $price['primary_formatted'] }}</strong>
+                        <p style="margin:0; font-size: 0.7rem; color: var(--portal-muted);">{{ $price['secondary_formatted'] }}</p>
                     </td>
                     <td>
-                        <strong>{{ number_format($vehicle->lead_count) }} contactos</strong>
-                        <span>{{ number_format($vehicle->view_count ?? 0) }} vistas</span>
+                        <div style="display: flex; gap: 1rem;">
+                            <div><strong style="display:block; font-size:0.85rem;">{{ $vehicle->lead_count }}</strong><span style="font-size:0.65rem; color: var(--portal-muted);">CONTACTOS</span></div>
+                            <div><strong style="display:block; font-size:0.85rem;">{{ number_format($vehicle->view_count ?? 0) }}</strong><span style="font-size:0.65rem; color: var(--portal-muted);">VISTAS</span></div>
+                        </div>
                     </td>
-                    <td>
-                        <strong>{{ $vehicle->media->count() }} archivos</strong>
-                        <span>{{ $vehicle->supports_360 ? '360 activo' : 'Sin 360' }} · {{ $vehicle->has_video ? 'Con video' : 'Sin video' }}</span>
-                    </td>
-                    <td>
-                        <div class="table-actions">
-                            <a href="{{ route('seller.vehicles.edit', $vehicle) }}" class="text-link">Editar</a>
-                            @if ($vehicle->status !== 'published')
-                                <form method="POST" action="{{ route('seller.vehicles.publish', $vehicle) }}">@csrf @method('PATCH')<button type="submit" class="text-link">Publicar</button></form>
-                            @else
-                                <form method="POST" action="{{ route('seller.vehicles.pause', $vehicle) }}">@csrf @method('PATCH')<button type="submit" class="text-link">Pausar</button></form>
-                            @endif
-                            @if ($vehicle->publication_tier === 'basic' && $vehicle->expires_at && $vehicle->expires_at->isPast())
-                                <form method="POST" action="{{ route('seller.vehicles.refresh-basic', $vehicle) }}">@csrf @method('PATCH')<button type="submit" class="text-link">Renovar gratis</button></form>
-                            @endif
-                            <a href="{{ route('catalog.show', $vehicle->slug) }}" class="text-link">Ver anuncio</a>
-                            <form method="POST" action="{{ route('seller.vehicles.destroy', $vehicle) }}" onsubmit="return confirm('?Eliminar publicaci?n?');">@csrf @method('DELETE')<button type="submit" class="text-link">Eliminar</button></form>
+                    <td style="text-align: right;">
+                        <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                            <a href="{{ route('seller.vehicles.edit', $vehicle) }}" class="button button--ghost" style="padding: 0.25rem 0.5rem; min-height: 0; font-size: 0.75rem;">Editar</a>
+                            <a href="{{ route('catalog.show', $vehicle->slug) }}" class="button button--ghost" style="padding: 0.25rem 0.5rem; min-height: 0; font-size: 0.75rem;">Ver</a>
+                            <form method="POST" action="{{ route('seller.vehicles.destroy', $vehicle) }}" onsubmit="return confirm('¿Eliminar anuncio?');" style="display:inline;">@csrf @method('DELETE')<button type="submit" class="button button--ghost" style="padding: 0.25rem 0.5rem; min-height: 0; font-size: 0.75rem; color: var(--portal-warn);">Borrar</button></form>
                         </div>
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6">Aún no tienes publicaciones registradas.</td></tr>
+                <tr><td colspan="5" style="text-align: center; padding: 4rem;">Aún no has registrado ningún vehículo en tu inventario.</td></tr>
             @endforelse
             </tbody>
         </table>
     </div>
-
     <div class="pagination-shell">{{ $sellerListings->links() }}</div>
 </section>
 @endsection

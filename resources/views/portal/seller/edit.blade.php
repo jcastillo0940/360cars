@@ -1,4 +1,4 @@
-﻿@extends('layouts.portal')
+@extends('layouts.portal')
 
 @section('title', 'Editar anuncio vendedor | Movikaa')
 @section('portal-eyebrow', 'Seller edit')
@@ -10,44 +10,23 @@
     <a href="{{ route('catalog.show', $editingVehicle->slug) }}" class="button button--solid">Ver anuncio</a>
 @endsection
 
-@section('sidebar')
-<nav class="portal-nav">
-    <a href="{{ route('seller.dashboard') }}">Resumen</a>
-    <a href="{{ route('seller.listings') }}" class="is-active">Publicaciones</a>
-    <a href="{{ route('seller.onboarding.create') }}">Nuevo anuncio</a>
-    <a href="{{ route('seller.media') }}">Media</a>
-    <a href="{{ route('seller.messages') }}">Mensajes</a>
-    <a href="{{ route('seller.billing') }}">Pagos</a>
-    <a href="{{ route('buyer.dashboard') }}">Actividad comprador</a>
-</nav>
-<div class="portal-note-card">
-    <span class="portal-kicker">Editando</span>
-    <strong>{{ $editingVehicle->title }}</strong>
-    <p>{{ $editingVehicle->make?->name }} · {{ $editingVehicle->model?->name }} · {{ $editingVehicle->year }}</p>
-    <span class="status-badge mt-4">{{ ucfirst($editingVehicle->publication_tier) }}</span>
-</div>
-@endsection
-
 @section('content')
-    @include('portal.seller._form')
+    <div class="reveal">
+        @include('portal.seller._form')
+    </div>
 
-    <section class="dashboard-panel">
+    <section class="dashboard-panel reveal reveal--delay-3" style="margin-top: 2rem; border-color: var(--portal-danger);">
         <div class="panel-heading">
             <div>
-                <p class="portal-kicker">Acciones rapidas</p>
-                <h2>Estado y media</h2>
+                <p class="portal-kicker" style="color: var(--portal-danger);">Zona de Peligro</p>
+                <h2>Eliminar publicación</h2>
+                <p style="color: var(--portal-muted);">Esta acción es irreversible. Se eliminarán los datos, fotos y estadísticas del auto.</p>
             </div>
-        </div>
-        <div class="seller-toolbar seller-toolbar--spread">
-            <div class="seller-toolbar__meta">
-                @if ($editingVehicle->status !== 'published')
-                    <form method="POST" action="{{ route('seller.vehicles.publish', $editingVehicle) }}">@csrf @method('PATCH')<button type="submit" class="button button--solid">Publicar ahora</button></form>
-                @else
-                    <form method="POST" action="{{ route('seller.vehicles.pause', $editingVehicle) }}">@csrf @method('PATCH')<button type="submit" class="button button--ghost">Pausar</button></form>
-                @endif
-                <a href="{{ route('seller.media') }}" class="button button--ghost">Gestionar media</a>
-            </div>
-            <form method="POST" action="{{ route('seller.vehicles.destroy', $editingVehicle) }}" onsubmit="return confirm('Eliminar publicacion?');">@csrf @method('DELETE')<button type="submit" class="button button--ghost">Eliminar</button></form>
+            <form method="POST" action="{{ route('seller.vehicles.destroy', $editingVehicle) }}" onsubmit="return confirm('¿Eliminar publicación definitivamente?');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="button button--solid" style="background: var(--portal-danger); border-color: var(--portal-danger);">Eliminar permanentemente</button>
+            </form>
         </div>
     </section>
 @endsection

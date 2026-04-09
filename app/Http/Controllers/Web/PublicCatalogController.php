@@ -11,6 +11,7 @@ use App\Services\Valuation\ValuationSettingsService;
 use App\Support\VehiclePricePresenter;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
 class PublicCatalogController extends Controller
@@ -33,6 +34,7 @@ class PublicCatalogController extends Controller
             'min_year' => $request->integer('min_year') ?: null,
             'max_year' => $request->integer('max_year') ?: null,
             'offers' => $request->boolean('offers'),
+            'featured' => $request->boolean('featured'),
         ];
 
         $query = $this->publishedVehiclesQuery();
@@ -81,6 +83,10 @@ class PublicCatalogController extends Controller
             $query->whereNotNull('original_price')->whereColumn('original_price', '>', 'price');
         }
 
+        if ($filters['featured']) {
+            $query->where('is_featured', true);
+        }
+
         $vehicles = $query->paginate(9)->withQueryString();
         $exchangeQuote = $this->exchangeRateService->latest();
         $filterOptions = $this->filterOptions();
@@ -92,7 +98,7 @@ class PublicCatalogController extends Controller
                 'accountUrl' => $this->resolveAccountUrl(),
                 'sellUrl' => $this->resolveSellUrl(),
                 'catalogUrl' => route('catalog.index'),
-                'comparisonsUrl' => auth()->check() ? route('buyer.comparisons.index') : route('login', ['redirect' => route('buyer.comparisons.index')]),
+                'comparisonsUrl' => route('buyer.comparisons.index'),
                 'valuationUrl' => route('valuation.index'),
                 'loginUrl' => auth()->check() ? $this->resolveAccountUrl() : route('login'),
                 'authUser' => $this->authUserPayload(),
@@ -136,7 +142,7 @@ class PublicCatalogController extends Controller
                 'accountUrl' => $this->resolveAccountUrl(),
                 'sellUrl' => $this->resolveSellUrl(),
                 'catalogUrl' => route('catalog.index'),
-                'comparisonsUrl' => auth()->check() ? route('buyer.comparisons.index') : route('login', ['redirect' => route('buyer.comparisons.index')]),
+                'comparisonsUrl' => route('buyer.comparisons.index'),
                 'valuationUrl' => route('valuation.index'),
                 'loginUrl' => auth()->check() ? $this->resolveAccountUrl() : route('login'),
                 'authUser' => $this->authUserPayload(),
@@ -149,6 +155,79 @@ class PublicCatalogController extends Controller
                 'footerLinks' => $this->footerLinks(),
             ],
         ]);
+    }
+
+    public function comparisons(Request $request)
+    {
+        $comparisonIds = collect($request->input('ids', []))
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->unique()
+            ->take(4)
+            ->values();
+
+        $exchangeQuote = $this->exchangeRateService->latest();
+        $comparisonVehicles = $comparisonIds->isEmpty()
+            ? collect()
+            : $this->publishedVehiclesQuery()
+                ->whereIn('id', $comparisonIds->all())
+                ->get()
+                ->sortBy(fn (Vehicle $vehicle) => $comparisonIds->search($vehicle->id))
+                ->values();
+
+        $suggestedVehicles = $this->publishedVehiclesQuery()
+            ->when($comparisonVehicles->isNotEmpty(), fn ($query) => $query->whereNotIn('id', $comparisonVehicles->pluck('id')))
+            ->take(6)
+            ->get();
+
+        return view('catalog.comparisons', [
+            'props' => [
+                'homeUrl' => route('home'),
+                'brandsUrl' => route('brands.index'),
+                'accountUrl' => $this->resolveAccountUrl(),
+                'sellUrl' => $this->resolveSellUrl(),
+                'catalogUrl' => route('catalog.index'),
+                'comparisonsUrl' => route('buyer.comparisons.index'),
+                'valuationUrl' => route('valuation.index'),
+                'loginUrl' => auth()->check() ? $this->resolveAccountUrl() : route('login'),
+                'authUser' => $this->authUserPayload(),
+                'publicTheme' => (string) $this->valuationSettings->get('frontend.public_theme', 'light'),
+                'comparisonIds' => $comparisonIds->all(),
+                'comparisonVehicles' => $comparisonVehicles->map(fn (Vehicle $vehicle) => $this->mapVehicle($vehicle, $exchangeQuote))->values()->all(),
+                'comparisonRecommendation' => $this->comparisonRecommendation($comparisonVehicles),
+                'suggestedVehicles' => $suggestedVehicles->map(fn (Vehicle $vehicle) => $this->mapVehicle($vehicle, $exchangeQuote))->values()->all(),
+                'footerLinks' => $this->footerLinks(),
+            ],
+        ]);
+    }
+
+    public function contactViaWhatsApp(Request $request, Vehicle $vehicle)
+    {
+        abort_unless(
+            $vehicle->status === 'published' && (! $vehicle->expires_at || $vehicle->expires_at->isFuture()),
+            404
+        );
+
+        $vehicle->loadMissing('owner');
+
+        $contactPhoneRaw = $vehicle->owner?->whatsapp_phone ?: $vehicle->owner?->phone;
+        $destination = $vehicle->owner?->whatsappDestination($contactPhoneRaw) ?: $this->normalizePhoneForCountry($contactPhoneRaw, $vehicle->owner?->country_code);
+        abort_if(blank($destination), 404);
+
+        $sessionKey = sprintf('vehicle_whatsapp_click.%s.%s', $vehicle->id, now()->toDateString());
+        if (! $request->session()->has($sessionKey)) {
+            $vehicle->increment('lead_count');
+            $request->session()->put($sessionKey, true);
+        }
+
+        $text = trim((string) $request->query('text', ''));
+        if ($text === '') {
+            $text = 'Hola, me interesa '.$vehicle->title.' que vi en Movikaa.';
+        }
+
+        return redirect()->away(
+            'https://wa.me/'.$destination.'?text='.rawurlencode($text)
+        );
     }
 
     protected function publishedVehiclesQuery()
@@ -236,6 +315,7 @@ class PublicCatalogController extends Controller
             'comparisonTemplate' => route('buyer.comparisons.store', ['vehicle' => '__VEHICLE__']),
             'savedSearchUrl' => auth()->check() ? route('buyer.saved-searches.store') : null,
             'contactTemplate' => route('buyer.conversations.store', ['vehicle' => '__VEHICLE__']),
+            'comparisonsUrl' => route('buyer.comparisons.index'),
             'loginUrl' => route('login'),
             'csrfToken' => csrf_token(),
         ];
@@ -337,6 +417,14 @@ class PublicCatalogController extends Controller
         $whatsAppUrl = $whatsAppNumber
             ? 'https://wa.me/'.$whatsAppNumber.'?text='.rawurlencode('Hola, me interesa '.$vehicle->title.' que vi en Movikaa.')
             : null;
+        $contactUrl = $whatsAppNumber ? route('catalog.contact-whatsapp', $vehicle->slug) : null;
+        $performanceBadge = null;
+
+        if ((int) $vehicle->lead_count >= 3) {
+            $performanceBadge = 'Con más contactos';
+        } elseif ((int) $vehicle->view_count >= 25) {
+            $performanceBadge = 'Más visto';
+        }
 
         return [
             'id' => $vehicle->id,
@@ -349,6 +437,7 @@ class PublicCatalogController extends Controller
             'price' => $pricing['primary_formatted'],
             'price_secondary' => $pricing['secondary_formatted'],
             'price_raw' => $pricing['primary_raw'],
+            'price_value' => (float) $vehicle->price,
             'city' => $vehicle->city,
             'province' => $vehicle->province ?: $vehicle->state,
             'description' => $vehicle->description,
@@ -370,7 +459,11 @@ class PublicCatalogController extends Controller
             'is_paid' => (bool) data_get($vehicle->metadata, 'plan_is_paid', false),
             'seller_name' => $vehicle->owner?->name ?: 'Vendedor Movikaa',
             'contact_phone' => $contactPhone,
+            'contact_url' => $contactUrl,
             'whatsapp_url' => $whatsAppUrl,
+            'view_count' => (int) $vehicle->view_count,
+            'lead_count' => (int) $vehicle->lead_count,
+            'performance_badge' => $performanceBadge,
         ];
     }
 
@@ -392,10 +485,106 @@ class PublicCatalogController extends Controller
 
         return $dial.$digits;
     }
+
+    protected function comparisonRecommendation(Collection $vehicles): ?array
+    {
+        if ($vehicles->count() < 2) {
+            return null;
+        }
+
+        $priceMin = (float) $vehicles->min('price');
+        $priceMax = (float) $vehicles->max('price');
+        $yearMin = (int) $vehicles->min('year');
+        $yearMax = (int) $vehicles->max('year');
+        $mileageMin = (float) ($vehicles->filter(fn (Vehicle $vehicle) => $vehicle->mileage !== null)->min('mileage') ?? 0);
+        $mileageMax = (float) ($vehicles->filter(fn (Vehicle $vehicle) => $vehicle->mileage !== null)->max('mileage') ?? 0);
+        $averagePrice = (float) $vehicles->avg('price');
+        $averageMileage = (float) ($vehicles->filter(fn (Vehicle $vehicle) => $vehicle->mileage !== null)->avg('mileage') ?? 0);
+
+        $ranking = $vehicles->map(function (Vehicle $vehicle) use ($priceMin, $priceMax, $yearMin, $yearMax, $mileageMin, $mileageMax, $averagePrice, $averageMileage): array {
+            $priceScore = $this->inverseScore((float) $vehicle->price, $priceMin, $priceMax);
+            $yearScore = $this->directScore((float) ($vehicle->year ?? $yearMin), $yearMin, $yearMax);
+            $mileageValue = $vehicle->mileage !== null ? (float) $vehicle->mileage : ($mileageMax ?: 0);
+            $mileageScore = $this->inverseScore($mileageValue, $mileageMin, $mileageMax ?: max(1, $mileageValue));
+            $bonusScore = in_array($vehicle->fuel_type, ['Híbrido', 'Eléctrico', 'PHEV'], true) ? 8 : 0;
+            $score = (int) round(($priceScore * 0.4) + ($yearScore * 0.32) + ($mileageScore * 0.2) + $bonusScore);
+            $reasons = [];
+
+            if ((float) $vehicle->price === $priceMin) {
+                $reasons[] = 'es la opción más económica del grupo';
+            } elseif ((float) $vehicle->price <= $averagePrice) {
+                $reasons[] = 'se mantiene por debajo del precio promedio';
+            }
+
+            if ((int) $vehicle->year === $yearMax) {
+                $reasons[] = 'está entre los años más recientes';
+            }
+
+            if ($vehicle->mileage !== null) {
+                if ((float) $vehicle->mileage === $mileageMin) {
+                    $reasons[] = 'tiene el kilometraje más bajo';
+                } elseif ($averageMileage > 0 && (float) $vehicle->mileage <= $averageMileage) {
+                    $reasons[] = 'su kilometraje está por debajo del promedio';
+                }
+            }
+
+            if (in_array($vehicle->fuel_type, ['Híbrido', 'Eléctrico', 'PHEV'], true)) {
+                $reasons[] = 'ofrece una motorización más eficiente';
+            }
+
+            if ($reasons === []) {
+                $reasons[] = 'mantiene un balance sólido entre precio, año y kilometraje';
+            }
+
+            return [
+                'vehicle_id' => $vehicle->id,
+                'title' => $vehicle->title,
+                'url' => route('catalog.show', $vehicle->slug),
+                'headline' => $this->recommendationHeadline($vehicle, $priceMin, $yearMax, $mileageMin),
+                'score' => max(1, min(100, $score)),
+                'reasons' => array_values(array_unique(array_slice($reasons, 0, 3))),
+            ];
+        })->sortByDesc('score')->values();
+
+        return [
+            'winner' => $ranking->first(),
+            'runnerUp' => $ranking->skip(1)->first(),
+            'ranking' => $ranking->all(),
+        ];
+    }
+
+    protected function directScore(float $value, float $min, float $max): float
+    {
+        if ($max <= $min) {
+            return 100;
+        }
+
+        return (($value - $min) / ($max - $min)) * 100;
+    }
+
+    protected function inverseScore(float $value, float $min, float $max): float
+    {
+        if ($max <= $min) {
+            return 100;
+        }
+
+        return (1 - (($value - $min) / ($max - $min))) * 100;
+    }
+
+    protected function recommendationHeadline(Vehicle $vehicle, float $priceMin, int $yearMax, float $mileageMin): string
+    {
+        if ((float) $vehicle->price === $priceMin) {
+            return 'Destaca por precio';
+        }
+
+        if ((int) $vehicle->year === $yearMax) {
+            return 'Destaca por año';
+        }
+
+        if ($vehicle->mileage !== null && (float) $vehicle->mileage === $mileageMin) {
+            return 'Destaca por kilometraje';
+        }
+
+        return 'La opción más equilibrada';
+    }
 }
-
-
-
-
-
-

@@ -1,5 +1,6 @@
-﻿import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { buildComparisonsUrl, getComparisonIds, toggleComparisonId } from './comparison-store';
 import { Icon, PriceStack, PublicFooter, PublicTopBar } from './public-shell';
 
 async function requestJson(url, method, csrfToken, body = null) {
@@ -22,7 +23,7 @@ async function requestJson(url, method, csrfToken, body = null) {
 function VehicleShowPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, loginUrl, authUser, valuationUrl, publicTheme = 'light', vehicle, relatedVehicles, engagement, endpoints, footerLinks, isAvailable = true }) {
     const [activeImage, setActiveImage] = useState(vehicle.media[0]?.url || vehicle.primary_image);
     const [favorited, setFavorited] = useState((engagement.favoriteVehicleIds || []).includes(vehicle.id));
-    const [compared, setCompared] = useState((engagement.comparisonVehicleIds || []).includes(vehicle.id));
+    const [compared, setCompared] = useState(() => getComparisonIds().includes(vehicle.id));
     const [message, setMessage] = useState('');
     const [guestName, setGuestName] = useState('');
     const [guestPhone, setGuestPhone] = useState('');
@@ -41,20 +42,19 @@ function VehicleShowPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, 
     ];
 
     const whatsappHref = useMemo(() => {
-        if (!vehicle.whatsapp_url) {
+        if (!vehicle.contact_url) {
             return null;
         }
 
         const composed = [
-            `Hola ${vehicle.vendedor_name}, me interesa ${vehicle.title}.`,
+            `Hola ${vehicle.seller_name || 'vendedor'}, me interesa ${vehicle.title}.`,
             guestName ? `Mi nombre es ${guestName}.` : '',
             guestPhone ? `Mi teléfono es ${guestPhone}.` : '',
             message || '',
         ].filter(Boolean).join(' ');
 
-        const [baseUrl] = vehicle.whatsapp_url.split('?text=');
-        return `${baseUrl}?text=${encodeURIComponent(composed)}`;
-    }, [vehicle.whatsapp_url, vehicle.vendedor_name, vehicle.title, guestName, guestPhone, message]);
+        return `${vehicle.contact_url}?text=${encodeURIComponent(composed)}`;
+    }, [vehicle.contact_url, vehicle.seller_name, vehicle.title, guestName, guestPhone, message]);
 
     const ensureBuyer = () => {
         if (!engagement.authenticated) {
@@ -71,9 +71,17 @@ function VehicleShowPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, 
     };
 
     const toggleCompare = async () => {
-        if (!ensureBuyer()) return;
-        const payload = await requestJson(endpoints.comparisonTemplate.replace('__VEHICLE__', String(vehicle.id)), compared ? 'DELETE' : 'POST', endpoints.csrfToken);
-        setCompared(Boolean(payload.compared));
+        const next = toggleComparisonId(vehicle.id);
+
+        if (next.reason) {
+            setMessageState(next.reason);
+            return;
+        }
+
+        setCompared(next.compared);
+        setMessageState(next.compared
+            ? 'Auto agregado al comparador público.'
+            : 'Auto removido del comparador.');
     };
 
     const contactSeller = async (event) => {
@@ -99,7 +107,7 @@ function VehicleShowPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, 
                 accountUrl={accountUrl}
                 authUser={authUser}
                 newsUrl={`${homeUrl}#noticias`}
-                featuredUrl={`${homeUrl}#destacados`}
+                featuredUrl={`${catalogUrl}?featured=1`}
             />
             <main className="pt-20">
                 {!isAvailable ? (
@@ -158,91 +166,116 @@ function VehicleShowPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, 
                     <a href={catalogUrl} className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline">
                         <Icon name="arrow_back" className="text-[18px]" /> Volver al inventario
                     </a>
-                    <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-                        <div>
-                            <div className="overflow-hidden rounded-[2rem] bg-white shadow-2xl">
-                                <img src={activeImage} alt={vehicle.title} className="h-[420px] w-full object-cover sm:h-[520px]" />
-                            </div>
-                            <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-5">
-                                {(vehicle.media.length ? vehicle.media : [{ id: 'primary', url: vehicle.primary_image, thumb_url: vehicle.primary_image, alt: vehicle.title }]).map((item) => (
-                                    <button key={item.id} type="button" onClick={() => setActiveImage(item.url)} className={`overflow-hidden rounded-2xl border ${activeImage === item.url ? 'border-secondary ring-2 ring-secondary/25' : 'border-outline-variant/30'}`}>
-                                        <img src={item.thumb_url || item.url} alt={item.alt} className="h-20 w-full object-cover" />
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="space-y-6">
-                            <div className="rounded-[2rem] bg-white p-6 shadow-xl sm:p-8">
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <span className="rounded-full bg-primary-fixed px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-primary">{vehicle.publication_tier}</span>
+                        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+                            <div className="lg:sticky lg:top-24">
+                                <div className="overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+                                    <img src={activeImage} alt={vehicle.title} className="h-[420px] w-full object-cover sm:h-[520px]" />
                                 </div>
-                                <h1 className="mt-4 font-headline text-4xl font-extrabold tracking-tight text-slate-950">{vehicle.title}</h1>
-                                <p className="mt-3 text-base text-slate-500">{vehicle.city || 'Costa Rica'} | {vehicle.published_label}</p>
-                                <div className="mt-6 flex items-end justify-between gap-4">
-                                    <PriceStack primary={vehicle.price} secondary={vehicle.price_secondary} large />
-                                    <div className="flex gap-2">
-                                        <button type="button" onClick={toggleFavorite} className={`rounded-full p-3 transition-colors ${favorited ? 'bg-secondary text-white' : 'bg-secondary/12 text-secondary hover:bg-secondary hover:text-white'}`}>
-                                            <Icon name="favorite" className="text-[22px]" />
+                                <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-5">
+                                    {(vehicle.media.length ? vehicle.media : [{ id: 'primary', url: vehicle.primary_image, thumb_url: vehicle.primary_image, alt: vehicle.title }]).map((item) => (
+                                        <button key={item.id} type="button" onClick={() => setActiveImage(item.url)} className={`overflow-hidden rounded-2xl border ${activeImage === item.url ? 'border-secondary ring-2 ring-secondary/25' : 'border-outline-variant/30'}`}>
+                                            <img src={item.thumb_url || item.url} alt={item.alt} className="h-20 w-full object-cover" />
                                         </button>
-                                        <button type="button" onClick={toggleCompare} className={`rounded-full p-3 transition-colors ${compared ? 'bg-secondary text-white' : 'bg-secondary/12 text-secondary hover:bg-secondary hover:text-white'}`}>
-                                            <Icon name="compare_arrows" className="text-[22px]" />
-                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="rounded-[2rem] bg-white p-6 shadow-xl sm:p-8">
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        <span className="rounded-full bg-primary-fixed px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-primary">{vehicle.publication_tier}</span>
+                                        {vehicle.performance_badge ? <span className="rounded-full bg-secondary/12 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-secondary">{vehicle.performance_badge}</span> : null}
                                     </div>
-                                </div>
-                                <p className="mt-6 text-sm leading-7 text-slate-600">{vehicle.description || 'Vehículo publicado en Movikaa, listo para contacto directo y validación comercial.'}</p>
-                            </div>
-
-                            <div className="rounded-[2rem] bg-white p-6 shadow-xl sm:p-8">
-                                <div className="mb-5 flex items-center justify-between">
-                                    <h2 className="font-headline text-2xl font-extrabold tracking-tight">Ficha técnica</h2>
-                                    <Icon name="verified" className="text-[24px] text-primary" />
-                                </div>
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    {specs.map(([label, value]) => (
-                                        <div key={label} className="rounded-2xl border border-outline-variant/20 bg-slate-50 p-4">
-                                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">{label}</p>
-                                            <strong className="mt-2 block text-base text-slate-900">{value || 'No indicado'}</strong>
+                                    <h1 className="mt-4 font-headline text-4xl font-extrabold tracking-tight text-slate-950">{vehicle.title}</h1>
+                                    <p className="mt-3 text-base text-slate-500">{vehicle.city || 'Costa Rica'} | {vehicle.published_label}</p>
+                                    <div className="mt-4 flex flex-wrap gap-2">
+                                        <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-primary">{vehicle.view_count} vistas</span>
+                                        <span className="rounded-full bg-secondary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-secondary">{vehicle.lead_count} contactos</span>
+                                    </div>
+                                    <div className="mt-6 flex items-end justify-between gap-4">
+                                        <PriceStack primary={vehicle.price} secondary={vehicle.price_secondary} large />
+                                        <div className="flex gap-2">
+                                            <button 
+                                                type="button" 
+                                                onClick={toggleFavorite} 
+                                                className={`group rounded-full p-3 transition-all ${favorited ? 'bg-secondary text-white shadow-lg' : 'bg-secondary/12 text-secondary hover:bg-secondary'}`}
+                                                title={favorited ? 'Quitar de mis favoritos' : 'Guardar este auto en mis favoritos'}
+                                            >
+                                                <Icon name="favorite" className={`text-[22px] transition-colors ${favorited ? 'text-white' : 'group-hover:text-white'}`} />
+                                            </button>
+                                            <button 
+                                                type="button" 
+                                                onClick={toggleCompare} 
+                                                className={`group rounded-full p-3 transition-all ${compared ? 'bg-secondary text-white shadow-lg' : 'bg-secondary/12 text-secondary hover:bg-secondary'}`}
+                                                title={compared ? 'Quitar del comparador' : 'Añadir a lista comparativa'}
+                                            >
+                                                <Icon name="compare_arrows" className={`text-[22px] transition-colors ${compared ? 'text-white' : 'group-hover:text-white'}`} />
+                                            </button>
                                         </div>
-                                    ))}
+                                    </div>
+                                    <a href={buildComparisonsUrl(endpoints.comparisonsUrl, getComparisonIds())} className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline">
+                                        <Icon name="compare_arrows" className="text-[18px]" />
+                                        Abrir comparador
+                                    </a>
+                                    <p className="mt-6 text-sm leading-7 text-slate-600">{vehicle.description || 'Vehículo publicado en Movikaa, listo para contacto directo y validación comercial.'}</p>
                                 </div>
-                                <div className="mt-6 flex flex-wrap gap-2">
-                                    {(vehicle.features || []).map((feature) => (
-                                        <span key={feature} className="rounded-full bg-primary-fixed px-3 py-2 text-sm font-semibold text-primary">{feature}</span>
-                                    ))}
+
+                                <div className="rounded-[2rem] bg-white p-6 shadow-xl sm:p-8">
+                                    <div className="mb-5 flex items-center justify-between">
+                                        <h2 className="font-headline text-2xl font-extrabold tracking-tight">Ficha técnica</h2>
+                                        <Icon name="verified" className="text-[24px] text-primary" />
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                        {specs.map(([label, value]) => (
+                                            <div key={label} className="rounded-2xl border border-outline-variant/20 bg-slate-50 p-4">
+                                                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">{label}</p>
+                                                <strong className="mt-2 block text-base text-slate-900">{value || 'No indicado'}</strong>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="mt-6 flex flex-wrap gap-2">
+                                        {(vehicle.features || []).map((feature) => (
+                                            <span key={feature} className="rounded-full bg-primary-fixed px-3 py-2 text-sm font-semibold text-primary">{feature}</span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="rounded-[2rem] bg-white p-6 shadow-xl sm:p-8">
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary/10 text-secondary">
+                                            <Icon name="chat" className="text-[28px]" />
+                                        </div>
+                                        <div>
+                                            <h2 className="font-headline text-2xl font-extrabold tracking-tight">Escríbenos directamente</h2>
+                                            <p className="text-sm text-slate-500">¿Tienes dudas sobre disponibilidad o financiamiento?</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-8 space-y-4">
+                                        <div className="rounded-2xl border border-outline-variant/30 bg-slate-50 p-5">
+                                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Atención Directa</p>
+                                            <strong className="mt-1 block text-lg text-slate-900">{vehicle.contact_phone || '+506 WhatsApp'}</strong>
+                                            <p className="mt-1 text-sm text-slate-500">Haz clic en el botón de abajo para iniciar la conversación instantánea.</p>
+                                        </div>
+
+                                        {whatsappHref ? (
+                                            <a 
+                                                href={whatsappHref} 
+                                                target="_blank" 
+                                                rel="noreferrer" 
+                                                className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-secondary px-5 py-5 font-headline text-xl font-extrabold text-white shadow-lg transition-all hover:bg-secondary-container hover:shadow-xl active:scale-[0.98]"
+                                            >
+                                                <Icon name="forum" className="text-[24px]" />
+                                                Contactar por WhatsApp
+                                            </a>
+                                        ) : (
+                                            <a href={`${loginUrl}?redirect=${encodeURIComponent(currentPath)}`} className="inline-flex w-full items-center justify-center rounded-2xl border border-secondary bg-secondary/12 px-5 py-4 font-headline text-lg font-extrabold text-secondary transition-colors hover:bg-secondary hover:text-white">Iniciar sesión para ver datos</a>
+                                        )}
+                                    </div>
+                                    {messageState ? <p className="mt-4 text-center text-sm text-slate-500">{messageState}</p> : null}
                                 </div>
                             </div>
-
-                            <form onSubmit={contactSeller} className="rounded-[2rem] bg-white p-6 shadow-xl sm:p-8">
-                                <div className="mb-5 flex items-center justify-between">
-                                    <div>
-                                        <h2 className="font-headline text-2xl font-extrabold tracking-tight">Contactar vendedor</h2>
-                                        <p className="mt-2 text-sm text-slate-500">Escribe directo por WhatsApp y continúa la conversación con el vendedor fuera de la plataforma.</p>
-                                        <p className="mt-2 text-sm text-slate-400">{vehicle.contact_phone ? `WhatsApp: ${vehicle.contact_phone}` : 'Sin WhatsApp configurado'}{vehicle.contact_email ? ` | Correo: ${vehicle.contact_email}` : ''}</p>
-                                    </div>
-                                    <Icon name="chat" className="text-[24px] text-primary" />
-                                </div>
-
-                                {!engagement.authenticated ? (
-                                    <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                        <input value={guestName} onChange={(event) => setGuestName(event.target.value)} type="text" placeholder="Tu nombre" className="w-full rounded-2xl border border-outline-variant/30 bg-slate-50 px-4 py-4 text-sm outline-none focus:border-primary" />
-                                        <input value={guestPhone} onChange={(event) => setGuestPhone(event.target.value)} type="text" placeholder="Tu teléfono" className="w-full rounded-2xl border border-outline-variant/30 bg-slate-50 px-4 py-4 text-sm outline-none focus:border-primary" />
-                                    </div>
-                                ) : null}
-
-                                <textarea value={message} onChange={(event) => setMessage(event.target.value)} rows={5} placeholder="Hola, me interesa este vehículo. Me gustaría conocer disponibilidad, historial y opciones de financiamiento." className="w-full rounded-2xl border border-outline-variant/30 bg-slate-50 px-4 py-4 text-sm outline-none focus:border-primary"></textarea>
-                                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                    <button type="submit" className="inline-flex items-center justify-center rounded-2xl bg-secondary px-5 py-4 font-headline text-lg font-extrabold text-white transition-colors hover:bg-secondary-container">Abrir WhatsApp</button>
-                                    {whatsappHref ? (
-                                        <a href={whatsappHref} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-2xl border border-secondary bg-secondary/12 px-5 py-4 font-headline text-lg font-extrabold text-secondary transition-colors hover:bg-secondary hover:text-white">WhatsApp directo</a>
-                                    ) : (
-                                        <a href={`${loginUrl}?redirect=${encodeURIComponent(currentPath)}`} className="inline-flex items-center justify-center rounded-2xl border border-secondary bg-secondary/12 px-5 py-4 font-headline text-lg font-extrabold text-secondary transition-colors hover:bg-secondary hover:text-white">Iniciar sesión</a>
-                                    )}
-                                </div>
-                                {messageState ? <p className="mt-4 text-sm text-slate-500">{messageState}</p> : null}
-                            </form>
                         </div>
-                    </div>
                 </section>
 
                 <section className="mx-auto max-w-screen-2xl px-4 pb-16 sm:px-6 lg:px-8">
@@ -292,4 +325,3 @@ const element = document.getElementById('vehicle-show-react');
 if (element) {
     createRoot(element).render(<VehicleShowPage {...JSON.parse(element.dataset.props || '{}')} />);
 }
-

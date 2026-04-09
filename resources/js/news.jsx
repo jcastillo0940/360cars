@@ -39,7 +39,7 @@ function NewsIndexPage({ homeUrl, catalogUrl, brandsUrl, newsUrl, valuationUrl, 
                 accountUrl={accountUrl}
                 authUser={authUser}
                 newsUrl={newsUrl}
-                featuredUrl={`${homeUrl}#destacados`}
+                featuredUrl={`${catalogUrl}?featured=1`}
             />
             <main className="pt-20">
                 <section className={`border-b border-outline-variant/20 py-16 sm:py-20 ${isDark ? 'bg-transparent' : 'bg-gradient-to-br from-[#eff5ff] via-white to-[#f8efe8]'}`}>
@@ -94,7 +94,7 @@ function NewsShowPage({ homeUrl, catalogUrl, brandsUrl, newsUrl, valuationUrl, s
                 accountUrl={accountUrl}
                 authUser={authUser}
                 newsUrl={newsUrl}
-                featuredUrl={`${homeUrl}#destacados`}
+                featuredUrl={`${catalogUrl}?featured=1`}
             />
             <main className="pt-20">
                 <section className="mx-auto max-w-screen-4xl px-4 py-10 sm:px-6 lg:px-8">

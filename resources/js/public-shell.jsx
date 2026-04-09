@@ -51,7 +51,7 @@ export function PublicTopBar({ homeUrl, catalogUrl, brandsUrl, valuationUrl, sel
     const navigation = [
         { label: 'Comprar', href: catalogUrl },
         { label: 'Marcas', href: brandsUrl || `${homeUrl}#marcas` },
-        { label: 'Destacados', href: featuredUrl || `${homeUrl}#destacados` },
+        { label: 'Destacados', href: featuredUrl || `${catalogUrl}?featured=1` },
         { label: 'Estimación de mercado', href: valuationUrl },
         { label: 'Noticias', href: newsUrl || '/noticias' },
     ];

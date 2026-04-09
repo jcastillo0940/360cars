@@ -1,288 +1,352 @@
 @extends('layouts.portal')
 
 @section('title', 'Admin Portal | 360Cars')
-@section('portal-eyebrow', 'Admin portal')
-@section('portal-title', 'Opera el marketplace con claridad comercial y t?cnica.')
-@section('portal-copy', 'Centro de control para moderaci?n, cobros, crecimiento y salud operativa del producto.')
+@section('portal-eyebrow', 'Administración')
+@section('portal-title', 'Panel de Control Principal')
 
 @section('header-actions')
-    <a href="#moderation" class="button button--solid">Revisar moderaci?n</a>
-    <a href="#payments" class="button button--ghost">Ver pagos</a>
+    <button type="button" class="button button--solid" data-tab-trigger="moderation">Pendientes</button>
 @endsection
 
 @section('sidebar')
-    <nav class="portal-nav">
-        <a href="#overview" class="is-active">Resumen</a>
-        <a href="#ops">Operaciones</a>
-        <a href="#payments">Pagos</a>
-        <a href="#exchange-rate">Tipo de cambio</a>
-        <a href="#public-theme">Tema público</a>
-        <a href="#valuation-ai">Tasador IA</a>
-        <a href="#moderation">Moderaci?n</a>
-        <a href="#users">Usuarios</a>
-        <a href="#insights">Insights</a>
-        <a href="#settings">Planes</a>
-        <a href="#features">Extras</a>
+    <nav class="portal-nav" data-tabs>
+        <p class="muted-label" style="padding: 0 1rem; margin-bottom: 0.5rem;">Principal</p>
+        <a href="#overview" class="is-active" data-tab-trigger="overview">
+            <span class="nav-icon">📈</span>
+            <span>Resumen General</span>
+        </a>
+        <a href="#payments" data-tab-trigger="payments">
+            <span class="nav-icon">💰</span>
+            <span>Pagos y Finanzas</span>
+        </a>
+        <a href="#moderation" data-tab-trigger="moderation">
+            <span class="nav-icon">🛡️</span>
+            <span>Moderación de Autos</span>
+        </a>
+
+        <p class="muted-label" style="padding: 0 1rem; margin-top: 1.5rem; margin-bottom: 0.5rem;">Gestión</p>
+        <a href="#users" data-tab-trigger="users">
+            <span class="nav-icon">👥</span>
+            <span>Control de Usuarios</span>
+        </a>
+        <a href="#catalog" data-tab-trigger="catalog">
+            <span class="nav-icon">📚</span>
+            <span>Catálogo (Marcas/Mod)</span>
+        </a>
+
+        <p class="muted-label" style="padding: 0 1rem; margin-top: 1.5rem; margin-bottom: 0.5rem;">Sistema</p>
+        <a href="#config" data-tab-trigger="config">
+            <span class="nav-icon">⚙️</span>
+            <span>Configuración Global</span>
+        </a>
     </nav>
+    
     <div class="portal-note">
-        <p class="muted-label">Estado global</p>
-        <p>{{ $publishedVehicleCount }} publicaciones publicadas · {{ $paidTransactionsCount }} transacciónes pagadas.</p>
+        <p class="muted-label">Estado del Inventario</p>
+        <p><strong>{{ $publishedVehicleCount }}</strong> unidades publicadas.</p>
+        <p><strong>{{ $paidTransactionsCount }}</strong> ventas cerradas.</p>
     </div>
 @endsection
 
 @section('content')
-<section class="dashboard-grid" id="overview">
-    <article class="metric-card reveal"><span>GMV acumulado</span><strong>${{ number_format($gmv, 0) }}</strong><p>Calculado desde transacciónes pagadas.</p></article>
-    <article class="metric-card reveal reveal--delay"><span>Usuarios nuevos hoy</span><strong>{{ $newUsers }}</strong><p>Sesi?nes y onboarding del dia actual.</p></article>
-    <article class="metric-card reveal reveal--delay-2"><span>Moderaci?n pendiente</span><strong>{{ $pendingModeration }}</strong><p>Drafts o pausados por revisar.</p></article>
-</section>
+<div data-tabs>
+    {{-- TAB: OVERVIEW --}}
+    <div data-tab-panel="overview" class="reveal">
+        <section class="dashboard-grid">
+            <article class="metric-card">
+                <span>GMV Total</span>
+                <strong>${{ number_format($gmv, 0) }}</strong>
+                <p>Calculado desde transacciones pagadas.</p>
+            </article>
+            <article class="metric-card">
+                <span>Usuarios Hoy</span>
+                <strong>{{ $newUsers }}</strong>
+                <p>Nuevos registros en las últimas 24h.</p>
+            </article>
+            <article class="metric-card">
+                <span>Moderación Pendiente</span>
+                <strong class="{{ $pendingModeration > 0 ? 'text-warning' : '' }}">{{ $pendingModeration }}</strong>
+                <p>Listings esperando revisión.</p>
+            </article>
+        </section>
 
-<section class="dashboard-panel reveal" id="exchange-rate">
-    <div class="panel-heading"><div><p class="eyebrow">Moneda</p><h2>Tipo de cambio CRC / USD</h2></div><form method="POST" action="{{ route('admin.dashboard') }}">@csrf<button type="submit" class="button button--ghost">Actualizar tasa</button></form></div>
-    <div class="control-strip">
-        <article class="control-card"><span class="muted-label">CRC por USD</span><strong>{{ number_format((float) data_get($exchangeQuote, 'usd_to_crc', 0), 2) }}</strong><p>Fuente: {{ data_get($exchangeQuote, 'source', 'N/A') }}{{ data_get($exchangeQuote, 'stale') ? ' · cache anterior' : '' }}</p></article>
-        <article class="control-card"><span class="muted-label">USD por CRC</span><strong>{{ number_format((float) data_get($exchangeQuote, 'crc_to_usd', 0), 6) }}</strong><p>Actualizado: {{ data_get($exchangeQuote, 'fetched_at') ? \Illuminate\Support\Carbon::parse(data_get($exchangeQuote, 'fetched_at'))->format('d/m/Y H:i') : 'Sin dato' }}</p></article>
+        <section class="dashboard-panel mt-4">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">Marketplace Health</p>
+                    <h2>Salud Operativa</h2>
+                </div>
+            </div>
+            <div class="control-strip">
+                <article class="control-card">
+                    <span class="muted-label">Total Vehículos</span>
+                    <strong>{{ $vehicleCount }}</strong>
+                    <p>{{ $publishedVehicleCount }} están activos.</p>
+                </article>
+                <article class="control-card">
+                    <span class="muted-label">Leads Generados</span>
+                    <strong>{{ $leadCount }}</strong>
+                    <p>Interacciones directas.</p>
+                </article>
+                <article class="control-card">
+                    <span class="muted-label">Suscripciones</span>
+                    <strong>{{ $activeSubscriptions->count() }}</strong>
+                    <p>Con renovación activa.</p>
+                </article>
+            </div>
+        </section>
     </div>
-</section>
 
-<section class="dashboard-panel reveal" id="public-theme">
-    <div class="panel-heading"><div><p class="eyebrow">Frontend</p><h2>Tema público del home</h2></div></div>
-    <div class="control-strip">
-        <article class="control-card"><span class="muted-label">Modo actual</span><strong>{{ $publicTheme === 'dark' ? 'Modo oscuro' : 'Modo claro' }}</strong><p>El home público puede mantenerse claro o pasar a una versión oscura con la misma composici?n visual.</p></article>
-        <article class="control-card"><span class="muted-label">Alcance</span><strong>Home público</strong><p>Este ajuste cambia la presentación principal del front sin tocar vendedor, comprador ni administraci?n.</p></article>
-    </div>
-    <form method="POST" action="{{ route('admin.dashboard') }}" class="portal-form">
-        @csrf
-        <div class="form-grid">
-            <label class="form-field">
-                <span>Tema del home</span>
-                <select name="public_theme">
-                    <option value="light" @selected($publicTheme === 'light')>Modo claro</option>
-                    <option value="dark" @selected($publicTheme === 'dark')>Modo oscuro</option>
-                </select>
-            </label>
-        </div>
-        <div class="form-actions">
-            <button type="submit" class="button button--solid">Guardar tema público</button>
-        </div>
-    </form>
-</section>
-
-<section class="dashboard-panel reveal" id="valuation-ai">
-    <div class="panel-heading"><div><p class="eyebrow">Tasador</p><h2>Motor de valuaci?n e IA opcional</h2></div></div>
-    <div class="control-strip">
-        <article class="control-card"><span class="muted-label">Algoritmo base</span><strong>Activo</strong><p>El tasador siempre funciona con comparables locales, depreciación y reglas del mercado de Costa Rica.</p></article>
-        <article class="control-card"><span class="muted-label">API IA</span><strong>{{ $valuationAiConfigured ? 'Configurada' : 'Sin configurar' }}</strong><p>{{ $valuationAiConfigured ? 'Puedes usar una capa narrativa opcional para explicar mejor la evaluaci?n.' : 'Configura VALUATION_AI_API_KEY y endpoint si quieres enriquecer el resultado.' }}</p></article>
-    </div>
-    <form method="POST" action="{{ route('admin.dashboard') }}" class="portal-form">
-        @csrf
-        <label class="inline-check"><input type="checkbox" name="valuation_ai_enabled" value="1" @checked($valuationAiEnabled) /> <span>Activar resumen IA opcional en nuevas evaluaci?nes</span></label>
-        <div class="form-actions">
-            <button type="submit" class="button button--solid">Guardar ajuste del tasador</button>
-        </div>
-    </form>
-</section>
-<section class="dashboard-panel dashboard-panel--hero reveal" id="ops">
-    <div class="panel-heading"><div><p class="eyebrow">Marketplace health</p><h2>Radiografia del sistema en tiempo real.</h2></div><span class="pill">Admin workflow</span></div>
-    <div class="control-strip">
-        <article class="control-card"><span class="muted-label">Vehículos</span><strong>{{ $vehicleCount }}</strong><p>{{ $publishedVehicleCount }} publicados actualmente.</p></article>
-        <article class="control-card"><span class="muted-label">Contactos</span><strong>{{ $leadCount }}</strong><p>Acumulados en el inventario activo.</p></article>
-        <article class="control-card"><span class="muted-label">Subscripciones activas</span><strong>{{ $activeSubscriptions->count() }}</strong><p>Con renovacion y cobro ya trazables.</p></article>
-    </div>
-</section>
-
-<section class="panel-grid panel-grid--wide" id="payments">
-    <article class="dashboard-panel reveal">
-        <div class="panel-heading"><div><p class="eyebrow">Pagos</p><h2>Pagos recientes</h2></div></div>
-        <div class="table-shell">
-            <table class="portal-table">
-                <thead><tr><th>Orden</th><th>Usuario</th><th>Plan</th><th>Estado</th><th>Monto</th><th>Metodo</th></tr></thead>
-                <tbody>
-                    @forelse ($latestTransactions as $transaction)
+    {{-- TAB: PAYMENTS --}}
+    <div data-tab-panel="payments" class="reveal" hidden>
+        <article class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">Finanzas</p>
+                    <h2>Transacciones Recientes</h2>
+                </div>
+            </div>
+            <div class="table-shell">
+                <table class="portal-table">
+                    <thead>
                         <tr>
-                            <td><strong>{{ $transaction->external_reference }}</strong><span>{{ $transaction->provider }}</span></td>
-                            <td>{{ $transaction->user?->email }}</td>
-                            <td>{{ $transaction->plan?->name }}</td>
-                            <td><span class="status-badge {{ $transaction->status === 'paid' ? 'status-badge--success' : 'status-badge--warn' }}">{{ $transaction->status }}</span></td>
-                            <td>${{ number_format((float) $transaction->amount, 0) }}</td>
-                            <td>{{ $transaction->payment_method }}</td>
+                            <th>Orden / Ref</th>
+                            <th>Usuario</th>
+                            <th>Plan</th>
+                            <th>Estado</th>
+                            <th>Monto</th>
+                            <th>Método</th>
                         </tr>
-                    @empty
-                        <tr><td colspan="6">No hay transacciónes registradas.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </article>
-    <article class="dashboard-panel reveal reveal--delay" id="moderation">
-        <div class="panel-heading"><div><p class="eyebrow">Moderaci?n</p><h2>Últimos listings</h2></div></div>
-        <div class="table-shell">
-            <table class="portal-table">
-                <thead><tr><th>Listing</th><th>Owner</th><th>Estado</th><th>Precio</th><th>Media</th></tr></thead>
-                <tbody>
-                    @foreach ($latestVehicles as $vehicle)
-                        <tr>
-                            <td><strong>{{ $vehicle->title }}</strong><span>{{ $vehicle->make?->name }} · {{ $vehicle->model?->name }}</span></td>
-                            <td>{{ $vehicle->owner?->email }}</td>
-                            <td><span class="status-badge {{ $vehicle->status === 'published' ? 'status-badge--success' : ($vehicle->status === 'draft' ? 'status-badge--warn' : '') }}">{{ $vehicle->status }}</span></td>
-                            <td><strong>{{ \App\Support\VehiclePricePresenter::present((float) $vehicle->price, $vehicle->currency, $exchangeQuote)['primary_formatted'] }}</strong><span>{{ \App\Support\VehiclePricePresenter::present((float) $vehicle->price, $vehicle->currency, $exchangeQuote)['secondary_formatted'] }}</span></td>
-                            <td>{{ $vehicle->media()->count() }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </article>
-</section>
-
-<section class="panel-grid panel-grid--wide" id="users">
-    <article class="dashboard-panel reveal">
-        <div class="panel-heading"><div><p class="eyebrow">Usuarios</p><h2>Nuevas cuentas</h2></div></div>
-        <div class="table-shell">
-            <table class="portal-table">
-                <thead><tr><th>Usuario</th><th>Rol</th><th>Verificado</th><th>Alta</th></tr></thead>
-                <tbody>
-                    @foreach ($latestUsers as $user)
-                        <tr>
-                            <td><strong>{{ $user->name }}</strong><span>{{ $user->email }}</span></td>
-                            <td>{{ $user->account_type->value }}</td>
-                            <td>{{ $user->is_verified ? 'Si' : 'No' }}</td>
-                            <td>{{ optional($user->created_at)->format('d/m/Y H:i') }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </article>
-    <article class="dashboard-panel reveal reveal--delay" id="insights">
-        <div class="panel-heading"><div><p class="eyebrow">Insights</p><h2>Subscripciones activas</h2></div></div>
-        <div class="feature-checklist">
-            @forelse ($activeSubscriptions as $subscription)
-                <div><strong>{{ $subscription->user?->email }}</strong><p>{{ $subscription->plan?->name }} · vence {{ optional($subscription->ends_at)->format('d/m/Y') ?? 'N/A' }}</p></div>
-            @empty
-                <div><strong>Sin subscripciones</strong><p>No hay subscripciones activas registradas.</p></div>
-            @endforelse
-        </div>
-    </article>
-</section>
-
-<section class="dashboard-panel reveal" id="settings">
-    <div class="panel-heading"><div><p class="eyebrow">Planes disponibles</p><h2>Estructura comercial activa</h2></div></div>
-    <div class="feature-checklist">
-        @foreach ($plans as $plan)
-            <div><strong>{{ $plan->name }}</strong><p>${{ number_format((float) $plan->price, 0) }} · {{ $plan->max_active_listings ?? 'Ilimitadas' }} publicaciones · {{ $plan->photo_limit ?? 'Ilimitadas' }} fotos.</p></div>
-        @endforeach
+                    </thead>
+                    <tbody>
+                        @forelse ($latestTransactions as $transaction)
+                            <tr>
+                                <td><strong>{{ $transaction->external_reference }}</strong><span>{{ $transaction->provider }}</span></td>
+                                <td>{{ $transaction->user?->email }}</td>
+                                <td>{{ $transaction->plan?->name }}</td>
+                                <td><span class="status-badge {{ $transaction->status === 'paid' ? 'status-badge--success' : 'status-badge--warn' }}">{{ $transaction->status }}</span></td>
+                                <td>${{ number_format((float) $transaction->amount, 0) }}</td>
+                                <td>{{ $transaction->payment_method }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="6" class="empty-state">No hay transacciones registradas.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </article>
     </div>
-</section>
 
+    {{-- TAB: MODERATION --}}
+    <div data-tab-panel="moderation" class="reveal" hidden>
+        <article class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">Listings</p>
+                    <h2>Control de Calidad e Inventario</h2>
+                </div>
+            </div>
+            <div class="table-shell">
+                <table class="portal-table">
+                    <thead>
+                        <tr>
+                            <th>Vehículo</th>
+                            <th>Vendedor</th>
+                            <th>Estado</th>
+                            <th>Precio</th>
+                            <th>Fotos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($latestVehicles as $vehicle)
+                            <tr>
+                                <td><strong>{{ $vehicle->title }}</strong><span>{{ $vehicle->make?->name }} · {{ $vehicle->model?->name }}</span></td>
+                                <td>{{ $vehicle->owner?->email }}</td>
+                                <td><span class="status-badge {{ $vehicle->status === 'published' ? 'status-badge--success' : ($vehicle->status === 'draft' ? 'status-badge--warn' : '') }}">{{ $vehicle->status }}</span></td>
+                                <td><strong>{{ \App\Support\VehiclePricePresenter::present((float) $vehicle->price, $vehicle->currency, $exchangeQuote)['primary_formatted'] }}</strong></td>
+                                <td>{{ $vehicle->media()->count() }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </div>
 
-<section class="panel-grid panel-grid--wide" id="catalog">
-    <article class="dashboard-panel reveal">
-        <div class="panel-heading"><div><p class="eyebrow">Catálogo vehicular</p><h2>Crear marca o modelo</h2></div><span class="pill">Costa Rica</span></div>
-        <div class="control-strip">
-            <article class="control-card"><span class="muted-label">Marcas activas</span><strong>{{ $catalogStats['makes_active'] }}</strong><p>{{ $catalogStats['makes_total'] }} marcas registradas en total.</p></article>
-            <article class="control-card"><span class="muted-label">Modelos activos</span><strong>{{ $catalogStats['models_active'] }}</strong><p>{{ $catalogStats['models_total'] }} modelos registrados en total.</p></article>
-        </div>
-        <div class="panel-grid panel-grid--wide" style="margin-top: 1rem;">
-            <div class="dashboard-panel dashboard-panel--nested">
-                <div class="panel-heading"><div><p class="eyebrow">Nueva marca</p><h2>Agregar marca</h2></div></div>
+    {{-- TAB: USERS --}}
+    <div data-tab-panel="users" class="reveal" hidden>
+        <article class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">Usuarios</p>
+                    <h2>Gestión de Cuentas</h2>
+                </div>
+            </div>
+            <div class="table-shell">
+                <table class="portal-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre / Email</th>
+                            <th>Tipo de Cuenta</th>
+                            <th>Verif.</th>
+                            <th>Fecha Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($latestUsers as $user)
+                            <tr>
+                                <td><strong>{{ $user->name }}</strong><span>{{ $user->email }}</span></td>
+                                <td><span class="pill">{{ $user->account_type->value }}</span></td>
+                                <td>{{ $user->is_verified ? '✓' : '✗' }}</td>
+                                <td>{{ optional($user->created_at)->format('d/m/Y') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </div>
+
+    {{-- TAB: CATALOG --}}
+    <div data-tab-panel="catalog" class="reveal" hidden>
+        <section class="dashboard-grid">
+            <div class="dashboard-panel">
+                <div class="panel-heading"><h2>Nueva Marca</h2></div>
                 <form method="POST" action="{{ route('admin.dashboard') }}" class="portal-form">
                     @csrf
-                    <label class="form-field"><span>Nombre de la marca</span><input type="text" name="name" placeholder="Ej. Changan" required /></label>
-                    <div class="form-actions"><button type="submit" class="button button--solid">Guardar marca</button></div>
+                    <div class="form-field">
+                        <label>Nombre</label>
+                        <input type="text" name="name" placeholder="Ej. Toyota" required />
+                    </div>
+                    <button type="submit" class="button button--solid">Añadir Marca</button>
                 </form>
             </div>
-            <div class="dashboard-panel dashboard-panel--nested">
-                <div class="panel-heading"><div><p class="eyebrow">Nuevo modelo</p><h2>Agregar modelo</h2></div></div>
+            <div class="dashboard-panel">
+                <div class="panel-heading"><h2>Nuevo Modelo</h2></div>
                 <form method="POST" action="{{ route('admin.dashboard') }}" class="portal-form">
                     @csrf
                     <div class="form-grid">
-                        <label class="form-field"><span>Marca</span><select name="vehicle_make_id" required>@foreach ($catalogMakes as $make)<option value="{{ $make->id }}">{{ $make->name }}</option>@endforeach</select></label>
-                        <label class="form-field"><span>Nombre del modelo</span><input type="text" name="name" placeholder="Ej. Tiggo 7 Pro" required /></label>
+                        <div class="form-field">
+                            <label>Marca</label>
+                            <select name="vehicle_make_id" required>
+                                @foreach ($catalogMakes as $make)
+                                    <option value="{{ $make->id }}">{{ $make->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>Modelo</label>
+                            <input type="text" name="name" placeholder="Ej. Corolla" required />
+                        </div>
                     </div>
-                    <div class="form-actions"><button type="submit" class="button button--solid">Guardar modelo</button></div>
+                    <button type="submit" class="button button--solid">Añadir Modelo</button>
                 </form>
             </div>
-        </div>
-    </article>
-    <article class="dashboard-panel reveal reveal--delay">
-        <div class="panel-heading"><div><p class="eyebrow">Catálogo activo</p><h2>Marcas y modelos administraci?nistrables</h2></div></div>
-        <div class="feature-checklist">
-            @forelse ($catalogMakes as $make)
-                <div>
-                    <div class="support-band support-band--spaced">
+        </section>
+
+        <section class="dashboard-panel mt-4">
+            <div class="panel-heading"><h2>Inventario de Marcas</h2></div>
+            <div class="feature-checklist">
+                @foreach ($catalogMakes as $make)
+                    <div>
                         <div>
                             <strong>{{ $make->name }}</strong>
-                            <p>{{ $make->models->where('is_active', true)->count() }} modelos activos de {{ $make->models->count() }}.</p>
+                            <p>{{ $make->models->count() }} modelos registrados.</p>
                         </div>
                         <form method="POST" action="{{ route('admin', $make) }}">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="button button--ghost">{{ $make->is_active ? 'Desactivar marca' : 'Activar marca' }}</button>
+                            @csrf @method('PATCH')
+                            <button type="submit" class="button button--ghost">{{ $make->is_active ? 'Desactivar' : 'Activar' }}</button>
                         </form>
                     </div>
-                    <div class="media-chip-row">
-                        @forelse ($make->models as $model)
-                            <span class="media-chip">
-                                {{ $model->name }}
-                                <form method="POST" action="{{ route('admin', $model) }}">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="button button--ghost">{{ $model->is_active ? 'Desactivar' : 'Activar' }}</button>
-                                </form>
-                            </span>
-                        @empty
-                            <span class="status-badge status-badge--warn">Sin modelos registrados</span>
-                        @endforelse
+                @endforeach
+            </div>
+        </section>
+    </div>
+
+    {{-- TAB: CONFIG --}}
+    <div data-tab-panel="config" class="reveal" hidden>
+        <section class="form-grid">
+            {{-- EXCHANGE RATE --}}
+            <article class="dashboard-panel">
+                <div class="panel-heading"><h2>Tipo de Cambio</h2></div>
+                <div class="control-strip">
+                    <div class="control-card">
+                        <span class="muted-label">USD a CRC</span>
+                        <strong>{{ number_format((float) data_get($exchangeQuote, 'usd_to_crc', 0), 2) }}</strong>
                     </div>
                 </div>
-            @empty
-                <div><strong>Sin catálogo</strong><p>Todavía no se han cargado marcas y modelos.</p></div>
-            @endforelse
-        </div>
-    </article>
-</section>
-<section class="panel-grid panel-grid--wide" id="features">
-    <article class="dashboard-panel reveal">
-        <div class="panel-heading"><div><p class="eyebrow">Configuraci?n del onboarding</p><h2>Crear extra configurable</h2></div><span class="pill">Seller UX</span></div>
-        <form method="POST" action="{{ route('admin.dashboard') }}" class="portal-form">
-            @csrf
-            <div class="form-grid">
-                <label class="form-field"><span>Nombre del extra</span><input type="text" name="name" placeholder="Ej. Camara 360" required /></label>
-                <label class="form-field"><span>Categoria</span><input type="text" name="category" placeholder="seguridad, tecnologia, confort" required /></label>
-                <label class="form-field form-field--wide"><span>Descripcion</span><input type="text" name="description" placeholder="Texto corto para el vendedor" /></label>
-                <label class="form-field"><span>Orden</span><input type="number" name="sort_order" min="0" max="9999" value="0" /></label>
-            </div>
-            <div class="form-actions">
-                <button type="submit" class="button button--solid">Guardar extra</button>
-            </div>
-        </form>
-    </article>
-    <article class="dashboard-panel reveal reveal--delay">
-        <div class="panel-heading"><div><p class="eyebrow">Catálogo activo</p><h2>Extras visibles en vende tu auto</h2></div></div>
-        <div class="feature-checklist">
-            @forelse ($featureOptions as $category => $group)
-                <div>
-                    <strong>{{ str($category)->replace('-', ' ')->title() }}</strong>
-                    <div class="media-chip-row">
-                        @foreach ($group as $feature)
-                            <span class="media-chip">
-                                {{ $feature->name }}
-                                <form method="POST" action="{{ route('admin', $feature) }}">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="button button--ghost">{{ $feature->is_active ? 'Desactivar' : 'Activar' }}</button>
-                                </form>
-                            </span>
-                        @endforeach
+                <form method="POST" action="{{ route('admin.dashboard') }}">
+                    @csrf
+                    <button type="submit" class="button button--ghost">Forzar Actualización</button>
+                </form>
+            </article>
+
+            {{-- THEME & UI --}}
+            <article class="dashboard-panel">
+                <div class="panel-heading"><h2>Tema Visual</h2></div>
+                <form method="POST" action="{{ route('admin.dashboard') }}" class="portal-form">
+                    @csrf
+                    <div class="form-field">
+                        <label>Modo de color (Home)</label>
+                        <select name="public_theme">
+                            <option value="light" @selected($publicTheme === 'light')>Claridad (Light)</option>
+                            <option value="dark" @selected($publicTheme === 'dark')>Minimalismo (Dark)</option>
+                        </select>
                     </div>
-                </div>
-            @empty
-                <div><strong>Sin extras</strong><p>Todavía no has configurado extras para el onboarding vendedor.</p></div>
-            @endforelse
-        </div>
-    </article>
-</section>
+                    <button type="submit" class="button button--solid">Guardar Preferencia</button>
+                </form>
+            </article>
+
+            {{-- VALUATION AI --}}
+            <article class="dashboard-panel form-field--wide">
+                <div class="panel-heading"><h2>Motor de Valuación IA</h2></div>
+                <form method="POST" action="{{ route('admin.dashboard') }}" class="portal-form">
+                    @csrf
+                    <div class="form-field">
+                        <label class="inline-check">
+                            <input type="checkbox" name="valuation_ai_enabled" value="1" @checked($valuationAiEnabled) />
+                            <span>Habilitar sugerencias basadas en IA para vendedores</span>
+                        </label>
+                    </div>
+                    <p class="form-field small">Configuración actual: {{ $valuationAiConfigured ? '✓ Conectado a API' : '✗ Sin API Key' }}</p>
+                    <button type="submit" class="button button--solid">Guardar Configuración IA</button>
+                </form>
+            </article>
+        </section>
+    </div>
+</div>
+
+<script>
+    // Simple inline logic if standard tabs don't fire or to handle initial state/hash
+    document.addEventListener('DOMContentLoaded', () => {
+        const triggers = document.querySelectorAll('[data-tab-trigger]');
+        const panels = document.querySelectorAll('[data-tab-panel]');
+        
+        triggers.forEach(trigger => {
+            trigger.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = trigger.getAttribute('data-tab-trigger');
+                
+                // Update Sidebar
+                document.querySelectorAll('.portal-nav a').forEach(a => a.classList.remove('is-active'));
+                trigger.closest('a')?.classList.add('is-active');
+                
+                // Update Panels
+                panels.forEach(panel => {
+                    panel.hidden = panel.getAttribute('data-tab-panel') !== target;
+                });
+            });
+        });
+        
+        // Handle hash if present
+        const hash = window.location.hash.replace('#', '');
+        if (hash) {
+            const initialTrigger = document.querySelector(`[data-tab-trigger="${hash}"]`);
+            if (initialTrigger) initialTrigger.click();
+        }
+    });
+</script>
 @endsection
+
 
 

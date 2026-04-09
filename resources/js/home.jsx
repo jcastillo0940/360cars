@@ -120,7 +120,7 @@ function HomePage({
                 accountUrl={accountUrl}
                 authUser={authUser}
                 newsUrl={'/noticias'}
-                featuredUrl={`${homeUrl}#destacados`}
+                featuredUrl={`${catalogUrl}?featured=1`}
                 transparent={true}
             />
 

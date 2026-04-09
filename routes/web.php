@@ -18,6 +18,8 @@ Route::get('/marcas', [App\Http\Controllers\Web\HomeController::class, 'brands']
 Route::get('/noticias', [NewsController::class, 'index'])->name('news.index');
 Route::get('/noticias/{newsPost:slug}', [NewsController::class, 'show'])->name('news.show');
 Route::get('/vehiculos/{vehicle:slug}', [PublicCatalogController::class, 'show'])->name('catalog.show');
+Route::get('/vehiculos/{vehicle:slug}/contactar-whatsapp', [PublicCatalogController::class, 'contactViaWhatsApp'])->name('catalog.contact-whatsapp');
+Route::get('/buyer/comparisons', [PublicCatalogController::class, 'comparisons'])->name('buyer.comparisons.index');
 Route::get('/tasador', [VehicleValuationController::class, 'index'])->name('valuation.index');
 Route::post('/tasador', [VehicleValuationController::class, 'store'])->name('valuation.store');
 Route::get('/tasador/evaluaciones/{token}', [VehicleValuationController::class, 'show'])->name('valuation.show');
@@ -53,7 +55,6 @@ Route::middleware('auth')->group(function (): void {
 
     Route::get('/buyer', [BuyerPortalController::class, 'index'])->name('buyer.dashboard');
     Route::get('/buyer/favorites', [BuyerPortalController::class, 'favorites'])->name('buyer.favorites.index');
-    Route::get('/buyer/comparisons', [BuyerPortalController::class, 'comparisons'])->name('buyer.comparisons.index');
     Route::get('/buyer/searches', [BuyerPortalController::class, 'searches'])->name('buyer.searches.index');
     Route::get('/buyer/messages', [BuyerPortalController::class, 'messages'])->name('buyer.messages.index');
     Route::post('/buyer/favorites/{vehicle}', [BuyerEngagementController::class, 'favorite'])->name('buyer.favorites.store');

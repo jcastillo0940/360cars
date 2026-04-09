@@ -5,184 +5,194 @@
 @section('portal-title', 'Gestión de imágenes y galería')
 @section('portal-copy', 'Primero elige un vehículo. Después podrás ver su galería, subir fotos nuevas o reemplazar una foto específica sin confundirte.')
 
-@section('sidebar')
-<nav class="portal-nav">
-    <a href="{{ route('seller.dashboard') }}">Resumen</a>
-    <a href="{{ route('seller.listings') }}">Publicaciones</a>
-    <a href="{{ route('seller.onboarding.create') }}">Nuevo anuncio</a>
-    <a href="{{ route('seller.media') }}" class="is-active">Media</a>
-    <a href="{{ route('seller.messages') }}">Mensajes</a>
-    <a href="{{ route('seller.billing') }}">Pagos</a>
-    <a href="{{ route('buyer.dashboard') }}">Actividad comprador</a>
-</nav>
-@endsection
-
 @section('content')
 @php
     $selectedVehicle = $selectedMediaVehicle;
+    $existingMediaBySlot = collect();
+    if ($selectedVehicle) {
+        $existingMediaBySlot = $selectedVehicle->media->groupBy(function ($media) {
+            return $media->alt_text ?: 'extra';
+        });
+    }
 @endphp
 
-<section class="dashboard-grid">
-    <article class="metric-card"><span>Vehículos</span><strong>{{ $vehicles->count() }}</strong></article>
-    <article class="metric-card"><span>Publicadas</span><strong>{{ $publishedCount }}</strong></article>
-    <article class="metric-card"><span>En cola</span><strong>{{ $processingCount }}</strong></article>
+<section class="dashboard-grid reveal">
+    <article class="metric-card">
+        <span>Capacidad del Plan</span>
+        <strong>{{ $capabilities['max_photos'] }}</strong>
+        <p>Fotos totales permitidas.</p>
+    </article>
+    <article class="metric-card">
+        <span>Cargadas al Auto</span>
+        <strong>{{ $selectedVehicle ? $selectedVehicle->media->count() : 0 }}</strong>
+        <p>Imágenes en galería actual.</p>
+    </article>
+    <article class="metric-card">
+        <span>Espacio Libre</span>
+        <strong>{{ $selectedVehicle ? max(0, $capabilities['max_photos'] - $selectedVehicle->media->count()) : $capabilities['max_photos'] }}</strong>
+        <p>Cupos disponibles para subir.</p>
+    </article>
 </section>
 
-<section class="dashboard-panel">
+<section class="dashboard-panel reveal reveal--delay-1" style="margin: 1.5rem 0;">
     <div class="panel-heading">
-        <div>
-            <p class="portal-kicker">Paso 1</p>
-            <h2>Elige el vehículo que quieres gestionar</h2>
-        </div>
+        <div><p class="portal-kicker">Gestor de Media</p><h2>Vehículo a gestionar</h2></div>
     </div>
-
-    @if ($mediaVehicles->isEmpty())
-        <div class="empty-state">
-            <strong>Sin publicaciones todavía.</strong>
-            <p>Primero crea un anuncio para poder subir o reemplazar fotografías.</p>
-        </div>
-    @else
-        <form method="GET" action="{{ route('seller.media') }}" class="portal-form">
-            <div class="seller-filter-grid">
-                <label class="form-field">
-                    <span>Vehículo</span>
-                    <select name="vehicle" onchange="this.form.submit()">
-                        @foreach ($mediaVehicles as $vehicle)
-                            <option value="{{ $vehicle->id }}" @selected(optional($selectedVehicle)->id === $vehicle->id)>
-                                {{ $vehicle->title }} · {{ $vehicle->media->count() }} fotos
-                            </option>
-                        @endforeach
-                    </select>
-                </label>
-            </div>
-        </form>
-    @endif
+    <form method="GET" action="{{ route('seller.media') }}" class="portal-form">
+        <label class="form-field" style="max-width: 400px;">
+            <span>Cambiar de vehículo</span>
+            <select name="vehicle" onchange="this.form.submit()">
+                @foreach ($mediaVehicles as $vehicle)
+                    <option value="{{ $vehicle->id }}" @if(optional($selectedVehicle)->id === $vehicle->id) selected @endif>
+                        {{ $vehicle->title }} ({{ $vehicle->year }})
+                    </option>
+                @endforeach
+            </select>
+        </label>
+    </form>
 </section>
 
 @if ($selectedVehicle)
-    <section class="dashboard-panel">
-        <div class="panel-heading">
+    <section class="dashboard-panel reveal reveal--delay-2">
+        <div class="panel-heading" style="margin-bottom: 2rem;">
             <div>
-                <p class="portal-kicker">Paso 2</p>
-                <h2>Gestiona la galería de {{ $selectedVehicle->title }}</h2>
-                <p class="portal-header__copy">
-                    Usa “Subir nuevas fotos” para agregar más imágenes al final de la galería.
-                    Usa “Reemplazar esta foto” dentro de cada tarjeta si quieres cambiar una imagen puntual.
-                </p>
+                <p class="portal-kicker">Recomendado</p>
+                <h2>Fotos de Identidad</h2>
+                <p style="color: var(--portal-muted);">Las fotos en estas posiciones aparecen en las vistas principales de búsqueda.</p>
             </div>
-            <a href="{{ route('seller.vehicles.edit', $selectedVehicle) }}" class="button button--ghost">Editar anuncio</a>
+            <a href="{{ route('catalog.show', $selectedVehicle->slug) }}" class="button button--ghost" target="_blank">Ver vista pública</a>
         </div>
 
-        <div class="dashboard-grid dashboard-grid--three-up">
-            <article class="metric-card">
-                <span>Fotos actuales</span>
-                <strong>{{ $selectedVehicle->media->count() }}</strong>
-                <p>Total de imágenes asociadas a este vehículo.</p>
-            </article>
-            <article class="metric-card">
-                <span>Principal</span>
-                <strong>{{ optional($selectedVehicle->media->firstWhere('is_primary', true))->id ? '#'.optional($selectedVehicle->media->firstWhere('is_primary', true))->id : 'Sin definir' }}</strong>
-                <p>La foto principal es la que aparece primero en el marketplace.</p>
-            </article>
-            <article class="metric-card">
-                <span>Procesando</span>
-                <strong>{{ $selectedVehicle->media->where('processing_status', 'pending')->count() }}</strong>
-                <p>Imágenes que todavía están en cola o terminando de procesarse.</p>
-            </article>
-        </div>
-
-        <div class="dashboard-panel" style="margin-top: 1.5rem;">
-            <div class="panel-heading">
-                <div>
-                    <p class="portal-kicker">Subir nuevas</p>
-                    <h2>Agregar fotos nuevas a la galería</h2>
-                </div>
-            </div>
-
-            <form method="POST" action="{{ route('seller.vehicles.media.store', $selectedVehicle) }}" enctype="multipart/form-data" class="portal-form">
-                @csrf
-                <div class="seller-filter-grid">
-                    <label class="form-field" style="grid-column: 1 / -1;">
-                        <span>Selecciona una o varias fotos</span>
-                        <input type="file" name="images[]" multiple accept="image/*" required />
-                        <small>Estas fotos se agregarán al final de la galería actual de {{ $selectedVehicle->title }}.</small>
-                    </label>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="button button--solid">Subir nuevas fotos</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="panel-heading" style="margin-top: 2rem;">
-            <div>
-                <p class="portal-kicker">Paso 3</p>
-                <h2>Reemplazar o reordenar fotos existentes</h2>
-            </div>
-        </div>
-
-        <div class="chip-grid mt-4">
-            @forelse ($selectedVehicle->media->sortBy('sort_order') as $media)
-                @php
-                    $imageUrl = $media->path !== '' ? \Illuminate\Support\Facades\Storage::disk($media->disk ?: 'public')->url($media->path) : null;
-                    $label = $media->alt_text ?: 'Foto de galería';
-                @endphp
-                <article class="chip-card" style="display:grid; gap:1rem;">
-                    <div style="display:grid; gap:0.75rem;">
-                        <div style="display:flex; align-items:start; justify-content:space-between; gap:1rem;">
-                            <div>
-                                <strong>#{{ $media->id }} · {{ $label }}</strong>
-                                <p>{{ ucfirst($media->processing_status) }}@if($media->is_primary) · principal @endif</p>
-                            </div>
-                            @if ($media->is_primary)
-                                <span class="status-badge status-badge--success">Principal</span>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;">
+            @php $mainSlots = ['frontal', 'trasera', 'lateral_izquierdo', 'lateral_derecho']; @endphp
+            @foreach($mainSlots as $slot)
+                @php $slotMedia = $existingMediaBySlot->get($slot, collect())->first(); @endphp
+                <article style="background: var(--portal-soft); border: 2px solid {{ $slotMedia ? 'var(--portal-border)' : 'var(--portal-primary-soft)' }}; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.2s ease;">
+                    <div style="position: relative; height: 160px; background: #000; display: flex; align-items: center; justify-content: center;">
+                        @if ($slotMedia)
+                            <img src="{{ \Illuminate\Support\Facades\Storage::disk($slotMedia->disk ?: 'public')->url($slotMedia->path) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            @if($slotMedia->is_primary)
+                                <span style="position: absolute; top: 10px; right: 10px; background: var(--portal-primary); color: #000; font-size: 0.6rem; font-weight: 800; padding: 2px 6px; border-radius: 4px;">PORTADA</span>
                             @endif
-                        </div>
-
-                        @if ($imageUrl)
-                            <div style="border-radius:1rem; overflow:hidden; border:1px solid rgba(148,163,184,0.18); background:#0f172a;">
-                                <img src="{{ $imageUrl }}" alt="{{ $label }}" style="display:block; width:100%; height:220px; object-fit:cover;">
-                            </div>
                         @else
-                            <div class="empty-state" style="min-height:220px;">
-                                <strong>Imagen no disponible</strong>
-                                <p>Este archivo todavía no tiene una ruta pública lista.</p>
+                            <div style="text-align: center; padding: 1rem;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--portal-primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.5;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                                <p style="font-size: 0.7rem; margin-top: 0.5rem; color: var(--portal-muted);">Pendiente</p>
                             </div>
                         @endif
                     </div>
+                    <div style="padding: 1rem;">
+                        <strong style="display: block; font-size: 0.8rem; text-transform: capitalize;">{{ str_replace('_', ' ', $slot) }}</strong>
+                        <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                            @if($slotMedia)
+                                <form method="POST" action="{{ route('seller.vehicles.media.replace', [$selectedVehicle, $slotMedia]) }}" enctype="multipart/form-data">
+                                    @csrf
+                                    <label class="button button--ghost" style="width: 100%; font-size: 0.75rem; min-height: 0; padding: 0.4rem; cursor: pointer;">
+                                        Reemplazar
+                                        <input type="file" name="image" accept="image/*" onchange="this.form.submit()" style="display: none;">
+                                    </label>
+                                </form>
+                                @if(!$slotMedia->is_primary)
+                                    <form method="POST" action="{{ route('seller.vehicles.media.primary', [$selectedVehicle, $slotMedia]) }}">
+                                        @csrf @method('PATCH')
+                                        <button type="submit" class="button button--ghost" style="width: 100%; font-size: 0.75rem; min-height: 0; padding: 0.4rem;">Poner de Portada</button>
+                                    </form>
+                                @endif
+                                <form method="POST" action="{{ route('seller.vehicles.media.destroy', [$selectedVehicle, $slotMedia]) }}" onsubmit="return confirm('¿Quitar esta foto?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="button button--ghost" style="width: 100%; font-size: 0.75rem; min-height: 0; padding: 0.4rem; color: var(--portal-warn);">Quitar</button>
+                                </form>
+                            @else
+                                <form method="POST" action="{{ route('seller.vehicles.media.store', $selectedVehicle) }}" enctype="multipart/form-data">
+                                    @csrf
+                                    <label class="button button--solid" style="width: 100%; font-size: 0.75rem; min-height: 0; padding: 0.5rem; cursor: pointer;">
+                                        Subir Foto
+                                        <input type="file" name="required_images[{{ $slot }}]" accept="image/*" onchange="this.form.submit()" style="display: none;">
+                                    </label>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+                </article>
+            @endforeach
+        </div>
 
-                    <form method="POST" action="{{ route('seller.vehicles.media.replace', [$selectedVehicle, $media]) }}" enctype="multipart/form-data" class="portal-form">
-                        @csrf
-                        <div class="seller-filter-grid">
-                            <label class="form-field" style="grid-column: 1 / -1;">
-                                <span>Reemplazar esta foto</span>
-                                <input type="file" name="image" accept="image/*" required />
-                                <small>La imagen actual se sustituirá por la nueva, conservando su posición en la galería.</small>
-                            </label>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="button button--solid">Reemplazar esta foto</button>
-                        </div>
-                    </form>
-                    <div class="table-actions">
-                        @if (! $media->is_primary)
-                            <form method="POST" action="{{ route('seller.vehicles.media.primary', [$selectedVehicle, $media]) }}">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" class="text-link">Usar como principal</button>
-                            </form>
+        <div class="panel-heading" style="margin: 3rem 0 2rem;">
+            <div>
+                <p class="portal-kicker">Complementario</p>
+                <h2>Motor y Detalles</h2>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;">
+            @php $detailSlots = ['interior_conductor', 'interior_copiloto', 'interior_pasajeros', 'motor']; @endphp
+            @foreach($detailSlots as $slot)
+                @php $slotMedia = $existingMediaBySlot->get($slot, collect())->first(); @endphp
+                <article style="background: var(--portal-soft); border: 1px solid var(--portal-border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;">
+                    <div style="position: relative; height: 140px; background: #000; display: flex; align-items: center; justify-content: center;">
+                        @if ($slotMedia)
+                            <img src="{{ \Illuminate\Support\Facades\Storage::disk($slotMedia->disk ?: 'public')->url($slotMedia->path) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        @else
+                            <div style="text-align: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--portal-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </div>
                         @endif
-                        <form method="POST" action="{{ route('seller.vehicles.media.destroy', [$selectedVehicle, $media]) }}" onsubmit="return confirm('¿Eliminar esta fotografía?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-link">Eliminar</button>
+                    </div>
+                    <div style="padding: 1rem;">
+                        <strong style="display: block; font-size: 0.75rem; text-transform: capitalize; color: var(--portal-muted);">{{ str_replace('_', ' ', $slot) }}</strong>
+                        <div style="margin-top: 1rem;">
+                            @if($slotMedia)
+                                <form method="POST" action="{{ route('seller.vehicles.media.replace', [$selectedVehicle, $slotMedia]) }}" enctype="multipart/form-data">
+                                    @csrf
+                                    <label class="text-link" style="font-size: 0.75rem; cursor: pointer;">
+                                        Cambiar
+                                        <input type="file" name="image" accept="image/*" onchange="this.form.submit()" style="display: none;">
+                                    </label>
+                                </form>
+                            @else
+                                <form method="POST" action="{{ route('seller.vehicles.media.store', $selectedVehicle) }}" enctype="multipart/form-data">
+                                    @csrf
+                                    <label class="button button--ghost" style="width: 100%; font-size: 0.7rem; min-height: 0; padding: 0.3rem; cursor: pointer;">
+                                        Subir
+                                        <input type="file" name="required_images[{{ $slot }}]" accept="image/*" onchange="this.form.submit()" style="display: none;">
+                                    </label>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+                </article>
+            @endforeach
+        </div>
+
+        <div class="panel-heading" style="margin: 3rem 0 2rem;">
+            <div>
+                <p class="portal-kicker">Carrusel Final</p>
+                <h2>Fotos Extras</h2>
+                <p style="color: var(--portal-muted);">Imágenes adicionales del tablero, aros, baúl o cualquier detalle extra.</p>
+            </div>
+            <form method="POST" action="{{ route('seller.vehicles.media.store', $selectedVehicle) }}" enctype="multipart/form-data">
+                @csrf
+                <label class="button button--solid" style="cursor: pointer;">
+                    Añadir Extras
+                    <input type="file" name="images[]" multiple accept="image/*" onchange="this.form.submit()" style="display: none;">
+                </label>
+            </form>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem;">
+            @forelse ($existingMediaBySlot->get('extra', collect()) as $extraMedia)
+                <article style="background: var(--portal-soft); border-radius: 8px; overflow: hidden; position: relative; aspect-ratio: 1/1;">
+                    <img src="{{ \Illuminate\Support\Facades\Storage::disk($extraMedia->disk ?: 'public')->url($extraMedia->path) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 0.5rem; display: flex; justify-content: flex-end; gap: 0.4rem;">
+                        <form method="POST" action="{{ route('seller.vehicles.media.destroy', [$selectedVehicle, $extraMedia]) }}" onsubmit="return confirm('¿Quitar?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" style="background: var(--portal-danger); color: #fff; border: none; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">×</button>
                         </form>
                     </div>
                 </article>
             @empty
-                <div class="empty-state">
-                    <strong>Este vehículo todavía no tiene fotos.</strong>
-                    <p>Usa el bloque de arriba para subir las primeras imágenes y luego aquí podrás reemplazarlas una por una.</p>
+                <div style="grid-column: span 5; padding: 3rem; text-align: center; border: 1px dashed var(--portal-border); border-radius: 12px; color: var(--portal-muted);">
+                    Sin fotos adicionales por ahora.
                 </div>
             @endforelse
         </div>

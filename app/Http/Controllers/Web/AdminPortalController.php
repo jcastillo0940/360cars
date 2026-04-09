@@ -33,44 +33,61 @@ class AdminPortalController extends Controller
 
     public function index(Request $request)
     {
+        $selectedYear = (int) $request->input('year', now()->year);
+        $selectedMake = $request->input('make_id');
+        
         $data = $this->sharedData($request);
         $latestTransactions = Transaction::query()->with(['user', 'plan'])->latest()->take(6)->get();
-        $latestVehicles = Vehicle::query()->with(['owner', 'make', 'model'])->latest()->take(6)->get();
-
-        $paymentTrend = collect(range(5, 0))->map(function ($offset) {
-            $date = now()->subMonths($offset);
+        
+        // Revenue Trend by Month for the selected year
+        $paymentTrend = collect(range(1, 12))->map(function ($month) use ($selectedYear) {
             return [
-                'label' => $date->translatedFormat('M'),
+                'label' => now()->month($month)->translatedFormat('M'),
                 'value' => (float) Transaction::query()
                     ->where('status', 'paid')
-                    ->whereYear('created_at', $date->year)
-                    ->whereMonth('created_at', $date->month)
+                    ->whereYear('created_at', $selectedYear)
+                    ->whereMonth('created_at', $month)
                     ->sum('amount'),
             ];
-        })->push([
-            'label' => now()->translatedFormat('M'),
-            'value' => (float) Transaction::query()->where('status', 'paid')->whereYear('created_at', now()->year)->whereMonth('created_at', now()->month)->sum('amount'),
-        ]);
+        });
 
-        $inventoryTrend = collect(range(5, 0))->map(function ($offset) {
-            $date = now()->subMonths($offset);
+        // Inventory Growth
+        $inventoryTrend = collect(range(1, 12))->map(function ($month) use ($selectedYear, $selectedMake) {
             return [
-                'label' => $date->translatedFormat('M'),
-                'value' => Vehicle::query()->whereYear('created_at', $date->year)->whereMonth('created_at', $date->month)->count(),
+                'label' => now()->month($month)->translatedFormat('M'),
+                'value' => Vehicle::query()
+                    ->whereYear('created_at', $selectedYear)
+                    ->whereMonth('created_at', $month)
+                    ->when($selectedMake, fn($q) => $q->where('vehicle_make_id', $selectedMake))
+                    ->count(),
             ];
-        })->push([
-            'label' => now()->translatedFormat('M'),
-            'value' => Vehicle::query()->whereYear('created_at', now()->year)->whereMonth('created_at', now()->month)->count(),
-        ]);
+        });
+
+        // Top Brands distribution
+        $topBrands = Vehicle::query()
+            ->selectRaw('vehicle_make_id, count(*) as count')
+            ->groupBy('vehicle_make_id')
+            ->with('make')
+            ->orderByDesc('count')
+            ->take(5)
+            ->get()
+            ->map(fn($v) => [
+                'label' => $v->make?->name ?? 'Otros',
+                'count' => $v->count,
+                'percentage' => $data['vehicleCount'] > 0 ? round(($v->count / $data['vehicleCount']) * 100) : 0
+            ]);
 
         $paymentMax = max(1, $paymentTrend->max('value'));
         $inventoryMax = max(1, $inventoryTrend->max('value'));
 
         return view('portal.admin.overview', $data + [
             'latestTransactions' => $latestTransactions,
-            'latestVehicles' => $latestVehicles,
-            'paymentTrendChart' => $paymentTrend->map(fn ($item) => $item + ['height' => max(12, (int) round(($item['value'] / $paymentMax) * 100))]),
-            'inventoryTrendChart' => $inventoryTrend->map(fn ($item) => $item + ['height' => max(12, (int) round(($item['value'] / $inventoryMax) * 100))]),
+            'topBrands' => $topBrands,
+            'selectedYear' => $selectedYear,
+            'selectedMake' => $selectedMake,
+            'paymentTrendChart' => $paymentTrend->map(fn ($item) => $item + ['height' => max(1, (int) round(($item['value'] / $paymentMax) * 100))]),
+            'inventoryTrendChart' => $inventoryTrend->map(fn ($item) => $item + ['height' => max(1, (int) round(($item['value'] / $inventoryMax) * 100))]),
+            'availableYears' => range(now()->year, now()->year - 3),
         ]);
     }
 

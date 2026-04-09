@@ -55,7 +55,7 @@
                     <div class="hidden items-center gap-8 md:flex">
                         <a href="{{ route('catalog.index') }}"
                             class="font-headline text-sm font-bold tracking-tight text-slate-200 transition hover:text-primary">Comprar</a>
-                        <a href="{{ route('home') }}#destacados"
+                        <a href="{{ route('catalog.index', ['featured' => 1]) }}"
                             class="font-headline text-sm font-bold tracking-tight text-slate-200 transition hover:text-primary">Destacados</a>
                         <a href="{{ route('valuation.index') }}"
                             class="font-headline text-sm font-bold tracking-tight text-slate-200 transition hover:text-primary">Estimación
@@ -115,7 +115,7 @@
                 <div class="flex flex-col gap-4">
                     <a href="{{ route('catalog.index') }}"
                         class="font-headline text-base font-bold tracking-tight text-slate-100">Comprar</a>
-                    <a href="{{ route('home') }}#destacados"
+                    <a href="{{ route('catalog.index', ['featured' => 1]) }}"
                         class="font-headline text-base font-bold tracking-tight text-slate-100">Destacados</a>
                     <a href="{{ route('valuation.index') }}"
                         class="font-headline text-base font-bold tracking-tight text-slate-100">Estimación de mercado</a>

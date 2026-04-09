@@ -1,4 +1,4 @@
-﻿@extends('layouts.portal')
+@extends('layouts.portal')
 
 @section('title', 'Características | Movikaa')
 @section('portal-eyebrow', 'Administración')
@@ -9,93 +9,70 @@
     <a href="#features" class="button button--solid">Crear característica</a>
 @endsection
 
-@section('sidebar')
-<nav class="portal-nav">
-    <a href="{{ route('admin.dashboard') }}">Resumen</a>
-    <a href="{{ route('admin.catalog') }}">Catálogo</a>
-    <a href="{{ route('admin.features') }}" class="is-active">Características</a>
-    <a href="{{ route('admin.plans') }}">Planes</a>
-    <a href="{{ route('admin.news') }}">Noticias</a>
-    <a href="{{ route('admin.payments') }}">Pagos</a>
-    <a href="{{ route('admin.users') }}">Usuarios</a>
-    <a href="{{ route('admin.settings') }}">Ajustes</a>
-</nav>
-@endsection
-
 @section('content')
-<section class="dashboard-grid">
-    <article class="metric-card"><span>Total</span><strong>{{ $featureStats['total'] }}</strong><p>Características registradas.</p></article>
-    <article class="metric-card"><span>Activas</span><strong>{{ $featureStats['active'] }}</strong><p>Visibles en el flujo de publicación.</p></article>
-    <article class="metric-card"><span>Categorías</span><strong>{{ $featureStats['categories'] }}</strong><p>Grupos actualmente utilizados.</p></article>
+<section class="dashboard-grid reveal">
+    <article class="metric-card">
+        <span>Características</span>
+        <strong>{{ $featureStats['total'] }}</strong>
+        <p>Inscritas en el sistema.</p>
+    </article>
+    <article class="metric-card">
+        <span>Disponibles</span>
+        <strong>{{ $featureStats['active'] }}</strong>
+        <p>Opciones visibles para publicar.</p>
+    </article>
+    <article class="metric-card">
+        <span>Segmentos</span>
+        <strong>{{ $featureStats['categories'] }}</strong>
+        <p>Categorías de equipamiento.</p>
+    </article>
 </section>
 
-<section class="panel-grid panel-grid--admin-overview" id="features">
-    <article class="dashboard-panel">
-        <div class="panel-heading"><div><p class="portal-kicker">Nueva opción</p><h2>Crear característica</h2></div></div>
-        <form method="POST" action="{{ route('admin.feature-options.store') }}" class="portal-form">
-            @csrf
-            <div class="form-grid">
-                <label class="form-field"><span>Nombre</span><input type="text" name="name" placeholder="Ej. Cámara 360" required /></label>
-                <label class="form-field"><span>Categoría</span><input type="text" name="category" list="feature-category-list" placeholder="equipamiento" required /></label>
-                <label class="form-field form-field--wide"><span>Descripción</span><input type="text" name="description" placeholder="Opcional" /></label>
-                <label class="form-field"><span>Orden</span><input type="number" name="sort_order" min="0" max="9999" value="0" /></label>
-            </div>
-            <datalist id="feature-category-list">
-                @foreach ($featureCategories as $category)
-                    <option value="{{ $category }}"></option>
-                @endforeach
-            </datalist>
-            <div class="form-actions"><button type="submit" class="button button--solid">Crear característica</button></div>
-        </form>
-    </article>
+<section class="dashboard-panel reveal reveal--delay-1" id="features" style="margin-top: 1.5rem;">
+    <div class="panel-heading">
+        <div><p class="portal-kicker">Catálogo</p><h2>Características del Inventario</h2></div>
+        <button onclick="document.getElementById('new-feature-form').scrollIntoView({behavior:'smooth'})" class="button button--ghost" style="padding: 0.25rem 0.5rem; min-height: 0; font-size: 0.75rem;">Añadir nueva</button>
+    </div>
 
-    <article class="dashboard-panel">
-        <div class="panel-heading"><div><p class="portal-kicker">Listado</p><h2>Checklist activo</h2></div></div>
-        <div class="catalog-stack mt-4">
-            @forelse ($featureOptions->groupBy('category') as $category => $group)
-                <article class="catalog-block">
-                    <div class="catalog-block__header"><div><strong>{{ str($category)->replace('-', ' ')->title() }}</strong><p>{{ $group->count() }} opciones</p></div></div>
-                    <div class="table-shell mt-4">
-                        <table class="portal-table">
-                            <thead><tr><th>Nombre</th><th>Descripción</th><th>Orden</th><th>Estado</th><th>Acciones</th></tr></thead>
-                            <tbody>
-                            @foreach ($group as $feature)
-                                <tr>
-                                    <td><strong>{{ $feature->name }}</strong><span>{{ $feature->slug }}</span></td>
-                                    <td>{{ $feature->description ?: 'Sin descripción' }}</td>
-                                    <td>{{ $feature->sort_order }}</td>
-                                    <td><span class="status-badge {{ $feature->is_active ? 'status-badge--success' : '' }}">{{ $feature->is_active ? 'Activa' : 'Inactiva' }}</span></td>
-                                    <td>
-                                        <div class="table-actions">
-                                            <form method="POST" action="{{ route('admin.feature-options.toggle', $feature) }}">@csrf @method('PATCH')<button type="submit" class="button button--ghost">{{ $feature->is_active ? 'Desactivar' : 'Activar' }}</button></form>
-                                            <form method="POST" action="{{ route('admin.feature-options.destroy', $feature) }}" onsubmit="return confirm('¿Seguro que deseas eliminar est? característica?')">@csrf @method('DELETE')<button type="submit" class="button button--ghost-danger">Eliminar</button></form>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="5">
-                                        <form method="POST" action="{{ route('admin.feature-options.update', $feature) }}" class="portal-form">
-                                            @csrf
-                                            @method('PUT')
-                                            <div class="form-grid">
-                                                <label class="form-field"><span>Nombre</span><input type="text" name="name" value="{{ $feature->name }}" required /></label>
-                                                <label class="form-field"><span>Categoría</span><input type="text" name="category" value="{{ $feature->category }}" list="feature-category-list" required /></label>
-                                                <label class="form-field form-field--wide"><span>Descripción</span><input type="text" name="description" value="{{ $feature->description }}" placeholder="Opcional" /></label>
-                                                <label class="form-field"><span>Orden</span><input type="number" name="sort_order" min="0" max="9999" value="{{ $feature->sort_order }}" /></label>
-                                            </div>
-                                            <div class="form-actions"><button type="submit" class="button button--solid">Guardar cambios</button></div>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </article>
-            @empty
-                <div class="empty-state"><strong>Sin características</strong><p>Todavía no has configurado opciones para el checklist del vendedor.</p></div>
-            @endforelse
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 1rem;">
+        @foreach ($featureOptions->groupBy('category') as $category => $group)
+            <article style="background: var(--portal-soft); border: 1px solid var(--portal-border); border-radius: 8px; padding: 1.5rem;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1rem; color: var(--portal-primary); text-transform: uppercase; letter-spacing: 0.05em;">{{ str($category)->replace('-', ' ') }}</h3>
+                <div class="list-stack">
+                    @foreach ($group as $feature)
+                        <div class="list-row" style="padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <div style="flex: 1;">
+                                <strong style="font-size: 0.9rem;">{{ $feature->name }}</strong>
+                                <p style="margin:0; font-size: 0.7rem; color: var(--portal-muted);">Orden: {{ $feature->sort_order }}</p>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <span class="status-badge {{ $feature->is_active ? 'status-badge--success' : '' }}" style="font-size: 0.6rem;">{{ $feature->is_active ? 'ON' : 'OFF' }}</span>
+                                <form method="POST" action="{{ route('admin.feature-options.toggle', $feature) }}">@csrf @method('PATCH')<button type="submit" class="button button--ghost" style="padding: 0.2rem 0.4rem; min-height:0; font-size: 0.65rem;">Toggle</button></form>
+                                <form method="POST" action="{{ route('admin.feature-options.destroy', $feature) }}" onsubmit="return confirm('¿Eliminar?')">@csrf @method('DELETE')<button type="submit" class="button button--ghost" style="padding: 0.2rem 0.4rem; min-height:0; font-size: 0.65rem; color: var(--portal-warn);">×</button></form>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </article>
+        @endforeach
+    </div>
+</section>
+
+<section class="dashboard-panel reveal reveal--delay-2" id="new-feature-form" style="margin-top: 1.5rem;">
+    <div class="panel-heading"><div><p class="portal-kicker">Configuración</p><h2>Nueva Característica</h2></div></div>
+    <form method="POST" action="{{ route('admin.feature-options.store') }}" class="portal-form">
+        @csrf
+        <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr auto; align-items: flex-end; gap: 1rem;">
+            <label class="form-field"><span>Nombre de la opción</span><input type="text" name="name" placeholder="Ej. Pantalla Táctil" required /></label>
+            <label class="form-field"><span>Categoría</span><input type="text" name="category" list="feature-category-list" placeholder="Seguridad, Interior..." required /></label>
+            <label class="form-field"><span>Prioridad (Orden)</span><input type="number" name="sort_order" min="0" value="0" /></label>
+            <button type="submit" class="button button--solid">Crear Registro</button>
         </div>
-    </article>
+        <datalist id="feature-category-list">
+            @foreach ($featureCategories as $category)
+                <option value="{{ $category }}"></option>
+            @endforeach
+        </datalist>
+    </form>
 </section>
 @endsection

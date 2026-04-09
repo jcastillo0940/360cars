@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { buildComparisonsUrl, getComparisonIds } from './comparison-store';
 import { Icon, PriceStack, PublicFooter, PublicTopBar, formatCRC } from './public-shell';
 
 async function mutateVehicle(urlTemplate, vehicleId, method, csrfToken) {
@@ -46,13 +47,16 @@ function VehicleCard({ vehicle, isFavorited, onFavorite }) {
                     <span>{vehicle.mileage ? `${vehicle.mileage} ${vehicle.mileage_unit}` : 'Kilometraje no indicado'}</span>
                     <span>{vehicle.province || vehicle.city || 'Costa Rica'}</span>
                 </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                    {vehicle.performance_badge ? <span className="rounded-full bg-primary-fixed px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-primary">{vehicle.performance_badge}</span> : null}
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-600">{vehicle.view_count} vistas</span>
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-600">{vehicle.lead_count} contactos</span>
+                </div>
                 <div className="mt-5 flex items-center justify-between gap-3">
                     <PriceStack primary={vehicle.price} secondary={vehicle.price_secondary} />
-                    {vehicle.whatsapp_url ? (
+                    {vehicle.contact_url ? (
                         <a
-                            href={vehicle.whatsapp_url}
-                            target="_blank"
-                            rel="noreferrer"
+                            href={vehicle.contact_url}
                             className="inline-flex items-center gap-2 rounded-full border border-[#25D366]/30 bg-[#25D366]/12 px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#128C7E] transition-colors hover:border-[#25D366] hover:bg-[#25D366] hover:text-white"
                         >
                             <Icon name="chat" className="text-[16px]" />
@@ -108,7 +112,7 @@ function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, logi
         max_year: Number(filters.max_year || yearRange.max),
     });
     const [favoriteIds, setFavoriteIds] = useState(engagement.favoriteVehicleIds || []);
-    const [comparisonIds, setComparisonIds] = useState(engagement.comparisonVehicleIds || []);
+    const [comparisonIds, setComparisonIds] = useState(() => getComparisonIds());
     const [saveMessage, setSaveMessage] = useState('');
     const [compareMessage, setCompareMessage] = useState('');
     const isDark = publicTheme === 'dark';
@@ -126,6 +130,18 @@ function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, logi
             setLocalFilters((current) => ({ ...current, model: '' }));
         }
     }, [availableModels, localFilters.model]);
+
+    useEffect(() => {
+        const syncComparisonIds = () => setComparisonIds(getComparisonIds());
+
+        window.addEventListener('storage', syncComparisonIds);
+        window.addEventListener('focus', syncComparisonIds);
+
+        return () => {
+            window.removeEventListener('storage', syncComparisonIds);
+            window.removeEventListener('focus', syncComparisonIds);
+        };
+    }, []);
 
     const setFilter = (key, value) => {
         setLocalFilters((current) => ({ ...current, [key]: value }));
@@ -186,23 +202,6 @@ function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, logi
         setFavoriteIds((current) => payload.favorited ? [...current.filter((id) => id !== vehicleId), vehicleId] : current.filter((id) => id !== vehicleId));
     };
 
-    const toggleCompare = async (vehicleId) => {
-        if (!ensureBuyer()) return;
-        try {
-            const isActive = comparisonIds.includes(vehicleId);
-            const payload = await mutateVehicle(endpoints.comparisonTemplate, vehicleId, isActive ? 'DELETE' : 'POST', endpoints.csrfToken);
-            const nextIds = payload.compared
-                ? [...comparisonIds.filter((id) => id !== vehicleId), vehicleId]
-                : comparisonIds.filter((id) => id !== vehicleId);
-            setComparisonIds(nextIds);
-            setCompareMessage(payload.compared
-                ? `Vehículo agregado al comparador. Llevas ${payload.comparison_count} de 4.`
-                : 'Vehículo removido del comparador.');
-        } catch (error) {
-            setCompareMessage(error.message || 'No fue posible actualizar el comparador.');
-        }
-    };
-
     const saveSearch = async () => {
         if (!ensureBuyer() || !endpoints.savedSearchUrl) return;
         const response = await fetch(endpoints.savedSearchUrl, {
@@ -237,7 +236,7 @@ function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, logi
                 accountUrl={accountUrl}
                 authUser={authUser}
                 newsUrl={`${homeUrl}#noticias`}
-                featuredUrl={`${homeUrl}#destacados`}
+                featuredUrl={`${catalogUrl}?featured=1`}
             />
             <main className="pt-20">
                 <section className={`border-b border-outline-variant/20 py-16 sm:py-20 ${isDark ? 'bg-transparent' : 'bg-gradient-to-br from-[#eff5ff] via-white to-[#f8efe8]'}`}>
@@ -269,7 +268,7 @@ function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, logi
                             </div>
                             <div className="mt-5 flex flex-wrap items-center gap-3">
                                 <span className="rounded-full bg-secondary/12 px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-secondary">{comparisonIds.length} en comparador</span>
-                                <a href={comparisonsUrl} className="rounded-full border border-secondary bg-secondary px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white transition hover:bg-secondary-container">Ver comparador</a>
+                                <a href={buildComparisonsUrl(comparisonsUrl, comparisonIds)} className="rounded-full border border-secondary bg-secondary px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white transition hover:bg-secondary-container">Ver comparador</a>
                             </div>
                             {compareMessage ? <p className={`mt-4 text-sm ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>{compareMessage}</p> : null}
                         </div>

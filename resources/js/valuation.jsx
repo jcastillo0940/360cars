@@ -128,7 +128,7 @@ function ValuationPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, aut
                 accountUrl={accountUrl}
                 authUser={authUser}
                 newsUrl={`${homeUrl}#noticias`}
-                featuredUrl={`${homeUrl}#destacados`}
+                featuredUrl={`${catalogUrl}?featured=1`}
             />
 
             <main className="pt-20">
@@ -238,7 +238,6 @@ if (element) {
     const props = JSON.parse(element.dataset.props || '{}');
     createRoot(element).render(<ValuationPage {...props} />);
 }
-
 
 
 

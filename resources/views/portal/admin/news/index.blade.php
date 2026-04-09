@@ -1,4 +1,4 @@
-﻿@extends('layouts.portal')
+@extends('layouts.portal')
 
 @section('title', 'Noticias | Movikaa')
 @section('portal-eyebrow', 'Contenido editorial')
@@ -9,53 +9,71 @@
     <a href="{{ route('admin.news.create') }}" class="button button--solid">Nuevo artículo</a>
 @endsection
 
-@section('sidebar')
-<nav class="portal-nav">
-    <a href="{{ route('admin.dashboard') }}">Resumen</a>
-    <a href="{{ route('admin.catalog') }}">Catálogo</a>
-    <a href="{{ route('admin.features') }}">Características</a>
-    <a href="{{ route('admin.plans') }}">Planes</a>
-    <a href="{{ route('admin.news') }}" class="is-active">Noticias</a>
-    <a href="{{ route('admin.payments') }}">Pagos</a>
-    <a href="{{ route('admin.users') }}">Usuarios</a>
-    <a href="{{ route('admin.settings') }}">Ajustes</a>
-</nav>
-@endsection
-
 @section('content')
-<section class="dashboard-grid">
-    <article class="metric-card"><span>Total</span><strong>{{ $newsStats['total'] }}</strong><p>Artículos registrados.</p></article>
-    <article class="metric-card"><span>Publicados</span><strong>{{ $newsStats['published'] }}</strong><p>Visibles en el blog público.</p></article>
-    <article class="metric-card"><span>Dest?cados</span><strong>{{ $newsStats['featured'] }}</strong><p>Con prioridad visual en el listado.</p></article>
+<section class="dashboard-grid reveal">
+    <article class="metric-card">
+        <span>Artículos Totales</span>
+        <strong>{{ $newsStats['total'] }}</strong>
+        <p>En el repositorio editorial.</p>
+    </article>
+    <article class="metric-card">
+        <span>Edición Pública</span>
+        <strong>{{ $newsStats['published'] }}</strong>
+        <p>Visibles en el blog principal.</p>
+    </article>
+    <article class="metric-card">
+        <span>Destacados</span>
+        <strong>{{ $newsStats['featured'] }}</strong>
+        <p>Con prioridad en el feed.</p>
+    </article>
 </section>
 
-<section class="dashboard-panel">
-    <div class="panel-heading"><div><p class="portal-kicker">Filtros</p><h2>Buscar artículos</h2></div></div>
-    <form method="GET" action="{{ route('admin.news') }}" class="portal-form portal-form--inline">
-        <div class="form-grid">
-            <label class="form-field"><span>Buscar</span><input type="text" name="q" value="{{ $newsFilters['q'] }}" placeholder="Título, slug o resumen" /></label>
+<section class="dashboard-panel reveal reveal--delay-1">
+    <div class="panel-heading"><div><p class="portal-kicker">Filtrar</p><h2>Búsqueda Editorial</h2></div></div>
+    <form method="GET" action="{{ route('admin.news') }}" class="portal-form">
+        <div class="form-grid" style="grid-template-columns: 2fr 1fr auto; align-items: flex-end; gap: 1rem;">
+            <label class="form-field"><span>Título o Contenido</span><input type="text" name="q" value="{{ $newsFilters['q'] }}" placeholder="Ej. Consejos para vender..." /></label>
             <label class="form-field"><span>Estado</span><select name="status"><option value="">Todos</option><option value="draft" @selected($newsFilters['status']==='draft')>Borrador</option><option value="published" @selected($newsFilters['status']==='published')>Publicado</option></select></label>
+            <div style="display: flex; gap: 0.5rem;">
+                <button type="submit" class="button button--solid">Buscar</button>
+                <a href="{{ route('admin.news') }}" class="button button--ghost">Reset</a>
+            </div>
         </div>
-        <div class="form-actions"><button type="submit" class="button button--solid">Filtrar</button><a href="{{ route('admin.news') }}" class="button button--ghost">Limpiar</a></div>
     </form>
 </section>
 
-<section class="dashboard-panel" id="news-list">
-    <div class="panel-heading"><div><p class="portal-kicker">Listado</p><h2>Artículos creados</h2></div><a href="{{ route('news.index') }}" class="text-link" target="_blank" rel="noreferrer">Ver blog público</a></div>
+<section class="dashboard-panel reveal reveal--delay-2" id="news-list" style="margin-top: 1.5rem;">
+    <div class="panel-heading">
+        <div><p class="portal-kicker">Gesti?n</p><h2>Contenido del Blog</h2></div>
+        <a href="{{ route('news.index') }}" class="button button--ghost" style="padding: 0.25rem 0.5rem; min-height: 0; font-size: 0.75rem;" target="_blank">Ver blog público</a>
+    </div>
     <div class="table-shell">
         <table class="portal-table">
-            <thead><tr><th>Artículo</th><th>Estado</th><th>Autor</th><th>Fecha</th><th>Acciones</th></tr></thead>
+            <thead><tr><th>Artículo</th><th>Estado</th><th>Autor</th><th>Publicado</th><th style="text-align: right;">Acciones</th></tr></thead>
             <tbody>
             @forelse ($newsPosts as $post)
                 <tr>
-                    <td><strong>{{ $post->title }}</strong><span>{{ $post->slug }}</span></td>
-                    <td><span class="status-badge {{ $post->status === 'published' ? 'status-badge--success' : '' }}">{{ $post->status === 'published' ? 'Publicado' : 'Borrador' }}</span>@if($post->is_featured)<span class="status-badge" style="margin-left:.5rem;">Dest?cado</span>@endif</td>
-                    <td>{{ $post->author?->name ?? 'Equipo Movikaa' }}</td>
-                    <td>{{ optional($post->published_at)->format('d/m/Y H:i') ?? 'Sin fecha' }}</td>
-                    <td><div class="table-actions"><a href="{{ route('admin.news.edit', $post) }}" class="button button--ghost">Editar</a>@if($post->status === 'published')<a href="{{ route('news.show', $post->slug) }}" class="button button--ghost" target="_blank" rel="noreferrer">Ver</a>@endif<form method="POST" action="{{ route('admin.news.destroy', $post) }}" onsubmit="return confirm('¿Seguro que deseas eliminar este artículo?')">@csrf @method('DELETE')<button type="submit" class="button button--ghost-danger">Eliminar</button></form></div></td>
+                    <td>
+                        <strong style="color: var(--portal-primary); font-size: 0.95rem;">{{ $post->title }}</strong>
+                        <p style="margin:0; font-size: 0.7rem; color: var(--portal-muted);">/{{ $post->slug }}</p>
+                    </td>
+                    <td>
+                        <span class="status-badge {{ $post->status === 'published' ? 'status-badge--success' : '' }}">
+                            {{ $post->status === 'published' ? 'Publicado' : 'Borrador' }}
+                        </span>
+                        @if($post->is_featured) <span class="pill pill--success" style="font-size: 0.6rem; margin-left: 0.25rem;">Destacado</span> @endif
+                    </td>
+                    <td><span style="font-size: 0.85rem;">{{ $post->author?->name ?? 'Admin' }}</span></td>
+                    <td><span style="font-size: 0.85rem; color: var(--portal-muted);">{{ optional($post->published_at)->format('d/m/Y') ?? 'Pendiente' }}</span></td>
+                    <td style="text-align: right;">
+                        <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                            <a href="{{ route('admin.news.edit', $post) }}" class="button button--ghost" style="padding: 0.25rem 0.5rem; min-height: 0; font-size: 0.75rem;">Editar</a>
+                            <form method="POST" action="{{ route('admin.news.destroy', $post) }}" onsubmit="return confirm('¿Eliminar artículo?')" style="display:inline;">@csrf @method('DELETE')<button type="submit" class="button button--ghost" style="padding: 0.25rem 0.5rem; min-height: 0; font-size: 0.75rem; color: var(--portal-warn);">Borrar</button></form>
+                        </div>
+                    </td>
                 </tr>
             @empty
-                <tr><td colspan="5">Todavía no hay artículos. Crea el primero para activar el blog público.</td></tr>
+                <tr><td colspan="5" style="text-align: center; padding: 4rem;">No hay artículos todavía. Empieza a crear contenido para tu comunidad.</td></tr>
             @endforelse
             </tbody>
         </table>
