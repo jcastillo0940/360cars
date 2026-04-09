@@ -11,15 +11,28 @@
     @yield('head')
 </head>
 <body class="theme-dark bg-black text-white font-body">
-    <nav class="fixed top-0 z-50 w-full border-b border-white/10 bg-black/90 backdrop-blur-md" data-topbar>
-        <div class="mx-auto flex h-20 w-full max-w-screen-2xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
-            <a href="{{ route('home') }}" class="font-headline text-3xl font-extrabold tracking-tighter text-primary">Movikaa</a>
-            <a href="{{ route('home') }}" class="inline-flex items-center justify-center rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-primary hover:text-white">Volver al inicio</a>
-        </div>
-    </nav>
+    <div class="fixed inset-0 z-0 overflow-hidden">
+        <img 
+            src="/luxury_car_showroom_dark_1775669453755.png" 
+            class="h-full w-full scale-105 object-cover opacity-50 blur-xl animate-slow-zoom" 
+            alt="Background"
+        >
+        <div class="absolute inset-0 bg-gradient-to-br from-black/80 via-black/40 to-black/90"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#000_100%)] opacity-60"></div>
+    </div>
 
-    <main class="relative overflow-hidden pt-20">
+    <main class="relative z-10 flex min-h-screen items-center justify-center py-12 px-4">
         @yield('content')
     </main>
+
+    <style>
+        @keyframes slowZoom {
+            0% { transform: scale(1.05) translate(0, 0); }
+            100% { transform: scale(1.2) translate(-1%, -1%); }
+        }
+        .animate-slow-zoom {
+            animation: slowZoom 30s linear infinite alternate;
+        }
+    </style>
 </body>
 </html>

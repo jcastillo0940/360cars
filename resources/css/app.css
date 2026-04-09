@@ -157,24 +157,30 @@ h1, h2, h3, h4, strong { font-family: 'Manrope', sans-serif; font-weight: 700; c
     transition: all 0.2s;
 }
 .header-search__input:focus { width: 300px; outline: none; border-color: var(--portal-primary); background: var(--portal-card); }
-.header-search::before {
-    content: '🔍';
+.header-search { position: relative; display: flex; align-items: center; }
+.header-search svg {
     position: absolute;
     left: 0.85rem;
-    font-size: 0.8rem;
-    opacity: 0.5;
+    color: var(--portal-muted);
+    pointer-events: none;
 }
 
-.header-icons { display: flex; align-items: center; gap: 0.5rem; }
+.header-icons { display: flex; align-items: center; gap: 0.25rem; }
 .icon-btn {
-    width: 2.25rem; height: 2.25rem;
-    border-radius: 50%;
+    width: 2.5rem; height: 2.5rem;
+    border-radius: 0.75rem;
     display: flex; align-items: center; justify-content: center;
     background: transparent;
     color: var(--portal-muted);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
 }
-.icon-btn:hover { background: var(--portal-soft); color: var(--portal-ink); }
-.icon-placeholder { font-size: 1.1rem; }
+.icon-btn:hover { 
+    background: var(--portal-soft); 
+    color: var(--portal-primary);
+    transform: translateY(-1px);
+}
 
 .header-filters { display: flex; gap: 0.5rem; }
 .header-filters select {

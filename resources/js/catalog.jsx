@@ -47,10 +47,10 @@ function VehicleCard({ vehicle, isFavorited, onFavorite }) {
                     <span>{vehicle.mileage ? `${vehicle.mileage} ${vehicle.mileage_unit}` : 'Kilometraje no indicado'}</span>
                     <span>{vehicle.province || vehicle.city || 'Costa Rica'}</span>
                 </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                    {vehicle.performance_badge ? <span className="rounded-full bg-primary-fixed px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-primary">{vehicle.performance_badge}</span> : null}
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-600">{vehicle.view_count} vistas</span>
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-600">{vehicle.lead_count} contactos</span>
+                <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-bold uppercase tracking-[0.12em]">
+                    {vehicle.performance_badge ? <span className="rounded-full bg-primary/15 px-3 py-1 text-primary">{vehicle.performance_badge}</span> : null}
+                    <span className="rounded-full bg-slate-900/10 px-3 py-1 text-slate-700">{vehicle.view_count} vistas</span>
+                    {vehicle.is_owner ? <span className="rounded-full bg-secondary/15 px-3 py-1 text-secondary-container">{vehicle.lead_count} contactos</span> : null}
                 </div>
                 <div className="mt-5 flex items-center justify-between gap-3">
                     <PriceStack primary={vehicle.price} secondary={vehicle.price_secondary} />

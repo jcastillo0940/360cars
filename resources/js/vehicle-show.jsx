@@ -189,8 +189,8 @@ function VehicleShowPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, 
                                     <h1 className="mt-4 font-headline text-4xl font-extrabold tracking-tight text-slate-950">{vehicle.title}</h1>
                                     <p className="mt-3 text-base text-slate-500">{vehicle.city || 'Costa Rica'} | {vehicle.published_label}</p>
                                     <div className="mt-4 flex flex-wrap gap-2">
-                                        <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-primary">{vehicle.view_count} vistas</span>
-                                        <span className="rounded-full bg-secondary/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-secondary">{vehicle.lead_count} contactos</span>
+                                        <span className="rounded-full bg-slate-900/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-700">{vehicle.view_count} vistas</span>
+                                        {vehicle.is_owner ? <span className="rounded-full bg-secondary/15 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-secondary-container">{vehicle.lead_count} contactos</span> : null}
                                     </div>
                                     <div className="mt-6 flex items-end justify-between gap-4">
                                         <PriceStack primary={vehicle.price} secondary={vehicle.price_secondary} large />

@@ -464,6 +464,7 @@ class PublicCatalogController extends Controller
             'view_count' => (int) $vehicle->view_count,
             'lead_count' => (int) $vehicle->lead_count,
             'performance_badge' => $performanceBadge,
+            'is_owner' => auth()->check() && auth()->id() === $vehicle->user_id,
         ];
     }
 

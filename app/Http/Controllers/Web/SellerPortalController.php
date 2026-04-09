@@ -225,12 +225,14 @@ class SellerPortalController extends Controller
     public function uploadMedia(UploadVehicleMediaRequest $request, Vehicle $vehicle): RedirectResponse
     {
         $this->authorizeVehicleAccess($request, $vehicle);
-        $this->limitGuard->ensureCanUploadImages($request->user(), $vehicle->media()->count() + count($request->file('images', [])));
+        
+        $count = count($request->file('images', [])) + count($request->file('required_images', []));
+        $this->limitGuard->ensureCanUploadImages($request->user(), $vehicle->media()->count() + $count);
 
-        $queuedMediaIds = $this->imageProcessor->stageMany($vehicle, $request->file('images'));
+        $queuedMediaIds = $this->queueMediaFromRequest($request, $vehicle, false);
         $this->imageProcessor->dispatchMany($queuedMediaIds);
 
-        return back()->with('status', 'Imagenes agregadas y encoladas correctamente.');
+        return back()->with('status', 'Fotografías agregadas y procesándose correctamente.');
     }
 
     public function makePrimary(Request $request, Vehicle $vehicle, VehicleMedia $media): RedirectResponse
