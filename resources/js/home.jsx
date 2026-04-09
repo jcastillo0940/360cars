@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Icon, PriceStack, PublicFooter, PublicTopBar, formatCRC } from './public-shell';
+import { BrandMark } from './brand-assets';
 
 function vehicleUrl(catalogUrl, filters) {
     const params = new URLSearchParams();
@@ -49,30 +50,13 @@ function HomeVehicleCard({ vehicle, compact = false }) {
 }
 
 function BrandChip({ make, href }) {
-    const brandLogos = {
-        'Toyota': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Toyota.svg/1200px-Toyota.svg.png',
-        'Hyundai': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Hyundai_Motor_Company_logo.svg/1200px-Hyundai_Motor_Company_logo.svg.png',
-        'Nissan': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Nissan_logo.svg/1200px-Nissan_logo.svg.png',
-        'Suzuki': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Suzuki_logo_2.svg/1200px-Suzuki_logo_2.svg.png',
-        'Mitsubishi': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Mitsubishi_logo.svg/1200px-Mitsubishi_logo.svg.png',
-        'BMW': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/BMW.svg/1200px-BMW.svg.png',
-    };
-
-    const logoUrl = brandLogos[make.name];
-
     return (
         <a href={href} className="group rounded-[1.5rem] border border-outline-variant/20 bg-white p-5 shadow-lg transition hover:-translate-y-1 hover:border-primary hover:shadow-xl">
             <div className="flex items-center gap-4">
-                <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 p-2 font-headline text-lg font-black text-primary">
-                    {logoUrl ? (
-                        <img src={logoUrl} alt={make.name} className="h-full w-full object-contain mix-blend-multiply" />
-                    ) : (
-                        <span className="opacity-40">{make.name.slice(0, 2).toUpperCase()}</span>
-                    )}
-                </div>
+                <BrandMark name={make.name} />
                 <div>
                     <strong className="block font-headline text-xl font-extrabold text-slate-950">{make.name}</strong>
-                    <span className="mt-1 block text-sm text-slate-500">{make.models?.length || make.models_count || 0} modelos</span>
+                    <span className="mt-1 block text-sm text-slate-500">{make.listings_count || 0} autos en venta</span>
                 </div>
             </div>
         </a>

@@ -329,12 +329,27 @@ h1, h2, h3, h4, strong { font-family: 'Manrope', sans-serif; }
 .catalog-block--selected{border-color:rgba(246,162,26,.55);box-shadow:0 18px 40px rgba(246,162,26,.12)}
 
 /* UAT Fix: Ensure dropdown legibility */
-select option {
+select {
+    color-scheme: light;
+}
+
+select,
+select option,
+select optgroup {
     background-color: #ffffff !important;
     color: #1a1c1e !important;
 }
 
-.theme-dark select option {
+.theme-dark select {
+    color-scheme: dark;
+}
+
+.theme-dark select,
+.theme-dark select option,
+.theme-dark select optgroup,
+.seller-onboarding-page select,
+.seller-onboarding-page select option,
+.seller-onboarding-page select optgroup {
     background-color: #12131a !important;
     color: #f8fafc !important;
 }

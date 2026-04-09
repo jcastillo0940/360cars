@@ -625,10 +625,30 @@
     accent-color: #005bb7;
 }
 
+.public-hero-select,
+.hero-search-select {
+    color-scheme: light;
+}
+
+.public-hero-select,
+.hero-search-select,
+.public-hero-select option,
+.hero-search-select option,
+.public-hero-select optgroup,
+.hero-search-select optgroup {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+}
+
+.seller-onboarding-page select {
+    color-scheme: dark;
+}
+
 .seller-onboarding-page select,
-.seller-onboarding-page select option {
-    background: #12131a;
-    color: #f8fafc;
+.seller-onboarding-page select option,
+.seller-onboarding-page select optgroup {
+    background: #12131a !important;
+    color: #f8fafc !important;
 }
 
 @media (max-width: 900px) {

@@ -61,12 +61,19 @@ class HomeController extends Controller
             $catalogMakes = VehicleMake::query()
                 ->active()
                 ->with(['models' => fn ($query) => $query->active()->orderBy('name')])
+                ->withCount(['vehicles as listings_count' => function ($query): void {
+                    $query->where('status', 'published')
+                        ->where(function ($inner): void {
+                            $inner->whereNull('expires_at')->orWhere('expires_at', '>=', now());
+                        });
+                }])
                 ->orderBy('name')
                 ->get()
                 ->map(fn (VehicleMake $make) => [
                     'id' => $make->id,
                     'name' => $make->name,
                     'slug' => $make->slug,
+                    'listings_count' => (int) $make->listings_count,
                     'models' => $make->models->map(fn ($model) => [
                         'id' => $model->id,
                         'name' => $model->name,
@@ -102,6 +109,12 @@ class HomeController extends Controller
         $makes = VehicleMake::query()
             ->active()
             ->withCount(['models' => fn ($query) => $query->active()])
+            ->withCount(['vehicles as listings_count' => function ($query): void {
+                $query->where('status', 'published')
+                    ->where(function ($inner): void {
+                        $inner->whereNull('expires_at')->orWhere('expires_at', '>=', now());
+                    });
+            }])
             ->orderBy('name')
             ->get()
             ->map(fn (VehicleMake $make) => [
@@ -109,6 +122,7 @@ class HomeController extends Controller
                 'name' => $make->name,
                 'slug' => $make->slug,
                 'models_count' => (int) $make->models_count,
+                'listings_count' => (int) $make->listings_count,
             ])
             ->values();
 

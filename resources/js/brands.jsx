@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { PublicFooter, PublicTopBar } from './public-shell';
+import { BrandMark } from './brand-assets';
 
 function BrandDirectory({ homeUrl, catalogUrl, brandsUrl, valuationUrl, sellUrl, accountUrl, loginUrl, authUser, makes, publicTheme = 'light', footerLinks }) {
     const isDark = publicTheme === 'dark';
@@ -33,12 +34,10 @@ function BrandDirectory({ homeUrl, catalogUrl, brandsUrl, valuationUrl, sellUrl,
                         {makes.map((make) => (
                             <a key={make.id} href={`${catalogUrl}?make=${encodeURIComponent(make.name)}`} className="group rounded-[1.75rem] border border-outline-variant/20 bg-white p-6 shadow-xl transition hover:-translate-y-1 hover:border-primary hover:shadow-2xl">
                                 <div className="flex items-center gap-4">
-                                    <div className="inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-primary-fixed font-headline text-xl font-black text-primary">
-                                        {make.name.slice(0, 2).toUpperCase()}
-                                    </div>
+                                    <BrandMark name={make.name} className="h-16 w-16 rounded-3xl" />
                                     <div>
                                         <h2 className="font-headline text-2xl font-extrabold tracking-tight text-slate-950">{make.name}</h2>
-                                        <p className="mt-1 text-sm text-slate-500">{make.models_count} modelos activos</p>
+                                        <p className="mt-1 text-sm text-slate-500">{make.listings_count} autos publicados</p>
                                     </div>
                                 </div>
                                 <div className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-primary transition group-hover:translate-x-1">
