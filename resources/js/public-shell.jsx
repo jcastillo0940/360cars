@@ -16,7 +16,7 @@ export function Logo({ className = '' }) {
     return (
         <div className={`flex items-center ${className}`}>
             <img 
-                src="/storage/img/logo.png" 
+                src="/img/logo.png" 
                 alt="Movikaa" 
                 className="h-8 w-auto object-contain sm:h-10" 
                 onError={(e) => {

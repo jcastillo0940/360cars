@@ -15,7 +15,7 @@
         <aside class="portal-sidebar" data-sidebar>
             <div class="portal-sidebar__brand">
                 <a href="{{ route('home') }}" class="portal-brand">
-                    <img src="/storage/img/logo.png" alt="360Cars" style="height: 32px; width: auto; object-fit: contain;">
+                    <img src="/img/logo.png" alt="Movikaa" style="height: 32px; width: auto; object-fit: contain;">
                 </a>
                 <button class="portal-sidebar__toggle" type="button" data-sidebar-toggle aria-expanded="false">
                     <span></span>
