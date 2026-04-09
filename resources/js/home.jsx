@@ -125,14 +125,15 @@ function HomePage({
             />
 
             <main>
-                <section className="relative isolate flex min-h-[90vh] flex-col items-center justify-center overflow-hidden border-b border-outline-variant/5 bg-[#05070b] py-20 text-white">
-                    <div className="absolute inset-0 z-0">
-                        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-[#05070b]" />
+                <section className="relative isolate flex min-h-screen flex-col items-center justify-center overflow-hidden border-b border-outline-variant/5 bg-[#05070b] py-20 text-white">
+                    <div className="absolute inset-0 z-0 overflow-hidden">
                         <img
                             src="/luxury_car_showroom_dark_1775669453755.png"
-                            className="h-full w-full object-cover"
+                            className="h-full w-full scale-105 object-cover opacity-50 blur-md"
                             alt="Background"
                         />
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-[#05070b]" />
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_20%,_#05070b_100%)] opacity-80" />
                     </div>
 
                     <div className="relative z-10 mx-auto w-full max-w-screen-2xl px-4 text-center sm:px-6 lg:px-8">
@@ -226,7 +227,7 @@ function HomePage({
                             <div className="mt-8 flex justify-center">
                                 <a href={valuationUrl} className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/40 px-6 py-2.5 text-sm font-bold text-white backdrop-blur-md transition hover:bg-black/60">
                                     <Icon name="analytics" className="text-[20px]" />
-                                    <span>Probar tasador</span>
+                                    <span>Estimación de mercado</span>
                                 </a>
                             </div>
                         </div>

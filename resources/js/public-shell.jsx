@@ -12,6 +12,23 @@ export function Icon({ name, className = '', filled = false }) {
     );
 }
 
+export function Logo({ className = '' }) {
+    return (
+        <div className={`flex items-center ${className}`}>
+            <img 
+                src="/storage/img/logo.png" 
+                alt="Movikaa" 
+                className="h-8 w-auto object-contain sm:h-10" 
+                onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'block';
+                }}
+            />
+            <span className="hidden font-headline text-2xl font-black tracking-tighter sm:text-3xl">Movikaa</span>
+        </div>
+    );
+}
+
 export function PriceStack({ primary, secondary, align = 'left', large = false }) {
     return (
         <div className={align === 'right' ? 'text-right' : ''}>
@@ -71,7 +88,9 @@ export function PublicTopBar({ homeUrl, catalogUrl, brandsUrl, valuationUrl, sel
                     <button type="button" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant/40 text-primary transition hover:bg-primary/5 md:hidden" onClick={() => setMenuOpen((current) => !current)} aria-label="Abrir menú">
                         <Icon name={menuOpen ? 'close' : 'menu'} className="text-[24px]" />
                     </button>
-                    <a href={homeUrl} className={`font-headline text-2xl font-black tracking-tight sm:text-3xl ${transparent ? 'text-white' : 'text-primary'}`}>Movikaa</a>
+                    <a href={homeUrl} className={transparent ? 'text-white' : 'text-primary'}>
+                        <Logo />
+                    </a>
                     <div className="hidden md:flex md:gap-6 lg:gap-8">
                         {navigation.map((item) => (
                             <a key={item.label} href={item.href} className={`font-headline text-sm font-bold tracking-tight transition-colors lg:text-base ${transparent ? 'text-white/80 hover:text-white' : 'text-slate-600 hover:text-primary'}`}>
@@ -143,7 +162,9 @@ export function PublicFooter({ homeUrl, catalogUrl, brandsUrl, valuationUrl, sel
         <footer className="mt-16 bg-slate-950 text-white">
             <div className="mx-auto grid max-w-screen-2xl grid-cols-1 gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1.5fr_repeat(3,minmax(0,1fr))] lg:px-8">
                 <div>
-                    <a href={homeUrl} className="font-headline text-3xl font-black tracking-tight text-white">Movikaa</a>
+                    <a href={homeUrl} className="text-white">
+                        <Logo />
+                    </a>
                     <p className="mt-5 max-w-md text-sm leading-7 text-slate-400">Marketplace automotriz para Costa Rica con inventario real, herramientas claras para vender y una búsqueda pensada para decidir más rápido.</p>
                     <div className="mt-6 flex flex-wrap gap-3">
                         <a href={sellUrl} className="inline-flex items-center justify-center rounded bg-secondary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary-container">Publicar auto</a>

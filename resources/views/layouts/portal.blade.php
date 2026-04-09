@@ -15,11 +15,7 @@
         <aside class="portal-sidebar" data-sidebar>
             <div class="portal-sidebar__brand">
                 <a href="{{ route('home') }}" class="portal-brand">
-                    <span class="portal-brand__mark" style="background: var(--portal-primary); color: #000;">3</span>
-                    <span>
-                        <strong style="color: #fff;">360Cars</strong>
-                        <small>Backoffice</small>
-                    </span>
+                    <img src="/storage/img/logo.png" alt="360Cars" style="height: 32px; width: auto; object-fit: contain;">
                 </a>
                 <button class="portal-sidebar__toggle" type="button" data-sidebar-toggle aria-expanded="false">
                     <span></span>
