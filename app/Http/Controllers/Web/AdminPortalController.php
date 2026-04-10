@@ -18,6 +18,8 @@ use App\Services\Valuation\ValuationSettingsService;
 use App\Services\Valuation\VehicleValuationAiNarrator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -273,7 +275,8 @@ class AdminPortalController extends Controller
             'slug' => ['nullable', 'string', 'max:180', 'unique:news_posts,slug'],
             'excerpt' => ['nullable', 'string'],
             'content' => ['required', 'string'],
-            'cover_image_url' => ['nullable', 'url', 'max:2048'],
+            'cover_image' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'remove_cover_image' => ['nullable', 'boolean'],
             'status' => ['required', Rule::in(['draft', 'published'])],
             'is_featured' => ['nullable', 'boolean'],
             'published_at' => ['nullable', 'date'],
@@ -287,7 +290,7 @@ class AdminPortalController extends Controller
             'slug' => $this->uniqueNewsSlug($data['slug'] ?? $data['title']),
             'excerpt' => $data['excerpt'] ?? null,
             'content' => $data['content'],
-            'cover_image_url' => $data['cover_image_url'] ?? null,
+            'cover_image_url' => $this->storeNewsCoverImage($request->file('cover_image')),
             'status' => $data['status'],
             'is_featured' => (bool) ($data['is_featured'] ?? false),
             'published_at' => $data['status'] === 'published' ? ($data['published_at'] ?? now()) : null,
@@ -295,7 +298,7 @@ class AdminPortalController extends Controller
             'meta_description' => $data['meta_description'] ?? null,
         ]);
 
-        return redirect()->to(route('admin.news.edit', $post).'#editor')->with('status', 'Artículo creado correctamente.');
+        return redirect()->to(route('admin.news.edit', $post).'#editor')->with('status', 'Articulo creado correctamente.');
     }
 
     public function editNews(Request $request, NewsPost $newsPost)
@@ -312,7 +315,8 @@ class AdminPortalController extends Controller
             'slug' => ['nullable', 'string', 'max:180', Rule::unique('news_posts', 'slug')->ignore($newsPost->id)],
             'excerpt' => ['nullable', 'string'],
             'content' => ['required', 'string'],
-            'cover_image_url' => ['nullable', 'url', 'max:2048'],
+            'cover_image' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'remove_cover_image' => ['nullable', 'boolean'],
             'status' => ['required', Rule::in(['draft', 'published'])],
             'is_featured' => ['nullable', 'boolean'],
             'published_at' => ['nullable', 'date'],
@@ -324,12 +328,24 @@ class AdminPortalController extends Controller
             ? ($data['published_at'] ?? $newsPost->published_at ?? now())
             : null;
 
+        $coverImageUrl = $newsPost->cover_image_url;
+
+        if ($request->boolean('remove_cover_image')) {
+            $this->deleteNewsCoverImage($coverImageUrl);
+            $coverImageUrl = null;
+        }
+
+        if ($request->hasFile('cover_image')) {
+            $this->deleteNewsCoverImage($coverImageUrl);
+            $coverImageUrl = $this->storeNewsCoverImage($request->file('cover_image'));
+        }
+
         $newsPost->update([
             'title' => $data['title'],
             'slug' => $this->uniqueNewsSlug($data['slug'] ?? $data['title'], $newsPost->id),
             'excerpt' => $data['excerpt'] ?? null,
             'content' => $data['content'],
-            'cover_image_url' => $data['cover_image_url'] ?? null,
+            'cover_image_url' => $coverImageUrl,
             'status' => $data['status'],
             'is_featured' => (bool) ($data['is_featured'] ?? false),
             'published_at' => $publishedAt,
@@ -337,19 +353,86 @@ class AdminPortalController extends Controller
             'meta_description' => $data['meta_description'] ?? null,
         ]);
 
-        return redirect()->to(route('admin.news.edit', $newsPost).'#editor')->with('status', 'Artículo actualizado correctamente.');
+        return redirect()->to(route('admin.news.edit', $newsPost).'#editor')->with('status', 'Articulo actualizado correctamente.');
     }
 
     public function destroyNews(NewsPost $newsPost): RedirectResponse
     {
+        $this->deleteNewsCoverImage($newsPost->cover_image_url);
         $newsPost->delete();
 
-        return redirect()->to(route('admin.news').'#news-list')->with('status', 'Artículo eliminado correctamente.');
+        return redirect()->to(route('admin.news').'#news-list')->with('status', 'Articulo eliminado correctamente.');
+    }
+
+
+    private function storeNewsCoverImage(?UploadedFile $file): ?string
+    {
+        if (! $file instanceof UploadedFile) {
+            return null;
+        }
+
+        $disk = Storage::disk('public');
+        $directory = 'news/covers';
+        $baseName = (string) Str::uuid();
+        $binary = $file->get();
+
+        if ($binary === false) {
+            return null;
+        }
+
+        if (function_exists('imagecreatefromstring') && function_exists('imagewebp')) {
+            $source = @imagecreatefromstring($binary);
+
+            if ($source) {
+                $width = imagesx($source);
+                $height = imagesy($source);
+                $targetWidth = min($width, 1600);
+                $targetHeight = $width > 0 ? (int) round(($height / $width) * $targetWidth) : $height;
+                $canvas = imagecreatetruecolor($targetWidth, $targetHeight);
+                imagealphablending($canvas, false);
+                imagesavealpha($canvas, true);
+                $transparent = imagecolorallocatealpha($canvas, 0, 0, 0, 127);
+                imagefilledrectangle($canvas, 0, 0, $targetWidth, $targetHeight, $transparent);
+                imagecopyresampled($canvas, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
+
+                ob_start();
+                imagewebp($canvas, null, (int) config('media.webp_quality', 82));
+                $optimized = (string) ob_get_clean();
+                $path = $directory.'/'.$baseName.'.webp';
+                $disk->put($path, $optimized, 'public');
+
+                imagedestroy($source);
+                imagedestroy($canvas);
+
+                return $disk->url($path);
+            }
+        }
+
+        $extension = strtolower($file->getClientOriginalExtension() ?: 'jpg');
+        $path = $disk->putFileAs($directory, $file, $baseName.'.'.$extension, 'public');
+
+        return $path ? $disk->url($path) : null;
+    }
+
+    private function deleteNewsCoverImage(?string $coverImageUrl): void
+    {
+        if (! is_string($coverImageUrl) || $coverImageUrl === '') {
+            return;
+        }
+
+        $storagePrefix = Storage::disk('public')->url('');
+        $path = str_starts_with($coverImageUrl, $storagePrefix)
+            ? ltrim(Str::after($coverImageUrl, $storagePrefix), '/')
+            : ltrim($coverImageUrl, '/');
+
+        if (str_starts_with($path, 'news/covers/')) {
+            Storage::disk('public')->delete($path);
+        }
     }
 
     private function uniqueNewsSlug(string $value, ?int $ignoreId = null): string
     {
-        $base = Str::slug($value) ?: 'artículo';
+        $base = Str::slug($value) ?: 'articulo';
         $slug = $base;
         $suffix = 2;
 
@@ -545,18 +628,18 @@ class AdminPortalController extends Controller
             'sort_order' => $data['sort_order'] ?? 0,
         ]);
 
-        return redirect()->to(route('admin.features').'#features')->with('status', 'Característica actualizada correctamente.');
+        return redirect()->to(route('admin.features').'#features')->with('status', 'CaracterÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­stica actualizada correctamente.');
     }
 
     public function destroyFeatureOption(VehicleFeatureOption $featureOption): RedirectResponse
     {
         if (Vehicle::query()->whereJsonContains('features', $featureOption->slug)->exists()) {
-            return redirect()->to(route('admin.features').'#features')->with('status', 'No puedes eliminar est? característica porque ya está en uso en uno o más vehículos.');
+            return redirect()->to(route('admin.features').'#features')->with('status', 'No puedes eliminar est? caracterÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­stica porque ya estÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ en uso en uno o mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡s vehÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­culos.');
         }
 
         $featureOption->delete();
 
-        return redirect()->to(route('admin.features').'#features')->with('status', 'Característica eliminada correctamente.');
+        return redirect()->to(route('admin.features').'#features')->with('status', 'CaracterÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­stica eliminada correctamente.');
     }
 
 
@@ -604,8 +687,8 @@ class AdminPortalController extends Controller
         return redirect()->to(route('admin.settings').'#public-theme')->with(
             'status',
             $data['public_theme'] === 'dark'
-                ? 'Tema oscuro activado para el home público.'
-                : 'Tema claro activado para el home público.'
+                ? 'Tema oscuro activado para el home pÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âºblico.'
+                : 'Tema claro activado para el home pÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âºblico.'
         );
     }
 
@@ -624,3 +707,7 @@ class AdminPortalController extends Controller
         ]);
     }
 }
+
+
+
+
