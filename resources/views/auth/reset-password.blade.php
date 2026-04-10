@@ -1,6 +1,6 @@
-﻿@extends('layouts.auth')
+@extends('layouts.auth')
 
-@section('title', 'Rest?blecer contraseña | Movikaa')
+@section('title', 'Restablecer contraseña | Movikaa')
 
 @section('content')
 <section class="min-h-[calc(100vh-5rem)] bg-black px-4 py-10 sm:px-6 lg:px-8">
@@ -37,3 +37,4 @@
     </div>
 </section>
 @endsection
+

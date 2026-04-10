@@ -1,4 +1,4 @@
-﻿@extends('layouts.portal')
+@extends('layouts.portal')
 
 @section('title', 'B?squedas comprador | Movikaa')
 @section('portal-eyebrow', 'Buyer búsquedas')
@@ -33,3 +33,4 @@
     <div class="pagination-shell">{{ $savedSearchList->links() }}</div>
 </section>
 @endsection
+

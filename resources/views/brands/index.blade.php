@@ -11,3 +11,4 @@
 @section('content')
 <div id="brands-react" data-props='@json($props)'></div>
 @endsection
+

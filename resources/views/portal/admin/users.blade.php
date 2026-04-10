@@ -107,3 +107,4 @@
     <div class="pagination-shell">{{ $latestVehicles->links() }}</div>
 </section>
 @endsection
+

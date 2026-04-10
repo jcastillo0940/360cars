@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ApplySecurityHeaders;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\LogAuthDebug;
 use App\Http\Middleware\LoggablePreventRequestForgery;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->append(ApplySecurityHeaders::class);
         $middleware->statefulApi();
         $middleware->trustProxies(at: '*');
         $middleware->web(prepend: [

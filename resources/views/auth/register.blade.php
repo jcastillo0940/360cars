@@ -51,12 +51,12 @@
 
                 <label class="grid gap-2 text-left">
                     <span class="ml-1 text-xs font-bold uppercase tracking-widest text-slate-500">Contraseña</span>
-                    <input type="password" name="password" required class="min-h-14 rounded-2xl border border-white/5 bg-white/5 px-4 text-white outline-none transition placeholder:text-slate-600 focus:border-primary/50 focus:bg-white/10 focus:ring-4 focus:ring-primary/10" placeholder="••••••••" />
+                    <input type="password" name="password" required autocomplete="new-password" class="min-h-14 rounded-2xl border border-white/5 bg-white/5 px-4 text-white outline-none transition placeholder:text-slate-600 focus:border-primary/50 focus:bg-white/10 focus:ring-4 focus:ring-primary/10" placeholder="••••••••" />
                 </label>
 
                 <label class="grid gap-2 text-left">
                     <span class="ml-1 text-xs font-bold uppercase tracking-widest text-slate-500">Confirmar</span>
-                    <input type="password" name="password_confirmation" required class="min-h-14 rounded-2xl border border-white/5 bg-white/5 px-4 text-white outline-none transition placeholder:text-slate-600 focus:border-primary/50 focus:bg-white/10 focus:ring-4 focus:ring-primary/10" placeholder="••••••••" />
+                    <input type="password" name="password_confirmation" required autocomplete="new-password" class="min-h-14 rounded-2xl border border-white/5 bg-white/5 px-4 text-white outline-none transition placeholder:text-slate-600 focus:border-primary/50 focus:bg-white/10 focus:ring-4 focus:ring-primary/10" placeholder="••••••••" />
                 </label>
             </div>
 
@@ -78,3 +78,4 @@
     </div>
 </div>
 @endsection
+

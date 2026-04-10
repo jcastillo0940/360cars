@@ -11,3 +11,4 @@
 @section('content')
 <div id="comparisons-react" data-props='@json($props)'></div>
 @endsection
+

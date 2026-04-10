@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     siAcura,
     siAudi,
@@ -81,12 +81,22 @@ function iconColor(icon) {
     return hex.toLowerCase() === '#ffffff' ? '#0f172a' : hex;
 }
 
-export function brandLogoUrl() {
-    return null;
+function brandSlug(name = '') {
+    return String(name)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
+export function brandLogoUrl(name) {
+    return `/logos/${brandSlug(name)}.png`;
 }
 
 export function BrandMark({ name, className = '' }) {
     const icon = localBrandIcons[name];
+    const [useImage, setUseImage] = useState(true);
     const initials = name
         .split(/\s+/)
         .map((chunk) => chunk[0] || '')
@@ -95,8 +105,16 @@ export function BrandMark({ name, className = '' }) {
         .toUpperCase();
 
     return (
-        <div className={`inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 p-2 font-headline text-lg font-black text-primary ${className}`}>
-            {icon ? (
+        <div className={`inline-flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-slate-50 p-2 font-headline text-lg font-black text-primary ${className}`}>
+            {useImage ? (
+                <img
+                    src={brandLogoUrl(name)}
+                    alt={name}
+                    className="h-full w-full object-contain"
+                    loading="lazy"
+                    onError={() => setUseImage(false)}
+                />
+            ) : icon ? (
                 <svg
                     viewBox="0 0 24 24"
                     aria-hidden="true"

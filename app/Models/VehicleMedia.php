@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class VehicleMedia extends Model
 {
@@ -44,5 +45,25 @@ class VehicleMedia extends Model
     public function vehicle(): BelongsTo
     {
         return $this->belongsTo(Vehicle::class);
+    }
+
+    public function publicUrl(): ?string
+    {
+        if (! filled($this->path)) {
+            return null;
+        }
+
+        return Storage::disk($this->disk ?: 'public')->url($this->path);
+    }
+
+    public function thumbUrl(): ?string
+    {
+        $thumbPath = data_get($this->conversions, 'thumb');
+
+        if (filled($thumbPath)) {
+            return Storage::disk($this->disk ?: 'public')->url($thumbPath);
+        }
+
+        return $this->publicUrl();
     }
 }

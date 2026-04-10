@@ -11,7 +11,7 @@
     <a href="{{ route('seller.listings') }}">Publicaciones</a>
     <a href="{{ route('seller.onboarding.create') }}" class="is-active">Nuevo anuncio</a>
     <a href="{{ route('seller.media') }}">Media</a>
-    <a href="{{ route('seller.billing') }}">Pagos</a>
+    <a href="{{ (config('app.enable_payments') ? route('seller.billing') : route('seller.listings')) }}">Pagos</a>
     <a href="{{ route('buyer.dashboard') }}">Actividad comprador</a>
 </nav>
 <div class="portal-note-card"><span class="portal-kicker">Capacidad</span><strong>{{ $currentPlan->name }}</strong><p>{{ $currentPlan->photo_limit ?? 'Ilimitadas' }} fotos y {{ $capabilities['remaining_active_listings'] ?? 'Ilimitadas' }} publicaciones restantes.</p></div>
@@ -20,3 +20,4 @@
 @section('content')
     @include('portal.seller._form')
 @endsection
+

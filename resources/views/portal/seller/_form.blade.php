@@ -120,7 +120,25 @@
                 </div>
             </section>
 
+
             <section class="dashboard-panel">
+                <div class="panel-heading"><h2>Fotos actuales</h2></div>
+                @php
+                    $visibleMedia = $editingVehicle->media->filter(fn ($media) => filled($media->path))->sortBy([['is_primary', 'desc'], ['sort_order', 'asc']])->take(6);
+                @endphp
+                @if ($visibleMedia->isNotEmpty())
+                    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem;">
+                        @foreach ($visibleMedia as $media)
+                            <figure style="margin: 0; overflow: hidden; border-radius: 14px; border: 1px solid var(--portal-border); background: var(--portal-soft);">
+                                <img src="{{ $media->thumbUrl() ?: $media->publicUrl() }}" alt="{{ $media->alt_text ?: $editingVehicle->title }}" style="display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover;">
+                            </figure>
+                        @endforeach
+                    </div>
+                    <a href="{{ route('seller.media', ['vehicle' => $editingVehicle->id]) }}" class="button button--ghost" style="width: 100%; margin-top: 1rem;">Abrir gestor de fotos</a>
+                @else
+                    <div class="empty-state" style="padding: 1.5rem;">Aún no hay fotos procesadas visibles en este anuncio.</div>
+                @endif
+            </section>            <section class="dashboard-panel">
                 <div class="panel-heading"><h2>Acciones</h2></div>
                 <div style="display: grid; gap: 0.75rem;">
                     <a href="{{ route('seller.media', ['vehicle' => $editingVehicle->id]) }}" class="button button--ghost" style="width: 100%;">Gestionar Fotos</a>
@@ -135,3 +153,5 @@
         </aside>
     @endif
 </div>
+
+

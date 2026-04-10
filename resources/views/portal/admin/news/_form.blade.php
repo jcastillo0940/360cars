@@ -1,4 +1,4 @@
-﻿@php
+@php
     $post = $newsPost ?? null;
 @endphp
 <form method="POST" action="{{ $action }}" class="portal-form" id="editor">
@@ -20,10 +20,11 @@
     </div>
 
     <div class="form-actions" style="justify-content:space-between;align-items:center;gap:1rem;">
-        <label class="inline-check"><input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $post?->is_featured)) /> <span>Dest?car este artículo</span></label>
+        <label class="inline-check"><input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $post?->is_featured)) /> <span>Destacar este artículo</span></label>
         <div class="form-actions">
             <a href="{{ route('admin.news') }}" class="button button--ghost">Volver</a>
             <button type="submit" class="button button--solid">{{ $submitLabel }}</button>
         </div>
     </div>
 </form>
+

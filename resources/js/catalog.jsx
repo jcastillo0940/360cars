@@ -38,8 +38,9 @@ function VehicleCard({ vehicle, isFavorited, onFavorite }) {
                         <p className="text-xs font-bold uppercase tracking-[0.2em] text-secondary">{vehicle.make} {vehicle.model}</p>
                         <a href={vehicle.url} className="mt-2 block font-headline text-xl font-extrabold tracking-tight text-slate-900">{vehicle.title}</a>
                     </div>
-                    <button type="button" onClick={() => onFavorite(vehicle.id)} className={`rounded-full p-2 transition-colors ${isFavorited ? 'bg-secondary text-white' : 'bg-secondary/12 text-secondary hover:bg-secondary hover:text-white'}`}>
+                    <button type="button" onClick={() => onFavorite(vehicle.id)} className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] transition-colors ${isFavorited ? 'bg-secondary text-white' : 'bg-secondary/12 text-secondary hover:bg-secondary hover:text-white'}`}>
                         <Icon name="favorite" className="text-[18px]" />
+                        <span>{isFavorited ? 'En favoritos' : 'Agregar'}</span>
                     </button>
                 </div>
                 <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-500">
@@ -115,6 +116,7 @@ function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, logi
     const [comparisonIds, setComparisonIds] = useState(() => getComparisonIds());
     const [saveMessage, setSaveMessage] = useState('');
     const [compareMessage, setCompareMessage] = useState('');
+    const [showAllFeatures, setShowAllFeatures] = useState(false);
     const isDark = publicTheme === 'dark';
 
     const modelsByMake = filterOptions.modelsByMake || {};
@@ -238,12 +240,12 @@ function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, logi
                 newsUrl={`${homeUrl}#noticias`}
                 featuredUrl={`${catalogUrl}?featured=1`}
             />
-            <main className="pt-20">
-                <section className={`border-b border-outline-variant/20 py-16 sm:py-20 ${isDark ? 'bg-transparent' : 'bg-gradient-to-br from-[#eff5ff] via-white to-[#f8efe8]'}`}>
+            <main className="pt-20 lg:pt-20">
+                <section className={`hidden lg:block border-b border-outline-variant/20 py-16 sm:py-20 ${isDark ? 'bg-transparent' : 'bg-gradient-to-br from-[#eff5ff] via-white to-[#f8efe8]'}`}>
                     <div className="mx-auto grid max-w-screen-2xl grid-cols-1 gap-10 px-4 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
                         <div>
                             <p className="text-xs font-bold uppercase tracking-[0.24em] text-secondary">Inventario verificado</p>
-                            <h1 className={`mt-4 font-headline text-4xl font-extrabold tracking-tight sm:text-5xl ${isDark ? 'text-white' : 'text-slate-950'}`}>Encuentra el vehículo ideal con filtros útiles y resultados rápidos.</h1>
+                            <h1 className={`mt-4 font-headline text-4xl font-extrabold tracking-tight sm:text-5xl ${isDark ? 'text-white' : 'text-slate-950'}`}>Encuentra el vehículo ideal</h1>
                             <p className={`mt-5 max-w-2xl text-base sm:text-lg ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Filtra por marca, modelo, provincia, rango de precio, rango de año y características clave desde un solo lugar.</p>
                             <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
                                 {stats.map((item) => (
@@ -277,7 +279,7 @@ function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, logi
 
                 <section className="mx-auto max-w-screen-2xl px-4 py-16 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[340px_minmax(0,1fr)] lg:items-start">
-                        <aside className="lg:sticky lg:top-28">
+                        <aside id="catalog-filters" className="order-2 lg:order-1 lg:sticky lg:top-28">
                             <form onSubmit={handleSubmit} className="space-y-4 rounded-[2rem] border border-outline-variant/20 bg-white p-5 shadow-xl">
                                 <div className="flex items-center justify-between gap-3">
                                     <div>
@@ -316,19 +318,32 @@ function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, logi
                                         <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Características</span>
                                         <strong className="text-xs font-extrabold text-primary">{localFilters.features.length || 'Todas'}</strong>
                                     </div>
-                                    <div className="mt-4 grid gap-3">
-                                        {filterOptions.features.map((feature) => (
-                                            <label key={feature.slug} className="inline-flex items-center gap-3 rounded-xl border border-outline-variant/20 bg-slate-50 px-3 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary hover:text-primary">
+                                    <div className="mt-4 grid grid-cols-2 gap-2">
+                                        {(showAllFeatures ? filterOptions.features : filterOptions.features.slice(0, 6)).map((feature) => (
+                                            <label key={feature.slug} className="group relative flex cursor-pointer items-center gap-2 rounded-xl border border-outline-variant/20 bg-slate-50 p-2.5 transition-all hover:border-primary hover:bg-white">
                                                 <input
                                                     type="checkbox"
                                                     checked={localFilters.features.includes(feature.slug)}
                                                     onChange={() => toggleFeature(feature.slug)}
-                                                    className="h-4 w-4 accent-[var(--color-secondary)]"
+                                                    className="h-4 w-4 rounded-md border-slate-300 accent-secondary transition-all focus:ring-secondary/20"
                                                 />
-                                                <span>{feature.name}</span>
+                                                <span className="truncate text-[11px] font-bold tracking-tight text-slate-600 transition-colors group-hover:text-primary">{feature.name}</span>
                                             </label>
                                         ))}
                                     </div>
+                                    {filterOptions.features.length > 6 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowAllFeatures(!showAllFeatures)}
+                                            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-secondary/20 bg-secondary/5 py-2.5 text-[11px] font-black uppercase tracking-[0.14em] text-secondary transition-all hover:bg-secondary/10"
+                                        >
+                                            {showAllFeatures ? (
+                                                <><Icon name="expand_less" className="text-[18px]" /> Ver menos carac.</>
+                                            ) : (
+                                                <><Icon name="expand_more" className="text-[18px]" /> Ver todas ({filterOptions.features.length})</>
+                                            )}
+                                        </button>
+                                    )}
                                 </div>
 
                                 <RangeControl
@@ -359,13 +374,14 @@ function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, logi
                                     <Icon name="search" className="text-[20px]" /> Buscar vehículos
                                 </button>
                                 <button type="button" onClick={saveSearch} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-secondary bg-secondary px-5 py-3 font-headline text-sm font-bold text-white transition-colors hover:bg-secondary-container">
-                                    <Icon name="notifications_active" className="text-[18px]" /> Guardar est? búsqueda
+                                    <Icon name="notifications_active" className="text-[18px]" /> Guardar esta búsqueda
                                 </button>
                                 {saveMessage ? <p className="text-sm text-slate-500">{saveMessage}</p> : null}
                             </form>
                         </aside>
 
-                        <div>
+                        <div className="order-1 lg:order-2">
+
                             <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
                                     <p className="text-xs font-bold uppercase tracking-[0.24em] text-secondary">Catálogo público</p>
@@ -375,21 +391,37 @@ function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, logi
                             </div>
 
                             {vehicles.data.length ? (
-                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                                    {vehicles.data.map((vehicle) => (
-                                        <VehicleCard
-                                            key={vehicle.id}
-                                            vehicle={vehicle}
-                                            isFavorited={favoriteIds.includes(vehicle.id)}
-                                            onFavorite={toggleFavorite}
-                                        />
-                                    ))}
+                                <div>
+                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                                        {vehicles.data.map((vehicle) => (
+                                            <VehicleCard
+                                                key={vehicle.id}
+                                                vehicle={vehicle}
+                                                isFavorited={favoriteIds.includes(vehicle.id)}
+                                                onFavorite={toggleFavorite}
+                                            />
+                                        ))}
+                                    </div>
+                                    <div className="mt-8 lg:hidden">
+                                        <div className="flex flex-col gap-4 rounded-[2rem] border border-outline-variant/20 bg-slate-50 p-6 text-center">
+                                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Acerca de estos resultados</p>
+                                            <p className="text-sm leading-6 text-slate-500">Estamos mostrando {vehicles.meta.total} unidades verificadas en Costa Rica. Todos los precios y años son confirmados por el vendedor.</p>
+                                            <a href="#catalog-filters" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-secondary px-5 py-3 text-sm font-bold text-white shadow-lg">
+                                                <Icon name="tune" className="text-[20px]" /> Abrir filtros de búsqueda
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="rounded-[2rem] border border-outline-variant/20 bg-white p-10 text-center shadow-xl">
                                     <Icon name="search_off" className="text-[42px] text-primary" />
                                     <h3 className="mt-4 font-headline text-2xl font-extrabold tracking-tight">No encontramos autos con esos filtros</h3>
                                     <p className="mt-3 text-sm text-slate-500">Prueba ampliar el rango de precio, cambiar el año o limpiar la marca, modelo y provincia para ver más resultados.</p>
+                                    <div className="mt-6 flex justify-center lg:hidden">
+                                         <a href="#catalog-filters" className="inline-flex items-center gap-2 rounded-full border border-secondary bg-secondary/12 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-secondary">
+                                             <Icon name="tune" className="text-[16px]" /> Ajustar filtros
+                                         </a>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -416,3 +448,4 @@ const element = document.getElementById('catalog-react');
 if (element) {
     createRoot(element).render(<CatalogPage {...JSON.parse(element.dataset.props || '{}')} />);
 }
+

@@ -27,7 +27,7 @@ class PayPalCheckoutService
             'purchase_units' => [[
                 'reference_id' => 'plan-'.$plan->id,
                 'custom_id' => 'user:'.$user->id.'|plan:'.$plan->id,
-                'description' => 'Suscripcion '.$plan->name.' - 360Cars',
+                'description' => 'Suscripcion '.$plan->name.' - Movikaa',
                 'amount' => [
                     'currency_code' => $plan->currency ?: config('paypal.currency', 'USD'),
                     'value' => number_format((float) $plan->price, 2, '.', ''),
@@ -154,3 +154,4 @@ class PayPalCheckoutService
         return null;
     }
 }
+

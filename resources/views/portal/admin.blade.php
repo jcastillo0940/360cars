@@ -1,6 +1,6 @@
 @extends('layouts.portal')
 
-@section('title', 'Admin Portal | 360Cars')
+@section('title', 'Admin Portal | Movikaa')
 @section('portal-eyebrow', 'Administración')
 @section('portal-title', 'Panel de Control Principal')
 
@@ -12,31 +12,31 @@
     <nav class="portal-nav" data-tabs>
         <p class="muted-label" style="padding: 0 1rem; margin-bottom: 0.5rem;">Principal</p>
         <a href="#overview" class="is-active" data-tab-trigger="overview">
-            <span class="nav-icon">📈</span>
+            <span class="nav-icon">ðŸ“ˆ</span>
             <span>Resumen General</span>
         </a>
         <a href="#payments" data-tab-trigger="payments">
-            <span class="nav-icon">💰</span>
+            <span class="nav-icon">ðŸ’°</span>
             <span>Pagos y Finanzas</span>
         </a>
         <a href="#moderation" data-tab-trigger="moderation">
-            <span class="nav-icon">🛡️</span>
+            <span class="nav-icon">ðŸ›¡ï¸</span>
             <span>Moderación de Autos</span>
         </a>
 
         <p class="muted-label" style="padding: 0 1rem; margin-top: 1.5rem; margin-bottom: 0.5rem;">Gestión</p>
         <a href="#users" data-tab-trigger="users">
-            <span class="nav-icon">👥</span>
+            <span class="nav-icon">ðŸ‘¥</span>
             <span>Control de Usuarios</span>
         </a>
         <a href="#catalog" data-tab-trigger="catalog">
-            <span class="nav-icon">📚</span>
+            <span class="nav-icon">ðŸ“š</span>
             <span>Catálogo (Marcas/Mod)</span>
         </a>
 
         <p class="muted-label" style="padding: 0 1rem; margin-top: 1.5rem; margin-bottom: 0.5rem;">Sistema</p>
         <a href="#config" data-tab-trigger="config">
-            <span class="nav-icon">⚙️</span>
+            <span class="nav-icon">âš™ï¸</span>
             <span>Configuración Global</span>
         </a>
     </nav>
@@ -197,7 +197,7 @@
                             <tr>
                                 <td><strong>{{ $user->name }}</strong><span>{{ $user->email }}</span></td>
                                 <td><span class="pill">{{ $user->account_type->value }}</span></td>
-                                <td>{{ $user->is_verified ? '✓' : '✗' }}</td>
+                                <td>{{ $user->is_verified ? 'âœ“' : 'âœ—' }}</td>
                                 <td>{{ optional($user->created_at)->format('d/m/Y') }}</td>
                             </tr>
                         @endforeach
@@ -308,7 +308,7 @@
                             <span>Habilitar sugerencias basadas en IA para vendedores</span>
                         </label>
                     </div>
-                    <p class="form-field small">Configuración actual: {{ $valuationAiConfigured ? '✓ Conectado a API' : '✗ Sin API Key' }}</p>
+                    <p class="form-field small">Configuración actual: {{ $valuationAiConfigured ? 'âœ“ Conectado a API' : 'âœ— Sin API Key' }}</p>
                     <button type="submit" class="button button--solid">Guardar Configuración IA</button>
                 </form>
             </article>
@@ -347,6 +347,8 @@
     });
 </script>
 @endsection
+
+
 
 
 

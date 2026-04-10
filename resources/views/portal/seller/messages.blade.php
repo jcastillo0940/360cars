@@ -38,3 +38,4 @@
     <div class="pagination-shell">{{ $conversationList->links() }}</div>
 </section>
 @endsection
+

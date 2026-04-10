@@ -1,6 +1,6 @@
 @extends('layouts.portal')
 
-@section('title', 'Seller Portal | 360Cars')
+@section('title', 'Seller Portal | Movikaa')
 @section('portal-eyebrow', 'Panel Vendedor')
 @section('portal-title', 'Centro de Ventas')
 
@@ -197,7 +197,7 @@
                         <p class="muted-label">Paquete</p>
                         <strong>{{ $plan->name }}</strong>
                         <p>${{ number_format($plan->price, 0) }}</p>
-                        <form method="POST" action="{{ route('seller.billing.subscribe') }}" class="mt-4">
+                        <form method="POST" action="{{ (config('app.enable_payments') ? route('seller.billing.subscribe') : route('seller.dashboard')) }}" class="mt-4">
                             @csrf
                             <input type="hidden" name="plan_slug" value="{{ $plan->slug }}">
                             <button type="submit" class="button {{ $currentPlan->id === $plan->id ? 'button--ghost' : 'button--solid' }}" {{ $currentPlan->id === $plan->id ? 'disabled' : '' }}>
@@ -257,6 +257,8 @@
     });
 </script>
 @endsection
+
+
 
 
 

@@ -48,7 +48,7 @@
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
                                 <span class="status-badge {{ $feature->is_active ? 'status-badge--success' : '' }}" style="font-size: 0.6rem;">{{ $feature->is_active ? 'ON' : 'OFF' }}</span>
                                 <form method="POST" action="{{ route('admin.feature-options.toggle', $feature) }}">@csrf @method('PATCH')<button type="submit" class="button button--ghost" style="padding: 0.2rem 0.4rem; min-height:0; font-size: 0.65rem;">Toggle</button></form>
-                                <form method="POST" action="{{ route('admin.feature-options.destroy', $feature) }}" onsubmit="return confirm('¿Eliminar?')">@csrf @method('DELETE')<button type="submit" class="button button--ghost" style="padding: 0.2rem 0.4rem; min-height:0; font-size: 0.65rem; color: var(--portal-warn);">×</button></form>
+                                <form method="POST" action="{{ route('admin.feature-options.destroy', $feature) }}" onsubmit="return confirm('¿Eliminar?')">@csrf @method('DELETE')<button type="submit" class="button button--ghost" style="padding: 0.2rem 0.4rem; min-height:0; font-size: 0.65rem; color: var(--portal-warn);">Ã—</button></form>
                             </div>
                         </div>
                     @endforeach
@@ -76,3 +76,4 @@
     </form>
 </section>
 @endsection
+

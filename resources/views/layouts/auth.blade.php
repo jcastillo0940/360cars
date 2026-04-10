@@ -3,8 +3,10 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>@yield('title', '360Cars')</title>
-    <meta name="description" content="Acceso al marketplace y backoffice de 360Cars."/>
+    <title>@yield('title', 'Movikaa')</title>
+    <meta name="description" content="Acceso al marketplace y backoffice de Movikaa."/>
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="shortcut icon" href="/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     @vite(['resources/css/home.css', 'resources/js/app.js'])
@@ -36,3 +38,5 @@
     </style>
 </body>
 </html>
+
+

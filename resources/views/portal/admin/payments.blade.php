@@ -10,6 +10,7 @@
 @endsection
 
 @section('content')
+@if (config('app.enable_payments'))
 <section class="dashboard-grid reveal">
     <article class="metric-card">
         <span>Transacciones pagadas</span>
@@ -26,7 +27,9 @@
         <strong>{{ $activeSubscriptions->total() }}</strong>
         <p>Usuarios con servicio activo.</p>
     </article>
-</sectio<section class="dashboard-panel reveal reveal--delay-1">
+</section>
+
+<section class="dashboard-panel reveal reveal--delay-1">
     <div class="panel-heading"><div><p class="portal-kicker">Filtrar</p><h2>Búsqueda de transacciones</h2></div></div>
     <form method="GET" action="{{ route('admin.payments') }}" class="portal-form">
         <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr auto; align-items: flex-end; gap: 1rem;">
@@ -113,4 +116,17 @@
     </div>
     <div class="pagination-shell">{{ $activeSubscriptions->links() }}</div>
 </section>
+@else
+<section class="dashboard-panel reveal" style="text-align: center; padding: 5rem 2rem;">
+    <div style="max-width: 500px; margin: 0 auto;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--portal-primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 2rem; opacity: 0.5;"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+        <h2 style="font-family: var(--font-headline); font-size: 2rem; font-weight: 800; color: var(--portal-ink);">Módulo de pagos deshabilitado</h2>
+        <p style="margin-top: 1rem; color: var(--portal-muted); line-height: 1.6;">El sistema de cobros y suscripciones está actualmente desactivado desde la configuración global. Todos los usuarios tienen acceso básico por defecto.</p>
+        <a href="{{ route('admin.dashboard') }}" class="button button--solid" style="margin-top: 2rem;">Volver al panel</a>
+    </div>
+</section>
+@endif
+@endsection>
+</section>
 @endsection
+

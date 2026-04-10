@@ -66,16 +66,17 @@
                     <span>Habilitar Asistente IA</span>
                 </label>
                 <p style="font-size: 0.75rem; color: var(--portal-muted); margin-top: 0.5rem; margin-left: 1.5rem;">
-                    {{ $valuationAiConfigured ? '✓ Configuración validada.' : '⚠ Pendiente de configurar API Key.' }}
+                    {{ $valuationAiConfigured ? 'âœ“ Configuración validada.' : 'âš  Pendiente de configurar API Key.' }}
                 </p>
             </div>
             <button type="submit" class="button button--solid" style="width: 100%;">Actualizar motor</button>
         </form>
     </article>
 
+    @if (config('app.enable_payments'))
     <article class="dashboard-panel" id="payment-methods">
         <div class="panel-heading"><div><p class="portal-kicker">Pagos</p><h2>Pasarelas de Cobro</h2></div></div>
-        <form method="POST" action="{{ route('admin.payment-methods.update') }}" class="portal-form">
+        <form method="POST" action="{{ (config('app.enable_payments') ? route('admin.payment-methods.update') : route('admin.settings')) }}" class="portal-form">
             @csrf
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                 <div style="background: var(--portal-soft); padding: 1rem; border-radius: 8px; border: 1px solid var(--portal-border);">
@@ -94,5 +95,7 @@
             <button type="submit" class="button button--solid" style="width: 100%;">Sincronizar métodos</button>
         </form>
     </article>
+    @endif
 </section>
 @endsection
+

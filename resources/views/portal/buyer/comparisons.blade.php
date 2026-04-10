@@ -1,4 +1,4 @@
-﻿@extends('layouts.portal')
+@extends('layouts.portal')
 
 @section('title', 'Comparador comprador | Movikaa')
 @section('portal-eyebrow', 'Buyer comparador')
@@ -150,10 +150,11 @@
         </div>
     @else
         <div class="empty-state">
-            <strong>Tu comparador est? vacio.</strong>
+            <strong>Tu comparador está vacío.</strong>
             <p>Agrega hasta 4 vehículos desde el inventario para revisarlos aquí lado a lado.</p>
             <a href="{{ route('catalog.index') }}" class="button button--solid">Ir al inventario</a>
         </div>
     @endif
 </section>
 @endsection
+

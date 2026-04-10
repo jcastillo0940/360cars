@@ -60,7 +60,7 @@
                              @if ($isScheduled) <span class="pill pill--warn" style="font-size: 0.6rem;">PROGRAMADO</span> @endif
                         </div>
                     </div>
-                    <a href="{{ route('seller.billing', ['plan' => $plan->slug]) }}" class="button {{ ($selectedPlan?->id === $plan->id) ? 'button--solid' : 'button--ghost' }}" style="padding: 0.25rem 0.5rem; min-height: 0; font-size: 0.75rem; margin-left:1rem;">{{ ($selectedPlan?->id === $plan->id) ? '✓' : 'Ver' }}</a>
+                    <a href="{{ route('seller.billing', ['plan' => $plan->slug]) }}" class="button {{ ($selectedPlan?->id === $plan->id) ? 'button--solid' : 'button--ghost' }}" style="padding: 0.25rem 0.5rem; min-height: 0; font-size: 0.75rem; margin-left:1rem;">{{ ($selectedPlan?->id === $plan->id) ? 'âœ“' : 'Ver' }}</a>
                 </div>
             @endforeach
         </div>
@@ -86,17 +86,17 @@
                 @else
                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                         @if ($selectedPlan->price <= 0)
-                            <form method="POST" action="{{ route('seller.billing.free') }}">@csrf<input type="hidden" name="plan_slug" value="{{ $selectedPlan->slug }}"><button type="submit" class="button button--solid" style="width: 100%;">Activar Gratis</button></form>
+                            <form method="POST" action="{{ (config('app.enable_payments') ? route('seller.billing.free') : route('seller.dashboard')) }}">@csrf<input type="hidden" name="plan_slug" value="{{ $selectedPlan->slug }}"><button type="submit" class="button button--solid" style="width: 100%;">Activar Gratis</button></form>
                         @else
                             <p style="font-size: 0.75rem; color: var(--portal-muted); margin-bottom: 0.5rem;">Elige tu método de pago preferido:</p>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                                 @foreach (($paymentMethods['offline'] ?? []) as $key => $method)
                                     @if (! empty($method['enabled']))
-                                        <form method="POST" action="{{ route('seller.billing.request-payment') }}">@csrf<input type="hidden" name="plan_slug" value="{{ $selectedPlan->slug }}"><input type="hidden" name="payment_method" value="{{ $key }}"><button type="submit" class="button button--ghost" style="width:100%; font-size: 0.75rem; padding: 0.5rem;">{{ $method['label'] }}</button></form>
+                                        <form method="POST" action="{{ (config('app.enable_payments') ? route('seller.billing.request-payment') : route('seller.dashboard')) }}">@csrf<input type="hidden" name="plan_slug" value="{{ $selectedPlan->slug }}"><input type="hidden" name="payment_method" value="{{ $key }}"><button type="submit" class="button button--ghost" style="width:100%; font-size: 0.75rem; padding: 0.5rem;">{{ $method['label'] }}</button></form>
                                     @endif
                                 @endforeach
                                 @if (! empty(data_get($paymentMethods, 'online.paypal.enabled')))
-                                    <form method="POST" action="{{ route('seller.billing.paypal.create-order') }}" style="grid-column: span 2;">@csrf<input type="hidden" name="plan_slug" value="{{ $selectedPlan->slug }}"><button type="submit" class="button button--solid" style="width: 100%; background: #ffc439; color: #111;" {{ $paypalConfigured ? '' : 'disabled' }}>PayPal</button></form>
+                                    <form method="POST" action="{{ (config('app.enable_payments') ? route('seller.billing.paypal.create-order') : route('seller.dashboard')) }}" style="grid-column: span 2;">@csrf<input type="hidden" name="plan_slug" value="{{ $selectedPlan->slug }}"><button type="submit" class="button button--solid" style="width: 100%; background: #ffc439; color: #111;" {{ $paypalConfigured ? '' : 'disabled' }}>PayPal</button></form>
                                 @endif
                             </div>
                         @endif
@@ -134,5 +134,6 @@
     </div>
 </section>
 @endsection
+
 
 

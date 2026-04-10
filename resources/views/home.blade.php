@@ -55,3 +55,4 @@
 @endphp
 <div id="home-react" data-props='@json($homeProps)'></div>
 @endsection
+

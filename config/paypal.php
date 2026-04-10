@@ -5,7 +5,7 @@ return [
     'client_id' => env('PAYPAL_CLIENT_ID'),
     'client_secret' => env('PAYPAL_CLIENT_SECRET'),
     'webhook_id' => env('PAYPAL_WEBHOOK_ID'),
-    'brand_name' => env('PAYPAL_BRAND_NAME', env('APP_NAME', '360Cars')),
+    'brand_name' => env('PAYPAL_BRAND_NAME', env('APP_NAME', 'Movikaa')),
     'currency' => env('PAYPAL_CURRENCY', 'USD'),
     'return_url' => env('PAYPAL_RETURN_URL'),
     'cancel_url' => env('PAYPAL_CANCEL_URL'),
@@ -14,3 +14,4 @@ return [
         'live' => 'https://api-m.paypal.com',
     ],
 ];
+

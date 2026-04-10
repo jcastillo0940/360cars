@@ -125,24 +125,34 @@ function HomePage({
             />
 
             <main>
-                <section className="relative isolate flex min-h-screen flex-col items-center justify-center overflow-hidden border-b border-outline-variant/5 bg-[#05070b] py-20 text-white">
+                <section className="relative isolate flex min-h-[80vh] flex-col items-center justify-center overflow-hidden border-b border-outline-variant/5 bg-[#05070b] py-12 text-white sm:min-h-screen sm:py-20">
                     <div className="absolute inset-0 z-0 overflow-hidden">
                         <img
                             src="/luxury_car_showroom_dark_1775669453755.png"
-                            className="h-full w-full scale-105 object-cover opacity-50 blur-md"
+                            className="h-full w-full scale-110 object-cover opacity-40 blur-sm"
                             alt="Background"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-[#05070b]" />
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-[#05070b]" />
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_20%,_#05070b_100%)] opacity-80" />
                     </div>
 
                     <div className="relative z-10 mx-auto w-full max-w-screen-2xl px-4 text-center sm:px-6 lg:px-8">
-                        <h1 className="mx-auto max-w-4xl font-headline text-5xl font-extrabold tracking-tight text-white sm:text-7xl lg:text-8xl">
+                        <h1 className="mx-auto max-w-4xl font-headline text-4xl font-extrabold tracking-tight text-white sm:text-7xl lg:text-8xl">
                             Compra y vende autos de forma inteligente
                         </h1>
-                        <p className="mx-auto mt-6 max-w-2xl text-lg font-medium text-white/80 sm:text-xl">
-                            Compara precios, analiza opciones y encuentra el vehículo ideal para vos.
+                        <p className="mx-auto mt-4 max-w-2xl text-base font-medium text-white/80 sm:mt-6 sm:text-xl">
+                            Compara precios, analiza opciones y encuentra tu vehículo ideal.
                         </p>
+
+                        <div className="mt-10 grid gap-4 lg:hidden">
+                            <div className="flex items-center justify-between">
+                                <p className="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Autos primero</p>
+                                <a href={catalogUrl} className="text-sm font-bold text-white/80 hover:text-white">Ver todos</a>
+                            </div>
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                {recentVehicles.slice(0, 2).map((vehicle) => <HomeVehicleCard key={`hero-${vehicle.id}`} vehicle={vehicle} compact />)}
+                            </div>
+                        </div>
 
                         <div className="mx-auto mt-12 w-full max-w-5xl">
                             <form onSubmit={submitSearch} className="hero-search-shell shadow-2xl">
@@ -286,7 +296,7 @@ function HomePage({
                         <a href={brandsUrl} className="text-sm font-bold text-primary hover:underline">Ver todas las marcas</a>
                     </div>
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-                        {catalogMakes.slice(0, 8).map((make) => (
+                        {catalogMakes.slice(0, 16).map((make) => (
                             <BrandChip key={make.id} make={make} href={`${catalogUrl}?make=${encodeURIComponent(make.name)}`} />
                         ))}
                     </div>
@@ -334,3 +344,4 @@ const element = document.getElementById('home-react');
 if (element) {
     createRoot(element).render(<HomePage {...JSON.parse(element.dataset.props || '{}')} />);
 }
+

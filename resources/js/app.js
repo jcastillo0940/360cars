@@ -101,6 +101,7 @@ const createDraftPhotoStore = (storageKey) => {
 
     const dbName = 'movikaa-autosave';
     const storeName = 'draft-files';
+    const maxAgeMs = 1000 * 60 * 60 * 12;
 
     const open = () => new Promise((resolve, reject) => {
         const request = window.indexedDB.open(dbName, 1);
@@ -127,8 +128,14 @@ const createDraftPhotoStore = (storageKey) => {
 
                 request.onsuccess = () => {
                     const entries = {};
+                    const now = Date.now();
                     (request.result || []).forEach((item) => {
                         if (String(item.key).startsWith(`${storageKey}:`)) {
+                            if (item.savedAt && now - Number(item.savedAt) > maxAgeMs) {
+                                store.delete(item.key);
+                                return;
+                            }
+
                             entries[String(item.key).replace(`${storageKey}:`, '')] = item.file;
                         }
                     });
@@ -147,7 +154,7 @@ const createDraftPhotoStore = (storageKey) => {
 
             return new Promise((resolve, reject) => {
                 const transaction = db.transaction(storeName, 'readwrite');
-                transaction.objectStore(storeName).put({ key: `${storageKey}:${name}`, file });
+                transaction.objectStore(storeName).put({ key: `${storageKey}:${name}`, file, savedAt: Date.now() });
                 transaction.oncomplete = () => {
                     db.close();
                     resolve();
@@ -209,8 +216,38 @@ const createDraftPhotoStore = (storageKey) => {
 const createAutosaveManager = (form, statusNode) => {
     const storageKey = form.dataset.autosaveKey;
     const photoStore = createDraftPhotoStore(storageKey);
+    const storage = typeof window !== 'undefined' ? window.sessionStorage : null;
+    const safeFieldNames = new Set([
+        'current_step',
+        'vehicle_make_id',
+        'vehicle_model_id',
+        'year',
+        'description',
+        'condition',
+        'body_type',
+        'fuel_type',
+        'transmission',
+        'drivetrain',
+        'mileage',
+        'engine',
+        'exterior_color',
+        'interior_color',
+        'doors',
+        'vin',
+        'plate_number',
+        'currency',
+        'price',
+        'province',
+        'canton',
+        'district',
+        'city',
+        'state',
+        'country_code',
+        'accept_terms',
+        'features[]',
+    ]);
 
-    if (!storageKey || !('localStorage' in window)) {
+    if (!storageKey || !storage) {
         return {
             restore: async () => {},
             save: async () => {},
@@ -251,7 +288,7 @@ const createAutosaveManager = (form, statusNode) => {
         const fields = form.querySelectorAll('input[name], select[name], textarea[name]');
 
         fields.forEach((field) => {
-            if (field.type === 'file' || field.type === 'password') {
+            if (field.type === 'file' || field.type === 'password' || !safeFieldNames.has(field.name)) {
                 return;
             }
 
@@ -273,7 +310,6 @@ const createAutosaveManager = (form, statusNode) => {
                 if (field.checked) {
                     payload[field.name] = field.value;
                 }
-                autosave?.removePhoto(input);
                 return;
             }
 
@@ -285,7 +321,7 @@ const createAutosaveManager = (form, statusNode) => {
 
     const restore = async () => {
         try {
-            const raw = window.localStorage.getItem(storageKey);
+            const raw = storage.getItem(storageKey);
             if (!raw) return;
 
             const draft = JSON.parse(raw);
@@ -351,7 +387,7 @@ const createAutosaveManager = (form, statusNode) => {
                 minute: '2-digit',
             });
 
-            window.localStorage.setItem(storageKey, JSON.stringify({
+            storage.setItem(storageKey, JSON.stringify({
                 savedAt,
                 values: getPayload(),
             }));
@@ -370,7 +406,7 @@ const createAutosaveManager = (form, statusNode) => {
     };
 
     const clear = async () => {
-        window.localStorage.removeItem(storageKey);
+        storage.removeItem(storageKey);
         await photoStore.clear();
         updatePhotoDraftStatus(0);
         setStatus('Borrador local limpiado porque el envio termino.', 'done');
@@ -399,7 +435,9 @@ const createAutosaveManager = (form, statusNode) => {
     form.addEventListener('input', stamp);
     form.addEventListener('change', stamp);
 
-    return { restore, save, clear, stamp, savePhoto, removePhoto };
+    const hasDraft = () => Boolean(storage.getItem(storageKey));
+
+    return { hasDraft, restore, save, clear, stamp, savePhoto, removePhoto };
 };
 const makeFileFromBlob = (blob, originalFile) => {
     const extension = originalFile.name.includes('.') ? originalFile.name.split('.').pop() : 'jpg';
@@ -959,7 +997,49 @@ if (wizard) {
     wirePricePreview(wizard);
     wirePhotoHints(wizard, autosave);
     wirePhotoSequence(wizard);
-    autosave.restore();
+    const draftPrompt = document.querySelector('[data-draft-prompt]');
+    const continueBtn = draftPrompt?.querySelector('[data-draft-continue]');
+    const newBtn = draftPrompt?.querySelector('[data-draft-new]');
+    const discardBtn = draftPrompt?.querySelector('[data-draft-discard]');
+
+    if (autosave.hasDraft()) {
+        if (stepIndex === 0) {
+            if (draftPrompt) draftPrompt.hidden = false;
+        } else {
+            autosave.restore();
+        }
+    }
+
+    continueBtn?.addEventListener('click', async () => {
+        await autosave.restore();
+        if (draftPrompt) draftPrompt.hidden = true;
+        const raw = window.sessionStorage.getItem(wizard.dataset.autosaveKey);
+        if (raw) {
+            try {
+                const draft = JSON.parse(raw);
+                if (draft.values?.current_step !== undefined) {
+                    stepIndex = Number(draft.values.current_step);
+                    syncWizard(true);
+                }
+            } catch (e) {
+                // Silently fail on parse error
+            }
+        }
+    });
+
+    newBtn?.addEventListener('click', async () => {
+        await autosave.clear();
+        if (draftPrompt) draftPrompt.hidden = true;
+        window.location.reload();
+    });
+
+    discardBtn?.addEventListener('click', async () => {
+        if (window.confirm('¿Estás seguro de que quieres borrar el progreso guardado?')) {
+            await autosave.clear();
+            if (draftPrompt) draftPrompt.hidden = true;
+        }
+    });
+
     syncWizard(false);
 }
 
@@ -1193,3 +1273,4 @@ if (sellerMakeSelect && sellerModelSelect) {
     sellerMakeSelect.addEventListener('change', syncSellerModels);
     syncSellerModels();
 }
+

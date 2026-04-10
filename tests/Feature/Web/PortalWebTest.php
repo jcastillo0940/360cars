@@ -61,7 +61,7 @@ class PortalWebTest extends TestCase
 
     public function test_admin_can_toggle_valuation_ai_setting(): void
     {
-        $admin = User::where('email', 'admin@360cars.local')->firstOrFail();
+        $admin = User::where('email', 'admin@movikaa.local')->firstOrFail();
 
         $this->actingAs($admin)
             ->post(route('admin.valuation-ai.update'), [
@@ -149,7 +149,7 @@ class PortalWebTest extends TestCase
     public function test_user_can_login_through_web_and_reach_seller_dashboard(): void
     {
         $response = $this->post('/login', [
-            'email' => 'seller@360cars.local',
+            'email' => 'seller@movikaa.local',
             'password' => 'password',
         ]);
 
@@ -159,7 +159,7 @@ class PortalWebTest extends TestCase
 
     public function test_admin_dashboard_renders_real_sections(): void
     {
-        $admin = User::where('email', 'admin@360cars.local')->firstOrFail();
+        $admin = User::where('email', 'admin@movikaa.local')->firstOrFail();
 
         $this->actingAs($admin)
             ->get('/admin')
@@ -171,7 +171,7 @@ class PortalWebTest extends TestCase
 
     public function test_seller_can_create_vehicle_from_web_form(): void
     {
-        $seller = User::where('email', 'seller@360cars.local')->firstOrFail();
+        $seller = User::where('email', 'seller@movikaa.local')->firstOrFail();
 
         $this->actingAs($seller)
             ->post('/seller/vehicles', [
@@ -198,7 +198,7 @@ class PortalWebTest extends TestCase
 
     public function test_seller_can_activate_plan_in_sandbox_from_web(): void
     {
-        $seller = User::where('email', 'seller@360cars.local')->firstOrFail();
+        $seller = User::where('email', 'seller@movikaa.local')->firstOrFail();
         $plan = Plan::where('slug', 'estandar')->firstOrFail();
 
         $this->actingAs($seller)
@@ -243,7 +243,7 @@ class PortalWebTest extends TestCase
     {
         $seller = User::query()->create([
             'name' => 'Seller Basico',
-            'email' => 'seller-basic@360cars.local',
+            'email' => 'seller-basic@movikaa.local',
             'password' => 'password',
             'account_type' => 'seller',
             'country_code' => 'CR',
@@ -289,7 +289,7 @@ class PortalWebTest extends TestCase
 
     public function test_buyer_can_favorite_compare_and_message_from_web_routes(): void
     {
-        $buyer = User::where('email', 'buyer@360cars.local')->firstOrFail();
+        $buyer = User::where('email', 'buyer@movikaa.local')->firstOrFail();
         $vehicle = Vehicle::query()->where('status', 'published')->firstOrFail();
 
         $this->actingAs($buyer)

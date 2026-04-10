@@ -90,7 +90,7 @@ function ResultPanel({ result, shareUrl, isDark }) {
 
                     <div className={`rounded-2xl border p-5 text-white shadow-sm ${isDark ? 'border-secondary/30 bg-secondary/90' : 'border-outline-variant/20 bg-slate-900'}`}>
                         <span className={`text-xs font-bold uppercase tracking-[0.2em] ${isDark ? 'text-white/80' : 'text-white/60'}`}>Siguiente paso</span>
-                        <h3 className="mt-2 font-headline text-2xl font-extrabold tracking-tight">Convierte est? evaluación en anuncio</h3>
+                        <h3 className="mt-2 font-headline text-2xl font-extrabold tracking-tight">Convierte esta evaluación en anuncio</h3>
                         <p className={`mt-3 text-sm leading-6 ${isDark ? 'text-white' : 'text-white/80'}`}>Puedes compartir la valuación o pasar directo al flujo de venta con varios datos ya prellenados.</p>
                         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                             <button type="button" onClick={handleShare} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/15">

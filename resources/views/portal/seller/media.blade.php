@@ -186,7 +186,7 @@
                     <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 0.5rem; display: flex; justify-content: flex-end; gap: 0.4rem;">
                         <form method="POST" action="{{ route('seller.vehicles.media.destroy', [$selectedVehicle, $extraMedia]) }}" onsubmit="return confirm('¿Quitar?')">
                             @csrf @method('DELETE')
-                            <button type="submit" style="background: var(--portal-danger); color: #fff; border: none; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">×</button>
+                            <button type="submit" style="background: var(--portal-danger); color: #fff; border: none; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">Ã—</button>
                         </form>
                     </div>
                 </article>
@@ -199,3 +199,5 @@
     </section>
 @endif
 @endsection
+
+

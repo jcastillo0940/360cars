@@ -59,7 +59,7 @@
                                     {{ $model->name }}
                                     <form method="POST" action="{{ route('admin.catalog.models.toggle', $model) }}" style="display:inline; margin-left: 4px;">
                                         @csrf @method('PATCH')
-                                        <button type="submit" style="background:none; border:none; color: {{ $model->is_active ? 'var(--portal-primary)' : 'var(--portal-muted)' }}; cursor:pointer; padding:0; font-size: 0.6rem;">●</button>
+                                        <button type="submit" style="background:none; border:none; color: {{ $model->is_active ? 'var(--portal-primary)' : 'var(--portal-muted)' }}; cursor:pointer; padding:0; font-size: 0.6rem;">â—</button>
                                     </form>
                                 </span>
                             @empty
@@ -138,3 +138,4 @@
     </article>
 </section>
 @endsection
+

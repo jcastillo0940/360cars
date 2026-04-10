@@ -1,4 +1,4 @@
-﻿@extends('layouts.portal')
+@extends('layouts.portal')
 
 @section('title', 'Nuevo artículo | Movikaa')
 @section('portal-eyebrow', 'Contenido editorial')
@@ -12,7 +12,7 @@
     <a href="{{ route('admin.features') }}">Características</a>
     <a href="{{ route('admin.plans') }}">Planes</a>
     <a href="{{ route('admin.news') }}" class="is-active">Noticias</a>
-    <a href="{{ route('admin.payments') }}">Pagos</a>
+    <a href="{{ (config('app.enable_payments') ? route('admin.payments') : route('admin.dashboard')) }}">Pagos</a>
     <a href="{{ route('admin.users') }}">Usuarios</a>
     <a href="{{ route('admin.settings') }}">Ajustes</a>
 </nav>
@@ -24,3 +24,4 @@
     @include('portal.admin.news._form', ['action' => route('admin.news.store'), 'method' => 'POST', 'submitLabel' => 'Crear artículo', 'newsPost' => null])
 </section>
 @endsection
+

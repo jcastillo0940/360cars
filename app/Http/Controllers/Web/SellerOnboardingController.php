@@ -219,19 +219,18 @@ class SellerOnboardingController extends Controller
 
         $this->imageProcessor->dispatchMany($queuedMediaIds);
 
-        return redirect()->route('seller.dashboard')->with(
-            'status',
-            $wasAuthenticated
+        return redirect()->route('seller.dashboard')
+            ->with('status', $wasAuthenticated
                 ? 'Tu auto fue publicado con tu cuenta actual y ya quedo listo en tu panel seller.'
-                : 'Tu auto fue registrado y tu cuenta seller quedo lista.'
-        );
+                : 'Tu auto fue registrado y tu cuenta seller quedo lista.')
+            ->with('onboarding_finished', true);
     }
 
     private function syntheticEmail(?string $phone): string
     {
         $base = preg_replace('/\D+/', '', (string) $phone) ?: Str::random(10);
 
-        return $base.'@phone.360cars.local';
+        return $base.'@phone.movikaa.local';
     }
 
     private function features(array $features = [], ?string $legacyFeatures = null): array

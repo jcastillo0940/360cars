@@ -30,11 +30,13 @@ Route::prefix('v1')->group(function (): void {
     });
 
     Route::get('/plans', [PlanController::class, 'index']);
-    Route::post('/paypal/webhook', [PayPalController::class, 'webhook']);
+    if (config('app.enable_payments')) {
+        Route::post('/paypal/webhook', [PayPalController::class, 'webhook']);
+    }
 
     Route::prefix('auth')->group(function (): void {
-        Route::post('/register', [AuthController::class, 'register']);
-        Route::post('/login', [AuthController::class, 'login']);
+        Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:3,10');
+        Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 
         Route::middleware('auth:sanctum')->group(function (): void {
             Route::get('/me', [AuthController::class, 'me']);
@@ -57,8 +59,10 @@ Route::prefix('v1')->group(function (): void {
         Route::prefix('my')->group(function (): void {
             Route::get('/subscription', [SubscriptionController::class, 'current'])->middleware('role:seller,dealer,admin');
             Route::post('/subscription', [SubscriptionController::class, 'store'])->middleware('role:seller,dealer,admin');
-            Route::post('/subscription/paypal/create-order', [PayPalController::class, 'createOrder'])->middleware('role:seller,dealer,admin');
-            Route::post('/subscription/paypal/capture-order', [PayPalController::class, 'captureOrder'])->middleware('role:seller,dealer,admin');
+            if (config('app.enable_payments')) {
+                Route::post('/subscription/paypal/create-order', [PayPalController::class, 'createOrder'])->middleware('role:seller,dealer,admin');
+                Route::post('/subscription/paypal/capture-order', [PayPalController::class, 'captureOrder'])->middleware('role:seller,dealer,admin');
+            }
         });
 
         Route::prefix('my')->middleware('role:seller,dealer,admin')->group(function (): void {
@@ -77,3 +81,4 @@ Route::prefix('v1')->group(function (): void {
         });
     });
 });
+

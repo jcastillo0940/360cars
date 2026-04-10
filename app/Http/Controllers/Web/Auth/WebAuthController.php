@@ -25,17 +25,16 @@ class WebAuthController extends Controller
 
     public function create()
     {
-        Log::info('auth.login_page', [
+        $this->logAuthEvent('auth.login_page', [
             'auth_check' => Auth::check(),
             'user_id' => Auth::id(),
             'redirect_to' => request()->string('redirect')->toString(),
-            'session_id' => request()->hasSession() ? request()->session()->getId() : null,
         ]);
 
         if (Auth::check()) {
             $route = $this->redirectRoute(Auth::user());
 
-            Log::info('auth.login_page.redirect_authenticated', [
+            $this->logAuthEvent('auth.login_page.redirect_authenticated', [
                 'user_id' => Auth::id(),
                 'route' => $route,
             ]);
@@ -54,11 +53,9 @@ class WebAuthController extends Controller
         $credentials = $request->validated();
         $email = strtolower((string) $credentials['email']);
 
-        Log::info('auth.login_attempt.start', [
+        $this->logAuthEvent('auth.login_attempt.start', [
             'email' => $email,
             'redirect' => (string) $request->input('redirect'),
-            'session_id_before' => $request->session()->getId(),
-            'session_token_prefix_before' => is_string($request->session()->token()) ? substr((string) $request->session()->token(), 0, 12) : null,
             'has_session_cookie' => $request->cookies->has((string) config('session.cookie')),
             'has_xsrf_cookie' => $request->cookies->has('XSRF-TOKEN'),
         ]);
@@ -68,12 +65,11 @@ class WebAuthController extends Controller
             'password' => $credentials['password'],
         ], true);
 
-        Log::info('auth.login_attempt.result', [
+        $this->logAuthEvent('auth.login_attempt.result', [
             'email' => $email,
             'authenticated' => $authenticated,
             'auth_check_after_attempt' => Auth::check(),
             'user_id_after_attempt' => Auth::id(),
-            'session_id_after_attempt' => $request->session()->getId(),
         ]);
 
         if (! $authenticated) {
@@ -87,16 +83,14 @@ class WebAuthController extends Controller
 
         $redirectTo = (string) $request->input('redirect');
 
-        Log::info('auth.login_attempt.authenticated', [
+        $this->logAuthEvent('auth.login_attempt.authenticated', [
             'user_id' => $request->user()?->id,
             'account_type' => $request->user()?->account_type,
-            'session_id_regenerated' => $request->session()->getId(),
-            'session_token_prefix_after_regenerate' => is_string($request->session()->token()) ? substr((string) $request->session()->token(), 0, 12) : null,
             'redirect_input' => $redirectTo,
         ]);
 
         if ($redirectTo !== '' && str_starts_with($redirectTo, '/')) {
-            Log::info('auth.login_attempt.redirecting_custom', [
+            $this->logAuthEvent('auth.login_attempt.redirecting_custom', [
                 'user_id' => $request->user()?->id,
                 'redirect_to' => $redirectTo,
             ]);
@@ -106,7 +100,7 @@ class WebAuthController extends Controller
 
         $route = $this->redirectRoute($request->user());
 
-        Log::info('auth.login_attempt.redirecting_default', [
+        $this->logAuthEvent('auth.login_attempt.redirecting_default', [
             'user_id' => $request->user()?->id,
             'route' => $route,
         ]);
@@ -226,9 +220,8 @@ class WebAuthController extends Controller
 
     public function destroy(): RedirectResponse
     {
-        Log::info('auth.logout', [
+        $this->logAuthEvent('auth.logout', [
             'user_id' => Auth::id(),
-            'session_id' => request()->hasSession() ? request()->session()->getId() : null,
         ]);
 
         Auth::logout();
@@ -249,5 +242,14 @@ class WebAuthController extends Controller
         }
 
         return 'buyer.dashboard';
+    }
+
+    private function logAuthEvent(string $message, array $context = []): void
+    {
+        if (! app()->environment(['local', 'staging']) && ! config('app.debug')) {
+            return;
+        }
+
+        Log::info($message, $context);
     }
 }

@@ -1,4 +1,4 @@
-﻿@extends('layouts.portal')
+@extends('layouts.portal')
 
 @section('title', 'Mensajes comprador | Movikaa')
 @section('portal-eyebrow', 'Buyer mensajes')
@@ -31,3 +31,4 @@
     <div class="pagination-shell">{{ $conversationList->links() }}</div>
 </section>
 @endsection
+

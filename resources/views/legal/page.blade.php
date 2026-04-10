@@ -1,4 +1,4 @@
-﻿@extends('layouts.marketing')
+@extends('layouts.marketing')
 
 @section('title', ($pageTitle ?? 'Legal').' | Movikaa')
 
@@ -26,3 +26,4 @@
     </main>
 </div>
 @endsection
+

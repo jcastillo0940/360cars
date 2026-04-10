@@ -1,6 +1,6 @@
 @extends('layouts.portal')
 
-@section('title', 'Buyer Portal | 360Cars')
+@section('title', 'Buyer Portal | Movikaa')
 @section('portal-eyebrow', 'Buyer portal')
 @section('portal-title', 'Tu centro de seguimiento para oportunidades reales.')
 @section('portal-copy', 'Favoritos, comparador, búsquedas guardadas y conversaciones ya sobre la misma base publica del marketplace.')
@@ -105,3 +105,5 @@
     </section>
 </div>
 @endsection
+
+

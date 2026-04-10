@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Comparison;
 use App\Models\Vehicle;
 use App\Models\VehicleFeatureOption;
+use App\Models\VehicleMake;
+use App\Models\VehicleModel;
 use App\Services\Currency\ExchangeRateService;
 use App\Services\Valuation\ValuationSettingsService;
 use App\Support\VehiclePricePresenter;
@@ -242,24 +244,61 @@ class PublicCatalogController extends Controller
             ->latest();
     }
 
+    protected function publishedVehiclesFilterQuery()
+    {
+        return Vehicle::query()
+            ->where('status', 'published')
+            ->where(function ($query): void {
+                $query->whereNull('expires_at')->orWhere('expires_at', '>=', now());
+            });
+    }
+
     protected function filterOptions(): array
     {
-        $vehicles = $this->publishedVehiclesQuery()->get();
-        $makes = $vehicles->pluck('make')->filter()->unique('id')->sortBy('name')->values();
-        $modelsByMake = $makes->mapWithKeys(function ($make) use ($vehicles) {
-            return [
-                $make->name => $vehicles
-                    ->filter(fn ($vehicle) => $vehicle->make?->name === $make->name && $vehicle->model?->name)
-                    ->pluck('model.name')
-                    ->unique()
-                    ->sort()
-                    ->values()
-                    ->all(),
-            ];
-        });
+        $baseQuery = $this->publishedVehiclesFilterQuery();
 
-        $minPrice = (int) floor(((float) $vehicles->min('price') ?: 0) / 500000) * 500000;
-        $maxPrice = (int) ceil(((float) $vehicles->max('price') ?: 20000000) / 500000) * 500000;
+        $makes = VehicleMake::query()
+            ->active()
+            ->orderBy('name')
+            ->pluck('name')
+            ->all();
+
+        $models = VehicleModel::query()
+            ->active()
+            ->orderBy('name')
+            ->pluck('name')
+            ->all();
+
+        $modelsByMake = VehicleMake::query()
+            ->active()
+            ->with(['models' => fn ($q) => $q->active()->orderBy('name')])
+            ->get()
+            ->mapWithKeys(fn ($make) => [
+                $make->name => $make->models->pluck('name')->all()
+            ])
+            ->all();
+
+        $provinceValues = (clone $baseQuery)
+            ->whereNotNull('province')
+            ->where('province', '!=', '')
+            ->distinct()
+            ->orderBy('province')
+            ->pluck('province');
+
+        $stateValues = (clone $baseQuery)
+            ->whereNotNull('state')
+            ->where('state', '!=', '')
+            ->distinct()
+            ->orderBy('state')
+            ->pluck('state');
+
+        $priceMinValue = (float) ((clone $baseQuery)->min('price') ?: 0);
+        $priceMaxValue = (float) ((clone $baseQuery)->max('price') ?: 20000000);
+        $yearMinValue = (int) ((clone $baseQuery)->min('year') ?: 1950);
+        $yearMaxValue = (int) ((clone $baseQuery)->max('year') ?: now()->year + 1);
+
+        $minPrice = (int) floor($priceMinValue / 500000) * 500000;
+        $maxPrice = (int) ceil($priceMaxValue / 500000) * 500000;
 
         $featureOptions = VehicleFeatureOption::query()
             ->where('is_active', true)
@@ -268,10 +307,16 @@ class PublicCatalogController extends Controller
             ->get(['name', 'slug']);
 
         return [
-            'makes' => $makes->pluck('name')->all(),
-            'models' => $vehicles->pluck('model.name')->filter()->unique()->sort()->values()->all(),
+            'makes' => $makes,
+            'models' => $models,
             'modelsByMake' => $modelsByMake,
-            'provinces' => $vehicles->map(fn ($vehicle) => $vehicle->province ?: $vehicle->state)->filter()->unique()->sort()->values()->all(),
+            'provinces' => $provinceValues
+                ->merge($stateValues)
+                ->filter()
+                ->unique()
+                ->sort()
+                ->values()
+                ->all(),
             'features' => $featureOptions->map(fn (VehicleFeatureOption $feature) => [
                 'name' => $feature->name,
                 'slug' => $feature->slug,
@@ -282,8 +327,8 @@ class PublicCatalogController extends Controller
                 'step' => 500000,
             ],
             'yearRange' => [
-                'min' => (int) min(1950, (int) ($vehicles->min('year') ?: 1950)),
-                'max' => (int) max(now()->year + 1, (int) ($vehicles->max('year') ?: now()->year + 1)),
+                'min' => (int) min(1950, $yearMinValue),
+                'max' => (int) max(now()->year + 1, $yearMaxValue),
                 'step' => 1,
             ],
         ];

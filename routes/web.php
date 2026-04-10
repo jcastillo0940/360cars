@@ -10,6 +10,7 @@ use App\Http\Controllers\Web\SellerBillingController;
 use App\Http\Controllers\Web\SellerOnboardingController;
 use App\Http\Controllers\Web\SellerPortalController;
 use App\Http\Controllers\Web\VehicleValuationController;
+use App\Http\Controllers\Web\UserProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [App\Http\Controllers\Web\HomeController::class, 'index'])->name('home');
@@ -41,17 +42,19 @@ Route::view('/legal/cookies', 'legal.page', [
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [WebAuthController::class, 'create'])->name('login');
-    Route::post('/login', [WebAuthController::class, 'store'])->name('login.store');
+    Route::post('/login', [WebAuthController::class, 'store'])->middleware('throttle:5,1')->name('login.store');
     Route::get('/register', [WebAuthController::class, 'register'])->name('register');
-    Route::post('/register', [WebAuthController::class, 'registerStore'])->name('register.store');
+    Route::post('/register', [WebAuthController::class, 'registerStore'])->middleware('throttle:3,10')->name('register.store');
     Route::get('/forgot-password', [WebAuthController::class, 'forgotPassword'])->name('password.request');
-    Route::post('/forgot-password', [WebAuthController::class, 'sendResetLink'])->name('password.email');
+    Route::post('/forgot-password', [WebAuthController::class, 'sendResetLink'])->middleware('throttle:3,10')->name('password.email');
     Route::get('/reset-password/{token}', [WebAuthController::class, 'resetPassword'])->name('password.reset');
-    Route::post('/reset-password', [WebAuthController::class, 'updatePassword'])->name('password.update');
+    Route::post('/reset-password', [WebAuthController::class, 'updatePassword'])->middleware('throttle:5,10')->name('password.update');
 });
 
 Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [WebAuthController::class, 'destroy'])->name('logout');
+    Route::get('/profile', [UserProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [UserProfileController::class, 'update'])->name('profile.update');
 
     Route::get('/buyer', [BuyerPortalController::class, 'index'])->name('buyer.dashboard');
     Route::get('/buyer/favorites', [BuyerPortalController::class, 'favorites'])->name('buyer.favorites.index');
@@ -71,7 +74,9 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/seller/create', [SellerPortalController::class, 'createPage'])->name('seller.create');
         Route::get('/seller/vehicles/{vehicle}/edit', [SellerPortalController::class, 'editPage'])->name('seller.vehicles.edit');
         Route::get('/seller/media', [SellerPortalController::class, 'mediaPage'])->name('seller.media');
-        Route::get('/seller/billing', [SellerPortalController::class, 'billingPage'])->name('seller.billing');
+        if (config('app.enable_payments')) {
+            Route::get('/seller/billing', [SellerPortalController::class, 'billingPage'])->name('seller.billing');
+        }
         Route::get('/seller/messages', [SellerPortalController::class, 'messagesPage'])->name('seller.messages');
         Route::post('/seller/vehicles', [SellerPortalController::class, 'store'])->name('seller.vehicles.store');
         Route::put('/seller/vehicles/{vehicle}', [SellerPortalController::class, 'update'])->name('seller.vehicles.update');
@@ -84,17 +89,21 @@ Route::middleware('auth')->group(function (): void {
         Route::patch('/seller/vehicles/{vehicle}/media/{media}/primary', [SellerPortalController::class, 'makePrimary'])->name('seller.vehicles.media.primary');
         Route::delete('/seller/vehicles/{vehicle}/media/{media}', [SellerPortalController::class, 'destroyMedia'])->name('seller.vehicles.media.destroy');
 
+        if (config('app.enable_payments')) {
         Route::post('/seller/billing/subscribe', [SellerBillingController::class, 'subscribeSandbox'])->name('seller.billing.subscribe');
         Route::post('/seller/billing/free', [SellerBillingController::class, 'activateFree'])->name('seller.billing.free');
         Route::post('/seller/billing/request-payment', [SellerBillingController::class, 'requestManualPayment'])->name('seller.billing.request-payment');
         Route::post('/seller/billing/paypal/create-order', [SellerBillingController::class, 'createPayPalOrder'])->name('seller.billing.paypal.create-order');
         Route::get('/seller/billing/paypal/return', [SellerBillingController::class, 'capturePayPalReturn'])->name('seller.billing.paypal.return');
+        }
     });
 
     Route::middleware('role:admin')->group(function (): void {
         Route::get('/admin', [AdminPortalController::class, 'index'])->name('admin.dashboard');
         Route::get('/admin/catalog', [AdminPortalController::class, 'catalog'])->name('admin.catalog');
-        Route::get('/admin/payments', [AdminPortalController::class, 'payments'])->name('admin.payments');
+        if (config('app.enable_payments')) {
+            Route::get('/admin/payments', [AdminPortalController::class, 'payments'])->name('admin.payments');
+        }
         Route::get('/admin/users', [AdminPortalController::class, 'users'])->name('admin.users');
         Route::get('/admin/settings', [AdminPortalController::class, 'settings'])->name('admin.settings');
         Route::get('/admin/features', [AdminPortalController::class, 'features'])->name('admin.features');
@@ -108,10 +117,12 @@ Route::middleware('auth')->group(function (): void {
         Route::post('/admin/exchange-rate/refresh', [AdminPortalController::class, 'refreshExchangeRate'])->name('admin.exchange-rate.refresh');
         Route::post('/admin/valuation-ai', [VehicleValuationController::class, 'updateAiSetting'])->name('admin.valuation-ai.update');
         Route::post('/admin/public-theme', [AdminPortalController::class, 'updatePublicTheme'])->name('admin.public-theme.update');
+        if (config('app.enable_payments')) {
         Route::post('/admin/payment-methods', [AdminPortalController::class, 'updatePaymentMethods'])->name('admin.payment-methods.update');
         Route::post('/admin/integrations', [AdminPortalController::class, 'updateIntegrations'])->name('admin.integrations.update');
         Route::patch('/admin/payments/{transaction}/approve', [AdminPortalController::class, 'approvePayment'])->name('admin.payments.approve');
         Route::patch('/admin/payments/{transaction}/reject', [AdminPortalController::class, 'rejectPayment'])->name('admin.payments.reject');
+        }
         Route::post('/admin/catalog/entries', [AdminPortalController::class, 'storeCatalogEntry'])->name('admin.catalog.entries.store');
         Route::post('/admin/catalog/makes', [AdminPortalController::class, 'storeCatalogMake'])->name('admin.catalog.makes.store');
         Route::patch('/admin/catalog/makes/{vehicleMake}/toggle', [AdminPortalController::class, 'toggleCatalogMake'])->name('admin.catalog.makes.toggle');
@@ -123,5 +134,6 @@ Route::middleware('auth')->group(function (): void {
         Route::delete('/admin/feature-options/{featureOption}', [AdminPortalController::class, 'destroyFeatureOption'])->name('admin.feature-options.destroy');
     });
 });
+
 
 

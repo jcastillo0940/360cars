@@ -1,4 +1,4 @@
-﻿@extends('layouts.marketing')
+@extends('layouts.marketing')
 
 @section('title', 'Vende Tu Auto | Movikaa')
 
@@ -165,8 +165,8 @@
                 <div class="relative z-10 mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
                     <div class="grid gap-6 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
                         <aside
-                            class="grid gap-5 rounded-[28px] border border-white/10 bg-[#0d1117] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur sm:p-8 lg:sticky lg:top-28">
-                            <div>
+                            class="grid gap-4 rounded-[28px] border border-white/10 bg-[#0d1117] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur sm:p-8 lg:sticky lg:top-28">
+                            <div class="hidden lg:block">
                                 <span
                                     class="inline-flex rounded-full bg-primary-fixed px-4 py-2 text-[11px] font-bold uppercase tracking-[0.24em] text-primary">Vende
                                     tu auto</span>
@@ -178,52 +178,27 @@
                                     rápido.</p>
                             </div>
 
-                            <div class="grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-5">
-                                <div class="flex items-start justify-between gap-4">
-                                    <div>
-                                        <span
-                                            class="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Progreso</span>
-                                        <h2 class="mt-2 font-headline text-2xl font-extrabold tracking-tight text-white"
-                                            data-progress-heading>Vas por el 20%</h2>
-                                        <p class="mt-2 text-sm leading-7 text-slate-400" data-progress-copy>Completa los
-                                            datos base del auto para arrancar bien tu publicación.</p>
+                            <div class="rounded-[24px] border border-white/10 bg-white/5 p-3 sm:p-5">
+                                <div class="flex items-center justify-between px-1">
+                                    <div class="flex items-baseline gap-2">
+                                        <span class="text-[9px] font-bold uppercase tracking-[0.2em] text-secondary sm:text-[10px]">Paso <span data-current-step-meta-short>1/5</span></span>
+                                        <strong class="text-xs font-bold text-white sm:text-base" data-current-step-title>Identidad</strong>
                                     </div>
-                                    <div class="seller-progress-ring">
-                                        <span data-progress-percent>20%</span>
-                                    </div>
+                                    <span class="text-[10px] font-bold text-white" data-progress-percent>20%</span>
                                 </div>
-                                <div class="seller-progress-bar">
+                                <div class="seller-progress-bar mt-2 !h-1.5 sm:!h-2">
                                     <span data-progress-bar style="width: 20%"></span>
-                                </div>
-                                <div class="rounded-2xl bg-[#12131a] p-4 shadow-sm">
-                                    <div class="flex items-center justify-between gap-3">
-                                        <strong class="text-sm font-bold text-white">Estado del borrador</strong>
-                                        <span
-                                            class="inline-flex rounded-full bg-white/5 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400"
-                                            data-autosave-status>Sin guardar</span>
-                                    </div>
-                                    <p class="mt-2 text-sm leading-7 text-slate-400">Tu avance se guarda en este navegador
-                                        para que no pierdas información mientras avanzas.</p>
-                                </div>
-                                <div class="rounded-2xl bg-[#12131a] p-4 shadow-sm">
-                                    <span class="text-xs font-bold uppercase tracking-[0.2em] text-primary">Paso
-                                        actual</span>
-                                    <div class="mt-3 grid gap-2">
-                                        <strong class="text-base font-bold text-white" data-current-step-title>Identidad del
-                                            vehículo</strong>
-                                        <span class="text-sm text-slate-400" data-current-step-meta>Paso 1 de 5</span>
-                                    </div>
                                 </div>
                             </div>
 
-                            <div class="grid gap-3 rounded-2xl bg-primary px-5 py-5 text-white">
+                            <div class="hidden gap-3 rounded-2xl bg-primary px-5 py-5 text-white lg:grid">
                                 <span class="text-xs font-bold uppercase tracking-[0.2em] text-white/65">Consejo del
                                     paso</span>
                                 <p class="text-sm leading-7 text-white/90" data-sidebar-tip>Usa el nombre comercial correcto
                                     de la versión y una descripción breve pero confiable.</p>
                             </div>
 
-                            <div class="grid gap-3 rounded-2xl border border-white/10 bg-[#12131a] px-5 py-5">
+                            <div class="hidden gap-3 rounded-2xl border border-white/10 bg-[#12131a] px-5 py-5 lg:grid">
                                 <span class="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Carga
                                     inteligente</span>
                                 <p class="text-sm leading-7 text-slate-400" data-sidebar-loader>Avanza paso a paso. Aquí
@@ -252,13 +227,35 @@
                             @endif
                             <div
                                 class="mb-5 flex flex-col gap-4 border-b border-white/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
-                                <div>
-                                    <span class="text-xs font-bold uppercase tracking-[0.2em] text-secondary">Publicación
+                                <div class="grow">
+                                    <span class="hidden text-xs font-bold uppercase tracking-[0.2em] text-secondary sm:inline-block">Publicación
                                         guiada</span>
-                                    <h2 class="mt-2 font-headline text-3xl font-extrabold tracking-tight text-white">
-                                        Completa la publicación de tu auto</h2>
-                                    <p class="mt-2 max-w-2xl text-sm leading-7 text-slate-400">Diseñado para que cualquier
-                                        persona publique rápido, con buena información y sin registrarse al inicio.</p>
+                                    <h2 class="mt-2 font-headline text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
+                                        Publica tu auto</h2>
+                                    <p class="mt-1 hidden max-w-2xl text-sm leading-7 text-slate-400 sm:block">Diseñado para que cualquier
+                                        persona publique rápido y sin registrarse al inicio.</p>
+                                </div>
+                            </div>
+
+                            <div class="mb-8 rounded-[28px] border border-amber-400/30 bg-amber-500/5 p-4 shadow-xl backdrop-blur-sm sm:p-6" data-draft-prompt hidden>
+                                <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                                    <div class="flex items-start gap-4">
+                                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-black sm:h-12 sm:w-12 sm:rounded-2xl">
+                                            <span class="material-symbols-outlined text-xl sm:text-[28px]">history</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-500">¿Continuar borrador?</span>
+                                            <h3 class="mt-0.5 font-headline text-lg font-extrabold text-white sm:mt-1 sm:text-xl">Tienes un avance guardado</h3>
+                                            <p class="mt-1 hidden text-sm text-slate-400 sm:block">Encontramos un auto guardado localmente. Puedes seguir o empezar de cero.</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 sm:gap-3">
+                                        <button type="button" class="shrink-0 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs font-bold text-white transition hover:bg-white/10 sm:px-5 sm:text-sm" data-draft-new>Nuevo</button>
+                                        <button type="button" class="grow rounded-xl bg-amber-500 px-4 py-3 text-xs font-bold text-black transition hover:bg-amber-400 sm:px-5 sm:text-sm" data-draft-continue>Continuar ahora</button>
+                                        <button type="button" class="shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-rose-500/10 hover:text-rose-400" title="Descartar" data-draft-discard>
+                                            <span class="material-symbols-outlined text-xl">delete</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -297,7 +294,7 @@
                                                 del anuncio</span>
                                         </div>
 
-                                        <div class="mb-5 grid gap-4 md:grid-cols-2">
+                                        <div class="mb-5 hidden gap-4 md:grid md:grid-cols-2">
                                             <div class="rounded-2xl bg-[#12131a] p-4 shadow-sm"><span
                                                     class="text-xs font-bold uppercase tracking-[0.2em] text-primary">Importante</span>
                                                 <p class="mt-2 text-sm leading-7 text-slate-400">La selección de modelo se
@@ -491,7 +488,7 @@
                                                 confianza</span>
                                         </div>
 
-                                        <div class="mb-5 grid gap-4 lg:grid-cols-3">
+                                        <div class="mb-5 hidden gap-4 md:grid lg:grid-cols-3">
                                             <div class="rounded-2xl bg-[#12131a] p-4 shadow-sm"><strong
                                                     class="block text-sm font-bold text-white">Obligatorias</strong>
                                                 <p class="mt-2 text-sm leading-7 text-slate-400">Frontal, trasera, laterales
@@ -728,7 +725,7 @@
                                                 class="inline-flex rounded-full bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Google
                                                 Maps</span>
                                         </div>
-                                        <div class="mb-5 grid gap-4 md:grid-cols-2">
+                                        <div class="mb-5 hidden gap-4 md:grid md:grid-cols-2">
                                             <div class="rounded-2xl bg-[#12131a] p-4 shadow-sm"><strong
                                                     class="block text-sm font-bold text-white">País permitido</strong>
                                                 <p class="mt-2 text-sm leading-7 text-slate-400">Solo aceptamos ubicaciones
@@ -922,3 +919,5 @@
         </main>
     </div>
 @endsection
+
+

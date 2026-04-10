@@ -39,14 +39,14 @@
                     <td><strong style="font-size: 1.2rem;">${{ number_format((float) $plan->price, 0) }}</strong><span style="font-size: 0.7rem; color: var(--portal-muted);"> / pago</span></td>
                     <td>
                         <div style="font-size: 0.85rem;">
-                            <strong>{{ $plan->max_active_listings ?? '∞' }}</strong> <small>Autos</small><br>
-                            <strong>{{ $plan->photo_limit ?? '∞' }}</strong> <small>Fotos / auto</small>
+                            <strong>{{ $plan->max_active_listings ?? 'âˆž' }}</strong> <small>Autos</small><br>
+                            <strong>{{ $plan->photo_limit ?? 'âˆž' }}</strong> <small>Fotos / auto</small>
                         </div>
                     </td>
                     <td>
                         <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
-                            <span class="pill" style="font-size: 0.65rem;">{{ $plan->allows_video ? '✓ Video' : '✕ Video' }}</span>
-                            <span class="pill" style="font-size: 0.65rem;">{{ $plan->allows_360 ? '✓ 360' : '✕ 360' }}</span>
+                            <span class="pill" style="font-size: 0.65rem;">{{ $plan->allows_video ? 'âœ“ Video' : 'âœ• Video' }}</span>
+                            <span class="pill" style="font-size: 0.65rem;">{{ $plan->allows_360 ? 'âœ“ 360' : 'âœ• 360' }}</span>
                             @if($plan->featured_days > 0) <span class="pill pill--success" style="font-size: 0.65rem;">{{ $plan->featured_days }} días TOP</span> @endif
                         </div>
                     </td>
@@ -58,3 +58,4 @@
     </div>
 </section>
 @endsection
+

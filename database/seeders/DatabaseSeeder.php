@@ -24,11 +24,11 @@ class DatabaseSeeder extends Seeder
             CatalogSeeder::class,
             CostaRicaLocationsSeeder::class,
             PlanSeeder::class,
-            VehicleFeatureOptionSeeder::class,
+            ExtrasSeeder::class,
         ]);
 
         $seller = User::updateOrCreate(
-            ['email' => 'seller@360cars.local'],
+            ['email' => 'seller@movikaa.local'],
             [
                 'name' => 'Vendedor Demo',
                 'password' => 'password',
@@ -42,13 +42,13 @@ class DatabaseSeeder extends Seeder
         );
 
         $dealer = User::updateOrCreate(
-            ['email' => 'dealer@360cars.local'],
+            ['email' => 'dealer@movikaa.local'],
             [
                 'name' => 'Agencia Demo',
                 'password' => 'password',
                 'account_type' => 'dealer',
-                'agency_name' => '360Cars Motors',
-                'company_name' => '360Cars Motors S.A.',
+                'agency_name' => 'Movikaa Motors',
+                'company_name' => 'Movikaa Motors S.A.',
                 'phone' => '7000-0000',
                 'whatsapp_phone' => '7000-0000',
                 'country_code' => 'CR',
@@ -58,7 +58,7 @@ class DatabaseSeeder extends Seeder
         );
 
         $admin = User::updateOrCreate(
-            ['email' => 'admin@360cars.local'],
+            ['email' => 'admin@movikaa.local'],
             [
                 'name' => 'Admin Demo',
                 'password' => 'password',
@@ -71,7 +71,7 @@ class DatabaseSeeder extends Seeder
         );
 
         User::updateOrCreate(
-            ['email' => 'buyer@360cars.local'],
+            ['email' => 'buyer@movikaa.local'],
             [
                 'name' => 'Comprador Demo',
                 'password' => 'password',
@@ -358,3 +358,5 @@ class DatabaseSeeder extends Seeder
         }
     }
 }
+
+

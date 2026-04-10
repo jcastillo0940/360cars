@@ -1,4 +1,4 @@
-# 360Cars
+# Movikaa
 
 Backend inicial en Laravel 13 para un marketplace automotriz C2C enfocado en Costa Rica.
 
@@ -15,7 +15,7 @@ Backend inicial en Laravel 13 para un marketplace automotriz C2C enfocado en Cos
 - Integracion real con PayPal Orders v2 + webhook de reconciliacion
 - Preparado para integrar frontend React / Next.js en una siguiente fase
 
-## Lo que ya quedó montado
+## Lo que ya quedÃ³ montado
 
 - Configuracion local para MySQL con base de datos `cars360`
 - Estructura de usuarios para compradores, vendedores particulares y agencias
@@ -112,7 +112,7 @@ php artisan test
 - `PAYPAL_CLIENT_ID=...`
 - `PAYPAL_CLIENT_SECRET=...`
 - `PAYPAL_WEBHOOK_ID=...`
-- `PAYPAL_BRAND_NAME=360Cars`
+- `PAYPAL_BRAND_NAME=Movikaa`
 - `PAYPAL_RETURN_URL=https://tu-frontend.com/paypal/return`
 - `PAYPAL_CANCEL_URL=https://tu-frontend.com/paypal/cancel`
 
@@ -129,9 +129,9 @@ php artisan test
 
 ## Credenciales demo
 
-- `seller@360cars.local` / `password`
-- `dealer@360cars.local` / `password`
-- `buyer@360cars.local` / `password`
+- `seller@movikaa.local` / `password`
+- `dealer@movikaa.local` / `password`
+- `buyer@movikaa.local` / `password`
 
 ## Siguiente fase sugerida
 

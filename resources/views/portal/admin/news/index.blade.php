@@ -3,7 +3,7 @@
 @section('title', 'Noticias | Movikaa')
 @section('portal-eyebrow', 'Contenido editorial')
 @section('portal-title', 'Noticias y blog')
-@section('portal-copy', 'Crea, edita, publica y dest?ca artículos desde un módulo dedicado, con estructura de blog y lectura pública.')
+@section('portal-copy', 'Crea, edita, publica y destaca artículos desde un módulo dedicado, con estructura de blog y lectura pública.')
 
 @section('header-actions')
     <a href="{{ route('admin.news.create') }}" class="button button--solid">Nuevo artículo</a>
@@ -81,3 +81,4 @@
     <div class="pagination-shell">{{ $newsPosts->links() }}</div>
 </section>
 @endsection
+

@@ -1,9 +1,9 @@
-﻿@extends('layouts.portal')
+@extends('layouts.portal')
 
 @section('title', 'Editar artículo | Movikaa')
 @section('portal-eyebrow', 'Contenido editorial')
 @section('portal-title', 'Editar artículo')
-@section('portal-copy', 'Actualiza contenido, SEO, portada y est?do de publicación desde una sola vista.')
+@section('portal-copy', 'Actualiza contenido, SEO, portada y estado de publicación desde una sola vista.')
 
 @section('header-actions')
     @if ($newsPost->status === 'published')
@@ -18,7 +18,7 @@
     <a href="{{ route('admin.features') }}">Características</a>
     <a href="{{ route('admin.plans') }}">Planes</a>
     <a href="{{ route('admin.news') }}" class="is-active">Noticias</a>
-    <a href="{{ route('admin.payments') }}">Pagos</a>
+    <a href="{{ (config('app.enable_payments') ? route('admin.payments') : route('admin.dashboard')) }}">Pagos</a>
     <a href="{{ route('admin.users') }}">Usuarios</a>
     <a href="{{ route('admin.settings') }}">Ajustes</a>
 </nav>
@@ -30,3 +30,4 @@
     @include('portal.admin.news._form', ['action' => route('admin.news.update', $newsPost), 'method' => 'PUT', 'submitLabel' => 'Guardar cambios', 'newsPost' => $newsPost])
 </section>
 @endsection
+

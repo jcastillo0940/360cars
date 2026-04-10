@@ -14,11 +14,13 @@
 
 @section('content')
 <section class="dashboard-grid">
+    @if (config('app.enable_payments'))
     <article class="metric-card reveal">
         <span>GMV @if($selectedYear) ({{ $selectedYear }}) @endif</span>
         <strong>${{ number_format($gmv, 0) }}</strong>
         <p>Pagos confirmados acumulados.</p>
     </article>
+    @endif
     <article class="metric-card reveal reveal--delay-1">
         <span>Conversión Lead/Auto</span>
         <strong>{{ round(($leadCount / max(1, $publishedVehicleCount)), 1) }}</strong>
@@ -37,6 +39,7 @@
 </section>
 
 <section class="panel-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
+    @if (config('app.enable_payments'))
     <article class="dashboard-panel reveal">
         <div class="panel-heading">
             <div>
@@ -56,6 +59,7 @@
             @endforeach
         </div>
     </article>
+    @endif
 
     <article class="dashboard-panel reveal reveal--delay-1">
         <div class="panel-heading">
@@ -98,10 +102,11 @@
         </div>
     </article>
 
+    @if (config('app.enable_payments'))
     <article class="dashboard-panel reveal reveal--delay-1">
         <div class="panel-heading">
             <div><h2>Transacciones del Período</h2></div>
-            <a href="{{ route('admin.payments') }}" class="text-link">Ver todas</a>
+            <a href="{{ (config('app.enable_payments') ? route('admin.payments') : route('admin.dashboard')) }}" class="text-link">Ver todas</a>
         </div>
         <div class="table-shell" style="max-height: 280px; overflow-y: auto;">
             <table class="portal-table">
@@ -120,12 +125,16 @@
             </table>
         </div>
     </article>
+    @endif
 </section>
 
 <section class="dashboard-grid dashboard-grid--four-up" style="margin-top: 1.5rem;">
+    @if (config('app.enable_payments'))
     <article class="dashboard-panel panel-link-card"><h3>Planes</h3><p>Oferta comercial.</p><a href="{{ route('admin.plans') }}" class="button button--solid">Ver</a></article>
+    @endif
     <article class="dashboard-panel panel-link-card"><h3>Catálogo</h3><p>Marcas/Modelos.</p><a href="{{ route('admin.catalog') }}" class="button button--solid">Ver</a></article>
     <article class="dashboard-panel panel-link-card"><h3>Noticias</h3><p>Blog oficial.</p><a href="{{ route('admin.news') }}" class="button button--solid">Ver</a></article>
     <article class="dashboard-panel panel-link-card"><h3>Ajustes</h3><p>Sistema global.</p><a href="{{ route('admin.settings') }}" class="button button--solid">Ver</a></article>
 </section>
 @endsection
+

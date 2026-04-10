@@ -55,7 +55,7 @@ function AccountMenu({ authUser, sellUrl }) {
             <div className="mt-3 grid gap-2">
                 <a href={authUser.dashboardUrl} className="rounded-2xl border border-outline-variant/20 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:bg-primary-fixed hover:text-primary">Ir a mi panel</a>
                 <a href={sellUrl} className="rounded-2xl border border-secondary bg-secondary px-4 py-3 text-sm font-bold text-white transition hover:bg-secondary-container">Publicar o gestionar autos</a>
-                {authUser.compradorUrl ? <a href={authUser.compradorUrl} className="rounded-2xl border border-outline-variant/20 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:bg-primary-fixed hover:text-primary">Mi seguimiento</a> : null}
+                {authUser.buyerUrl ? <a href={authUser.buyerUrl} className="rounded-2xl border border-outline-variant/20 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:bg-primary-fixed hover:text-primary">Mi seguimiento</a> : null}
             </div>
         </div>
     );
@@ -114,11 +114,13 @@ export function PublicTopBar({ homeUrl, catalogUrl, brandsUrl, valuationUrl, sel
                     ) : (
                         <a href={accountUrl} className={`px-5 py-2 text-sm font-bold transition ${transparent ? 'text-white/80 hover:text-white' : 'text-slate-600 hover:text-primary'}`}>Ingresar</a>
                     )}
-                    <a href={sellUrl} className="rounded bg-secondary px-4 py-2.5 font-headline text-sm font-bold text-slate-950 shadow-md transition-colors hover:bg-[#ffb83a] lg:px-6">Vender mi auto</a>
                 </div>
-                <button type="button" onClick={() => setAccountMenuOpen((current) => !current)} className="inline-flex h-11 min-w-11 items-center justify-center gap-2 rounded-full text-primary md:hidden" aria-label={authUser?.authenticated ? 'Abrir menú de cuenta' : 'Ir a ingresar'}>
-                    <Icon name="person" className="text-[24px]" />
-                </button>
+                <div className="flex items-center gap-2 md:hidden">
+                    <a href={sellUrl} className="rounded-full bg-secondary px-4 py-2 font-headline text-xs font-bold text-slate-950 shadow-sm transition-colors hover:bg-[#ffb83a]">Vender</a>
+                    <button type="button" onClick={() => setAccountMenuOpen((current) => !current)} className="inline-flex h-11 w-11 items-center justify-center rounded-full text-primary" aria-label={authUser?.authenticated ? 'Abrir menú de cuenta' : 'Ir a ingresar'}>
+                        <Icon name="person" className="text-[24px]" />
+                    </button>
+                </div>
             </div>
             {menuOpen ? (
                 <div className="mobile-menu border-t border-outline-variant/20 bg-white px-4 py-4 shadow-xl md:hidden">
@@ -148,7 +150,7 @@ export function PublicTopBar({ homeUrl, catalogUrl, brandsUrl, valuationUrl, sel
                 <div className="border-t border-outline-variant/20 bg-white px-4 py-4 shadow-xl md:hidden">
                     <div className="flex flex-col gap-3">
                         <a href={authUser.dashboardUrl} className="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700">Ir a mi panel</a>
-                        {authUser.compradorUrl ? <a href={authUser.compradorUrl} className="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700">Mi actividad</a> : null}
+                        {authUser.buyerUrl ? <a href={authUser.buyerUrl} className="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700">Mi actividad</a> : null}
                         <a href={sellUrl} className="rounded bg-secondary px-4 py-3 text-center font-headline font-bold text-white">Publicar o gestionar autos</a>
                     </div>
                 </div>
@@ -200,10 +202,11 @@ export function PublicFooter({ homeUrl, catalogUrl, brandsUrl, valuationUrl, sel
             </div>
             <div className="border-t border-white/10">
                 <div className="mx-auto flex max-w-screen-2xl flex-col gap-3 px-4 py-5 text-xs text-slate-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-                    <span>© 2026 Movikaa Costa Rica. Todos los derechos reservados.</span>
+                    <span>Â© 2026 Movikaa Costa Rica. Todos los derechos reservados.</span>
                     <span>Desarrollado por <a href="https://pixelprocr.com" target="_blank" rel="noreferrer" className="font-semibold text-secondary transition hover:text-white">PixelPRO</a></span>
                 </div>
             </div>
         </footer>
     );
 }
+

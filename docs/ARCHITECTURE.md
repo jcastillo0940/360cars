@@ -1,8 +1,8 @@
-# Arquitectura Inicial 360Cars
+# Arquitectura Inicial Movikaa
 
 ## Vision
 
-360Cars nace como un marketplace C2C automotriz, pero con soporte desde el dia uno para agencias y monetizacion escalable. Esta base se enfoca en el backend y deja listo el dominio principal para crecimiento por fases.
+Movikaa nace como un marketplace C2C automotriz, pero con soporte desde el dia uno para agencias y monetizacion escalable. Esta base se enfoca en el backend y deja listo el dominio principal para crecimiento por fases.
 
 ## Modulos implementados
 

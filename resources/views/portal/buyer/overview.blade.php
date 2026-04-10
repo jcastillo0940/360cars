@@ -1,4 +1,4 @@
-﻿@extends('layouts.portal')
+@extends('layouts.portal')
 
 @section('title', 'Comprador | Movikaa')
 @section('portal-eyebrow', 'Comprador')
@@ -35,3 +35,4 @@
     <article class="dashboard-panel panel-link-card"><p class="portal-kicker">Mensajes</p><h2>Seguimiento comercial</h2><p>Conserva tus conversaciones con vendedores en un solo lugar.</p><a href="{{ route('buyer.messages.index') }}" class="button button--solid">Abrir mensajes</a></article>
 </section>
 @endsection
+
