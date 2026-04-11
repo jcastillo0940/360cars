@@ -168,7 +168,7 @@ class WebAuthController extends Controller
             ])->onlyInput('email');
         }
 
-        return back()->with('status', 'Te enviamos un enlace para rest?blecer tu contraseÃ±a.');
+        return back()->with('status', 'Te enviamos un enlace para restablecer tu contraseña.');
     }
 
     public function resetPassword(string $token, Request $request)
@@ -215,7 +215,7 @@ class WebAuthController extends Controller
             ])->withInput($request->except('password', 'password_confirmation'));
         }
 
-        return redirect()->route('login')->with('status', 'Tu contraseÃ±a fue actualizada correctamente.');
+        return redirect()->route('login')->with('status', 'Tu contraseña fue actualizada correctamente.');
     }
 
     public function destroy(): RedirectResponse

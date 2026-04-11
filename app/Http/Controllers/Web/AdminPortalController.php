@@ -628,18 +628,18 @@ class AdminPortalController extends Controller
             'sort_order' => $data['sort_order'] ?? 0,
         ]);
 
-        return redirect()->to(route('admin.features').'#features')->with('status', 'CaracterÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­stica actualizada correctamente.');
+        return redirect()->to(route('admin.features').'#features')->with('status', 'Característica actualizada correctamente.');
     }
 
     public function destroyFeatureOption(VehicleFeatureOption $featureOption): RedirectResponse
     {
         if (Vehicle::query()->whereJsonContains('features', $featureOption->slug)->exists()) {
-            return redirect()->to(route('admin.features').'#features')->with('status', 'No puedes eliminar est? caracterÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­stica porque ya estÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ en uso en uno o mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡s vehÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­culos.');
+            return redirect()->to(route('admin.features').'#features')->with('status', 'No puedes eliminar esta característica porque ya está en uso en uno o más vehículos.');
         }
 
         $featureOption->delete();
 
-        return redirect()->to(route('admin.features').'#features')->with('status', 'CaracterÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­stica eliminada correctamente.');
+        return redirect()->to(route('admin.features').'#features')->with('status', 'Característica eliminada correctamente.');
     }
 
 
@@ -687,8 +687,8 @@ class AdminPortalController extends Controller
         return redirect()->to(route('admin.settings').'#public-theme')->with(
             'status',
             $data['public_theme'] === 'dark'
-                ? 'Tema oscuro activado para el home pÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âºblico.'
-                : 'Tema claro activado para el home pÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âºblico.'
+                ? 'Tema oscuro activado para el home público.'
+                : 'Tema claro activado para el home público.'
         );
     }
 
