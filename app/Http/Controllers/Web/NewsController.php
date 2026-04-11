@@ -68,9 +68,7 @@ class NewsController extends Controller
                 : (auth()->user()->hasRole('seller', 'dealer') ? route('seller.dashboard') : route('buyer.dashboard')))
             : route('login');
 
-        $sellUrl = auth()->check() && auth()->user()->hasRole('seller', 'dealer', 'admin')
-            ? route('seller.dashboard')
-            : route('seller.onboarding.create');
+        $sellUrl = route('seller.onboarding.create');
 
         return [
             'homeUrl' => route('home'),

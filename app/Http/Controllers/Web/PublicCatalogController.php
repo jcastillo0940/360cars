@@ -377,13 +377,7 @@ class PublicCatalogController extends Controller
 
     protected function resolveSellUrl(): string
     {
-        if (! auth()->check()) {
-            return route('seller.onboarding.create');
-        }
-
-        return auth()->user()->hasRole('seller', 'dealer', 'admin')
-            ? route('seller.dashboard')
-            : route('seller.onboarding.create');
+        return route('seller.onboarding.create');
     }
 
     protected function authUserPayload(): array

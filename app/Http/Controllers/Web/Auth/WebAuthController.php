@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace App\Http\Controllers\Web\Auth;
 
@@ -258,4 +258,3 @@ class WebAuthController extends Controller
         Log::info($message, $context);
     }
 }
-

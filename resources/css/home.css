@@ -174,46 +174,46 @@
 }
 
 .brand-range {
-    accent-color: var(--color-primary);
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
 }
 
 .brand-range::-webkit-slider-thumb {
     appearance: none;
     -webkit-appearance: none;
-    width: 1.25rem;
-    height: 1.25rem;
-    border-radius: 999px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
     background: var(--color-secondary);
-    border: 2px solid #ffffff;
-    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
+    border: 3px solid #ffffff;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
     cursor: pointer;
-    transition: transform 0.15s ease, background-color 0.15s ease;
-}
-
-.brand-range::-webkit-slider-thumb:hover {
-    transform: scale(1.15);
-    background: var(--color-secondary-container);
-}
-
-.brand-range::-webkit-slider-thumb:active {
-    transform: scale(0.95);
+    transition: all 0.2s ease;
+    margin-top: -8.5px; /* (5px / 2) - (22px / 2) approx */
 }
 
 .brand-range::-webkit-slider-runnable-track {
-    height: 0.45rem;
+    height: 5px;
     border-radius: 999px;
     background: rgba(194, 198, 212, 0.35);
 }
 
 .brand-range::-moz-range-thumb {
-    width: 1.25rem;
-    height: 1.25rem;
-    border: 2px solid #ffffff;
-    border-radius: 999px;
+    width: 22px;
+    height: 22px;
+    border: 3px solid #ffffff;
+    border-radius: 50%;
     background: var(--color-secondary);
-    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
     cursor: pointer;
-    transition: transform 0.15s ease;
+    transition: all 0.2s ease;
+}
+
+.brand-range::-moz-range-track {
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(194, 198, 212, 0.35);
 }
 
 .brand-range::-moz-range-thumb:hover {
@@ -345,54 +345,61 @@
     background: linear-gradient(90deg, rgba(255, 255, 255, 0.92) 0%, rgba(246, 162, 26, 0.95) 100%);
 }
 
+.hero-dark-range {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent !important;
+    height: 2.5rem;
+}
+
 .hero-dark-range::-webkit-slider-runnable-track {
-    height: 0.58rem;
+    height: 6px;
     background: transparent;
 }
 
 .hero-dark-range::-moz-range-track {
-    height: 0.58rem;
+    height: 6px;
     background: transparent;
 }
 
 .hero-dark-range::-webkit-slider-thumb {
     appearance: none;
     -webkit-appearance: none;
-    margin-top: -11px;
-    width: 1.85rem;
-    height: 1.85rem;
-    background: linear-gradient(135deg, #ffc14d 0%, #f6a21a 100%);
+    margin-top: -9px; /* (6px / 2) - (24px / 2) = 3 - 12 = -9px */
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #ffffff 0%, #f6a21a 100%);
     border: 3px solid #ffffff;
-    border-radius: 999px;
+    border-radius: 50%;
     box-shadow: 
         0 0 0 4px rgba(246, 162, 26, 0.15),
-        0 8px 16px -4px rgba(0, 0, 0, 0.4);
+        0 8px 16px -4px rgba(0, 0, 0, 0.6);
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .hero-dark-range::-webkit-slider-thumb:hover {
-    transform: scale(1.1);
+    transform: scale(1.15);
     box-shadow: 
         0 0 0 6px rgba(246, 162, 26, 0.25),
-        0 12px 20px -4px rgba(0, 0, 0, 0.5);
+        0 12px 24px -4px rgba(0, 0, 0, 0.7);
 }
 
 .hero-dark-range::-webkit-slider-thumb:active {
-    transform: scale(0.95);
+    transform: scale(0.9);
 }
 
 .hero-dark-range::-moz-range-thumb {
-    width: 1.85rem;
-    height: 1.85rem;
-    background: linear-gradient(135deg, #ffc14d 0%, #f6a21a 100%);
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #ffffff 0%, #f6a21a 100%);
     border: 3px solid #ffffff;
-    border-radius: 999px;
+    border-radius: 50%;
     box-shadow: 
         0 0 0 4px rgba(246, 162, 26, 0.15),
-        0 8px 16px -4px rgba(0, 0, 0, 0.4);
+        0 8px 16px -4px rgba(0, 0, 0, 0.6);
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .hero-dark-range::-moz-range-thumb:hover {

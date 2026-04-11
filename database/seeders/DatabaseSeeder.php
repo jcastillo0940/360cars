@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             CostaRicaLocationsSeeder::class,
             PlanSeeder::class,
             ExtrasSeeder::class,
+            NewsPostSeeder::class,
         ]);
 
         $seller = User::updateOrCreate(

@@ -134,7 +134,7 @@ class HomeController extends Controller
                 'catalogUrl' => route('catalog.index'),
                 'brandsUrl' => route('brands.index'),
                 'valuationUrl' => route('valuation.index'),
-                'sellUrl' => auth()->check() && auth()->user()->hasRole('seller', 'dealer', 'admin') ? route('seller.dashboard') : route('seller.onboarding.create'),
+                'sellUrl' => route('seller.onboarding.create'),
                 'accountUrl' => auth()->check()
                     ? (auth()->user()->hasRole('admin')
                         ? route('admin.dashboard')
