@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers\Web\Auth;
 
@@ -39,7 +39,7 @@ class WebAuthController extends Controller
                 'route' => $route,
             ]);
 
-            return redirect()->route($route);
+            return $this->redirectToNamedRoute($route);
         }
 
         return view('auth.login', [
@@ -105,13 +105,13 @@ class WebAuthController extends Controller
             'route' => $route,
         ]);
 
-        return redirect()->route($route)->with('status', 'Bienvenido de nuevo.');
+        return $this->redirectToNamedRoute($route)->with('status', 'Bienvenido de nuevo.');
     }
 
     public function register()
     {
         if (Auth::check()) {
-            return redirect()->route($this->redirectRoute(Auth::user()));
+            return $this->redirectToNamedRoute($this->redirectRoute(Auth::user()));
         }
 
         return view('auth.register', [
@@ -138,13 +138,13 @@ class WebAuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route($this->redirectRoute($user))->with('status', 'Cuenta creada correctamente.');
+        return $this->redirectToNamedRoute($this->redirectRoute($user))->with('status', 'Cuenta creada correctamente.');
     }
 
     public function forgotPassword()
     {
         if (Auth::check()) {
-            return redirect()->route($this->redirectRoute(Auth::user()));
+            return $this->redirectToNamedRoute($this->redirectRoute(Auth::user()));
         }
 
         return view('auth.forgot-password', [
@@ -168,13 +168,13 @@ class WebAuthController extends Controller
             ])->onlyInput('email');
         }
 
-        return back()->with('status', 'Te enviamos un enlace para rest?blecer tu contraseña.');
+        return back()->with('status', 'Te enviamos un enlace para rest?blecer tu contraseÃ±a.');
     }
 
     public function resetPassword(string $token, Request $request)
     {
         if (Auth::check()) {
-            return redirect()->route($this->redirectRoute(Auth::user()));
+            return $this->redirectToNamedRoute($this->redirectRoute(Auth::user()));
         }
 
         return view('auth.reset-password', [
@@ -215,7 +215,7 @@ class WebAuthController extends Controller
             ])->withInput($request->except('password', 'password_confirmation'));
         }
 
-        return redirect()->route('login')->with('status', 'Tu contraseña fue actualizada correctamente.');
+        return redirect()->route('login')->with('status', 'Tu contraseÃ±a fue actualizada correctamente.');
     }
 
     public function destroy(): RedirectResponse
@@ -228,7 +228,7 @@ class WebAuthController extends Controller
         request()->session()->invalidate();
         request()->session()->regenerateToken();
 
-        return redirect()->route('login')->with('status', 'Sesion cerrada correctamente.');
+        return $this->redirectToNamedRoute('login')->with('status', 'Sesion cerrada correctamente.');
     }
 
     private function redirectRoute(User $user): string
@@ -244,6 +244,11 @@ class WebAuthController extends Controller
         return 'buyer.dashboard';
     }
 
+    private function redirectToNamedRoute(string $route, array $parameters = []): RedirectResponse
+    {
+        return redirect()->to(route($route, $parameters, false));
+    }
+
     private function logAuthEvent(string $message, array $context = []): void
     {
         if (! app()->environment(['local', 'staging']) && ! config('app.debug')) {
@@ -253,3 +258,4 @@ class WebAuthController extends Controller
         Log::info($message, $context);
     }
 }
+

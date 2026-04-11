@@ -1,4 +1,56 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
+
+function normalizeAppUrl(url) {
+    if (!url || typeof window === 'undefined') {
+        return url;
+    }
+
+    try {
+        const parsed = new URL(url, window.location.origin);
+        return `${window.location.origin}${parsed.pathname}${parsed.search}${parsed.hash}`;
+    } catch {
+        return url;
+    }
+}
+
+function readCookie(name) {
+    if (typeof document === 'undefined') {
+        return '';
+    }
+
+    const match = document.cookie
+        .split('; ')
+        .find((entry) => entry.startsWith(`${name}=`));
+
+    return match ? decodeURIComponent(match.split('=').slice(1).join('=')) : '';
+}
+
+function LogoutButton({ className = '' }) {
+    const handleLogout = () => {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = normalizeAppUrl('/logout');
+
+        const token = readCookie('XSRF-TOKEN');
+
+        if (token) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = '_token';
+            input.value = token;
+            form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+    };
+
+    return (
+        <button type="button" onClick={handleLogout} className={className}>
+            Cerrar sesión
+        </button>
+    );
+}
 
 export function Icon({ name, className = '', filled = false }) {
     return (
@@ -39,23 +91,26 @@ export function PriceStack({ primary, secondary, align = 'left', large = false }
 }
 
 export function formatCRC(value) {
-    return `₡${new Intl.NumberFormat('es-CR').format(Number(value || 0))}`;
+    return `â‚¡${new Intl.NumberFormat('es-CR').format(Number(value || 0))}`;
 }
 
 function AccountMenu({ authUser, sellUrl }) {
     const firstName = authUser?.firstName || 'Cuenta';
+    const dashboardUrl = normalizeAppUrl(authUser?.dashboardUrl);
+    const sellerUrl = normalizeAppUrl(sellUrl);
+    const buyerUrl = normalizeAppUrl(authUser?.buyerUrl);
 
     return (
         <div className="absolute right-0 top-[calc(100%+0.75rem)] w-72 overflow-hidden rounded-3xl border border-outline-variant/20 bg-white p-3 shadow-2xl">
             <div className="rounded-2xl bg-surface-container-low p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Tu cuenta</p>
                 <strong className="mt-2 block font-headline text-xl font-extrabold text-slate-900">Hola, {firstName}</strong>
-                <p className="mt-2 text-sm text-slate-500">Tu sesión está activa. Entra a tu panel o sigue gestionando tus publicaciones.</p>
             </div>
             <div className="mt-3 grid gap-2">
-                <a href={authUser.dashboardUrl} className="rounded-2xl border border-outline-variant/20 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:bg-primary-fixed hover:text-primary">Ir a mi panel</a>
-                <a href={sellUrl} className="rounded-2xl border border-secondary bg-secondary px-4 py-3 text-sm font-bold text-white transition hover:bg-secondary-container">Publicar o gestionar autos</a>
-                {authUser.buyerUrl ? <a href={authUser.buyerUrl} className="rounded-2xl border border-outline-variant/20 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:bg-primary-fixed hover:text-primary">Mi seguimiento</a> : null}
+                <a href={dashboardUrl} className="rounded-2xl border border-outline-variant/20 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:bg-primary-fixed hover:text-primary">Ir a mi panel</a>
+                <a href={sellerUrl} className="rounded-2xl border border-secondary bg-secondary px-4 py-3 text-sm font-bold text-white transition hover:bg-secondary-container">Publicar o gestionar autos</a>
+                {buyerUrl ? <a href={buyerUrl} className="rounded-2xl border border-outline-variant/20 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-primary hover:bg-primary-fixed hover:text-primary">Mi seguimiento</a> : null}
+                <LogoutButton className="rounded-2xl border border-outline-variant/20 px-4 py-3 text-left text-sm font-bold text-slate-700 transition hover:border-primary hover:bg-primary-fixed hover:text-primary" />
             </div>
         </div>
     );
@@ -88,12 +143,12 @@ export function PublicTopBar({ homeUrl, catalogUrl, brandsUrl, valuationUrl, sel
                     <button type="button" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant/40 text-primary transition hover:bg-primary/5 md:hidden" onClick={() => setMenuOpen((current) => !current)} aria-label="Abrir menú">
                         <Icon name={menuOpen ? 'close' : 'menu'} className="text-[24px]" />
                     </button>
-                    <a href={homeUrl} className={transparent ? 'text-white' : 'text-primary'}>
+                    <a href={normalizeAppUrl(homeUrl)} className={transparent ? 'text-white' : 'text-primary'}>
                         <Logo />
                     </a>
                     <div className="hidden md:flex md:gap-6 lg:gap-8">
                         {navigation.map((item) => (
-                            <a key={item.label} href={item.href} className={`font-headline text-sm font-bold tracking-tight transition-colors lg:text-base ${transparent ? 'text-white/80 hover:text-white' : 'text-slate-600 hover:text-primary'}`}>
+                            <a key={item.label} href={normalizeAppUrl(item.href)} className={`font-headline text-sm font-bold tracking-tight transition-colors lg:text-base ${transparent ? 'text-white/80 hover:text-white' : 'text-slate-600 hover:text-primary'}`}>
                                 {item.label}
                             </a>
                         ))}
@@ -112,11 +167,11 @@ export function PublicTopBar({ homeUrl, catalogUrl, brandsUrl, valuationUrl, sel
                             {accountMenuOpen ? <AccountMenu authUser={authUser} sellUrl={sellUrl} /> : null}
                         </div>
                     ) : (
-                        <a href={accountUrl} className={`px-5 py-2 text-sm font-bold transition ${transparent ? 'text-white/80 hover:text-white' : 'text-slate-600 hover:text-primary'}`}>Ingresar</a>
+                        <a href={normalizeAppUrl(accountUrl)} className={`px-5 py-2 text-sm font-bold transition ${transparent ? 'text-white/80 hover:text-white' : 'text-slate-600 hover:text-primary'}`}>Ingresar</a>
                     )}
                 </div>
                 <div className="flex items-center gap-2 md:hidden">
-                    <a href={sellUrl} className="rounded-full bg-secondary px-4 py-2 font-headline text-xs font-bold text-slate-950 shadow-sm transition-colors hover:bg-[#ffb83a]">Vender</a>
+                    <a href={normalizeAppUrl(sellUrl)} className="rounded-full bg-secondary px-4 py-2 font-headline text-xs font-bold text-slate-950 shadow-sm transition-colors hover:bg-[#ffb83a]">Vender</a>
                     <button type="button" onClick={() => setAccountMenuOpen((current) => !current)} className="inline-flex h-11 w-11 items-center justify-center rounded-full text-primary" aria-label={authUser?.authenticated ? 'Abrir menú de cuenta' : 'Ir a ingresar'}>
                         <Icon name="person" className="text-[24px]" />
                     </button>
@@ -126,7 +181,7 @@ export function PublicTopBar({ homeUrl, catalogUrl, brandsUrl, valuationUrl, sel
                 <div className="mobile-menu border-t border-outline-variant/20 bg-white px-4 py-4 shadow-xl md:hidden">
                     <div className="flex flex-col gap-4">
                         {navigation.map((item) => (
-                            <a key={item.label} href={item.href} className="font-headline text-base font-bold tracking-tight text-slate-700">{item.label}</a>
+                            <a key={item.label} href={normalizeAppUrl(item.href)} className="font-headline text-base font-bold tracking-tight text-slate-700">{item.label}</a>
                         ))}
                         <div className="mt-3 flex flex-col gap-3 border-t border-outline-variant/20 pt-4">
                             {authUser?.authenticated ? (
@@ -134,14 +189,14 @@ export function PublicTopBar({ homeUrl, catalogUrl, brandsUrl, valuationUrl, sel
                                     <div className="rounded-2xl bg-surface-container-low px-4 py-4">
                                         <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Cuenta activa</p>
                                         <strong className="mt-2 block font-headline text-lg font-extrabold text-slate-900">Hola, {authUser.firstName || 'Cuenta'}</strong>
-                                        <p className="mt-2 text-sm text-slate-500">Tu sesión ya está iniciada.</p>
                                     </div>
-                                    <a href={authUser.dashboardUrl} className="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700">Ir a mi panel</a>
+                                    <a href={normalizeAppUrl(authUser.dashboardUrl)} className="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700">Ir a mi panel</a>
                                 </>
                             ) : (
-                                <a href={accountUrl} className="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700">Ingresar</a>
+                                <a href={normalizeAppUrl(accountUrl)} className="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700">Ingresar</a>
                             )}
-                            <a href={sellUrl} className="rounded bg-secondary px-4 py-3 text-center font-headline font-bold text-white">Vender mi auto</a>
+                            <a href={normalizeAppUrl(sellUrl)} className="rounded bg-secondary px-4 py-3 text-center font-headline font-bold text-white">Vender mi auto</a>
+                            {authUser?.authenticated ? <LogoutButton className="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700" /> : null}
                         </div>
                     </div>
                 </div>
@@ -149,9 +204,10 @@ export function PublicTopBar({ homeUrl, catalogUrl, brandsUrl, valuationUrl, sel
             {accountMenuOpen && authUser?.authenticated ? (
                 <div className="border-t border-outline-variant/20 bg-white px-4 py-4 shadow-xl md:hidden">
                     <div className="flex flex-col gap-3">
-                        <a href={authUser.dashboardUrl} className="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700">Ir a mi panel</a>
-                        {authUser.buyerUrl ? <a href={authUser.buyerUrl} className="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700">Mi actividad</a> : null}
-                        <a href={sellUrl} className="rounded bg-secondary px-4 py-3 text-center font-headline font-bold text-white">Publicar o gestionar autos</a>
+                        <a href={normalizeAppUrl(authUser.dashboardUrl)} className="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700">Ir a mi panel</a>
+                        {authUser.buyerUrl ? <a href={normalizeAppUrl(authUser.buyerUrl)} className="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700">Mi actividad</a> : null}
+                        <a href={normalizeAppUrl(sellUrl)} className="rounded bg-secondary px-4 py-3 text-center font-headline font-bold text-white">Publicar o gestionar autos</a>
+                        <LogoutButton className="rounded border border-outline-variant/40 px-4 py-3 text-center font-headline font-bold text-slate-700" />
                     </div>
                 </div>
             ) : null}
@@ -164,49 +220,48 @@ export function PublicFooter({ homeUrl, catalogUrl, brandsUrl, valuationUrl, sel
         <footer className="mt-16 bg-slate-950 text-white">
             <div className="mx-auto grid max-w-screen-2xl grid-cols-1 gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1.5fr_repeat(3,minmax(0,1fr))] lg:px-8">
                 <div>
-                    <a href={homeUrl} className="text-white">
+                    <a href={normalizeAppUrl(homeUrl)} className="text-white">
                         <Logo />
                     </a>
                     <p className="mt-5 max-w-md text-sm leading-7 text-slate-400">Marketplace automotriz para Costa Rica con inventario real, herramientas claras para vender y una búsqueda pensada para decidir más rápido.</p>
                     <div className="mt-6 flex flex-wrap gap-3">
-                        <a href={sellUrl} className="inline-flex items-center justify-center rounded bg-secondary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary-container">Publicar auto</a>
-                        <a href={loginUrl} className="inline-flex items-center justify-center rounded border border-secondary bg-secondary/10 px-5 py-3 text-sm font-bold text-secondary transition hover:bg-secondary hover:text-white">Ingresar</a>
+                        <a href={normalizeAppUrl(sellUrl)} className="inline-flex items-center justify-center rounded bg-secondary px-5 py-3 text-sm font-bold text-white transition hover:bg-secondary-container">Publicar auto</a>
+                        <a href={normalizeAppUrl(loginUrl)} className="inline-flex items-center justify-center rounded border border-secondary bg-secondary/10 px-5 py-3 text-sm font-bold text-secondary transition hover:bg-secondary hover:text-white">Ingresar</a>
                     </div>
                 </div>
                 <div>
                     <h3 className="text-xs font-bold uppercase tracking-[0.24em] text-secondary">Explorar</h3>
                     <div className="mt-5 flex flex-col gap-3 text-sm text-slate-400">
-                        <a href={catalogUrl} className="transition hover:text-white">Inventario</a>
-                        <a href={brandsUrl || catalogUrl} className="transition hover:text-white">Marcas</a>
-                        <a href={valuationUrl} className="transition hover:text-white">Estimación de mercado</a>
-                        <a href={sellUrl} className="transition hover:text-white">Vender mi auto</a>
+                        <a href={normalizeAppUrl(catalogUrl)} className="transition hover:text-white">Inventario</a>
+                        <a href={normalizeAppUrl(brandsUrl || catalogUrl)} className="transition hover:text-white">Marcas</a>
+                        <a href={normalizeAppUrl(valuationUrl)} className="transition hover:text-white">Estimación de mercado</a>
+                        <a href={normalizeAppUrl(sellUrl)} className="transition hover:text-white">Vender mi auto</a>
                     </div>
                 </div>
                 <div>
                     <h3 className="text-xs font-bold uppercase tracking-[0.24em] text-secondary">Cuenta</h3>
                     <div className="mt-5 flex flex-col gap-3 text-sm text-slate-400">
-                        <a href={loginUrl} className="transition hover:text-white">Iniciar sesión</a>
-                        <a href={sellUrl} className="transition hover:text-white">Publicar anuncio</a>
-                        <a href={newsUrl || '/noticias'} className="transition hover:text-white">Noticias</a>
-                        <a href={catalogUrl} className="transition hover:text-white">Buscar autos</a>
+                        <a href={normalizeAppUrl(loginUrl)} className="transition hover:text-white">Iniciar sesión</a>
+                        <a href={normalizeAppUrl(sellUrl)} className="transition hover:text-white">Publicar anuncio</a>
+                        <a href={normalizeAppUrl(newsUrl || '/noticias')} className="transition hover:text-white">Noticias</a>
+                        <a href={normalizeAppUrl(catalogUrl)} className="transition hover:text-white">Buscar autos</a>
                     </div>
                 </div>
                 <div>
                     <h3 className="text-xs font-bold uppercase tracking-[0.24em] text-secondary">Legal</h3>
                     <div className="mt-5 flex flex-col gap-3 text-sm text-slate-400">
-                        <a href={termsUrl} className="transition hover:text-white">Términos de servicio</a>
-                        <a href={privacyUrl} className="transition hover:text-white">Política de privacidad</a>
-                        <a href={cookiesUrl} className="transition hover:text-white">Política de cookies</a>
+                        <a href={normalizeAppUrl(termsUrl)} className="transition hover:text-white">Términos de servicio</a>
+                        <a href={normalizeAppUrl(privacyUrl)} className="transition hover:text-white">Política de privacidad</a>
+                        <a href={normalizeAppUrl(cookiesUrl)} className="transition hover:text-white">Política de cookies</a>
                     </div>
                 </div>
             </div>
             <div className="border-t border-white/10">
                 <div className="mx-auto flex max-w-screen-2xl flex-col gap-3 px-4 py-5 text-xs text-slate-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-                    <span>Â© 2026 Movikaa Costa Rica. Todos los derechos reservados.</span>
+                    <span>© 2026 Movikaa Costa Rica. Todos los derechos reservados.</span>
                     <span>Desarrollado por <a href="https://pixelprocr.com" target="_blank" rel="noreferrer" className="font-semibold text-secondary transition hover:text-white">PixelPRO</a></span>
                 </div>
             </div>
         </footer>
     );
 }
-

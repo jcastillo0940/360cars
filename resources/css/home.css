@@ -340,18 +340,20 @@
 }
 
 .hero-dark-range::-webkit-slider-thumb {
-    margin-top: -4px;
-    width: 1.6rem;
-    height: 1.6rem;
-    background: #f7f7fa;
-    border: 2px solid rgba(255, 255, 255, 0.85);
+    margin-top: -10px;
+    width: 2rem;
+    height: 2rem;
+    background: linear-gradient(180deg, #ffc14d 0%, #f6a21a 100%);
+    border: 3px solid rgba(255, 255, 255, 0.92);
+    box-shadow: 0 0 0 6px rgba(246, 162, 26, 0.18), 0 12px 24px rgba(15, 23, 42, 0.28);
 }
 
 .hero-dark-range::-moz-range-thumb {
-    width: 1.6rem;
-    height: 1.6rem;
-    background: #f7f7fa;
-    border: 2px solid rgba(255, 255, 255, 0.85);
+    width: 2rem;
+    height: 2rem;
+    background: linear-gradient(180deg, #ffc14d 0%, #f6a21a 100%);
+    border: 3px solid rgba(255, 255, 255, 0.92);
+    box-shadow: 0 0 0 6px rgba(246, 162, 26, 0.18), 0 12px 24px rgba(15, 23, 42, 0.28);
 }
 
 .hero-dark-range--overlay {
