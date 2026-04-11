@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 function normalizeAppUrl(url) {
     if (!url || typeof window === 'undefined') {
@@ -91,7 +91,7 @@ export function PriceStack({ primary, secondary, align = 'left', large = false }
 }
 
 export function formatCRC(value) {
-    return `â‚¡${new Intl.NumberFormat('es-CR').format(Number(value || 0))}`;
+    return `₡${new Intl.NumberFormat('es-CR').format(Number(value || 0))}`;
 }
 
 function AccountMenu({ authUser, sellUrl }) {
@@ -155,6 +155,7 @@ export function PublicTopBar({ homeUrl, catalogUrl, brandsUrl, valuationUrl, sel
                     </div>
                 </div>
                 <div className="hidden items-center gap-4 md:flex">
+                    <a href={normalizeAppUrl(sellUrl)} className="rounded-full bg-secondary px-6 py-2.5 font-headline text-sm font-bold text-slate-950 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[#ffb83a] hover:shadow-md">Vender auto</a>
                     {authUser?.authenticated ? (
                         <div className="relative">
                             <button type="button" onClick={() => setAccountMenuOpen((current) => !current)} className={`inline-flex items-center gap-3 rounded-full border px-4 py-2 text-sm font-bold transition ${transparent ? 'border-white/20 bg-white/5 text-white hover:bg-white/10' : 'border-outline-variant/40 bg-white text-slate-700 hover:border-primary hover:text-primary'}`}>
