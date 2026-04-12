@@ -50,8 +50,10 @@
                         data-menu-toggle aria-expanded="false" aria-label="Abrir menu">
                         <span class="material-symbols-outlined text-[24px]">menu</span>
                     </button>
-                    <a href="{{ route('home') }}"
-                        class="font-headline text-2xl font-black tracking-tight text-primary sm:text-3xl">Movikaa</a>
+                    <a href="{{ route('home') }}" class="flex items-center">
+                        <img src="{{ asset('img/logo.png') }}" alt="Movikaa" class="h-8 w-auto object-contain sm:h-10" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <span class="hidden font-headline text-2xl font-black tracking-tight text-primary sm:text-3xl">Movikaa</span>
+                    </a>
                     <div class="hidden items-center gap-8 md:flex">
                         <a href="{{ route('catalog.index') }}"
                             class="font-headline text-sm font-bold tracking-tight text-slate-200 transition hover:text-primary">Comprar</a>

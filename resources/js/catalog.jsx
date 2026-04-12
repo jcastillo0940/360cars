@@ -120,7 +120,7 @@ function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, logi
     const isDark = publicTheme === 'dark';
 
     const modelsByMake = filterOptions.modelsByMake || {};
-    const availableModels = localFilters.make ? (modelsByMake[localFilters.make] || []) : (filterOptions.models || []);
+    const availableModels = localFilters.make ? (modelsByMake[localFilters.make] || []) : [];
     const stats = useMemo(() => [
         { label: 'Resultados activos', value: vehicles.meta.total },
         { label: 'Página actual', value: vehicles.meta.current_page },
@@ -299,7 +299,7 @@ function CatalogPage({ homeUrl, catalogUrl, brandsUrl, sellUrl, accountUrl, logi
 
                                 <label className="block rounded-2xl border border-outline-variant/30 bg-white p-4">
                                     <span className="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Modelo</span>
-                                    <select value={localFilters.model} onChange={(event) => setFilter('model', event.target.value)} className="catalog-filter-select w-full border-none bg-white p-0 font-semibold text-slate-900 focus:ring-0">
+                                    <select value={localFilters.model} onChange={(event) => setFilter('model', event.target.value)} className="catalog-filter-select w-full border-none bg-white p-0 font-semibold text-slate-900 focus:ring-0" disabled={!localFilters.make}>
                                         <option value="">Todos</option>
                                         {availableModels.map((item) => <option key={item} value={item}>{item}</option>)}
                                     </select>
