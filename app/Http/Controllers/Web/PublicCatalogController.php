@@ -310,12 +310,9 @@ class PublicCatalogController extends Controller
             'makes' => $makes,
             'models' => $models,
             'modelsByMake' => $modelsByMake,
-            'provinces' => $provinceValues
-                ->merge($stateValues)
-                ->filter()
-                ->unique()
-                ->sort()
-                ->values()
+            'provinces' => \App\Models\Province::query()
+                ->orderBy('name')
+                ->pluck('name')
                 ->all(),
             'features' => $featureOptions->map(fn (VehicleFeatureOption $feature) => [
                 'name' => $feature->name,
