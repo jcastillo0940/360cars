@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
+use Throwable;
 
 class WebAuthController extends Controller
 {
@@ -52,6 +53,7 @@ class WebAuthController extends Controller
     {
         $credentials = $request->validated();
         $email = strtolower((string) $credentials['email']);
+        $user = User::query()->where('email', $email)->first();
 
         $this->logAuthEvent('auth.login_attempt.start', [
             'email' => $email,
@@ -60,9 +62,16 @@ class WebAuthController extends Controller
             'has_xsrf_cookie' => $request->cookies->has('XSRF-TOKEN'),
         ]);
 
+        if ($user && ! $user->is_active && Hash::check($credentials['password'], $user->password)) {
+            return back()
+                ->withErrors(['email' => 'Tu cuenta esta desactivada. Contacta al administrador.'])
+                ->onlyInput('email');
+        }
+
         $authenticated = Auth::attempt([
             'email' => $email,
             'password' => $credentials['password'],
+            'is_active' => true,
         ], true);
 
         $this->logAuthEvent('auth.login_attempt.result', [
@@ -137,8 +146,12 @@ class WebAuthController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate();
+        $user->sendWelcomeEmail();
 
-        return $this->redirectToNamedRoute($this->redirectRoute($user))->with('status', 'Cuenta creada correctamente.');
+        return $this->redirectToNamedRoute($this->redirectRoute($user))->with(
+            'status',
+            'Cuenta creada correctamente. Te enviamos un correo de bienvenida si el SMTP esta configurado.',
+        );
     }
 
     public function forgotPassword()
@@ -158,10 +171,20 @@ class WebAuthController extends Controller
             'email' => ['required', 'email'],
         ]);
 
-        $status = Password::sendResetLink([
-            'email' => strtolower((string) $credentials['email']),
-        ]);
+        try {
+            $status = Password::sendResetLink([
+                'email' => strtolower((string) $credentials['email']),
+            ]);
+        } catch (Throwable $exception) {
+            Log::warning('mail.password_reset.failed', [
+                'email' => strtolower((string) $credentials['email']),
+                'message' => $exception->getMessage(),
+            ]);
 
+            return back()->withErrors([
+                'email' => 'No pudimos enviar el correo en este momento. Revisa la configuracion SMTP e intenta de nuevo.',
+            ])->onlyInput('email');
+        }
         if ($status !== Password::RESET_LINK_SENT) {
             return back()->withErrors([
                 'email' => __($status),
@@ -258,3 +281,9 @@ class WebAuthController extends Controller
         Log::info($message, $context);
     }
 }
+
+
+
+
+
+

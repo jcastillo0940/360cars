@@ -51,7 +51,7 @@ Route::middleware('guest')->group(function (): void {
     Route::post('/reset-password', [WebAuthController::class, 'updatePassword'])->middleware('throttle:5,10')->name('password.update');
 });
 
-Route::middleware('auth')->group(function (): void {
+Route::middleware(['auth', 'active'])->group(function (): void {
     Route::post('/logout', [WebAuthController::class, 'destroy'])->name('logout');
     Route::get('/profile', [UserProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [UserProfileController::class, 'update'])->name('profile.update');
@@ -105,7 +105,17 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/admin/payments', [AdminPortalController::class, 'payments'])->name('admin.payments');
         }
         Route::get('/admin/users', [AdminPortalController::class, 'users'])->name('admin.users');
+        Route::post('/admin/users', [AdminPortalController::class, 'storeUser'])->name('admin.users.store');
+        Route::put('/admin/users/{user}', [AdminPortalController::class, 'updateUser'])->name('admin.users.update');
+        Route::patch('/admin/users/{user}/toggle', [AdminPortalController::class, 'toggleUser'])->name('admin.users.toggle');
+        Route::delete('/admin/users/{user}', [AdminPortalController::class, 'destroyUser'])->name('admin.users.destroy');
+        Route::post('/admin/vehicles', [AdminPortalController::class, 'storeVehicle'])->name('admin.vehicles.store');
+        Route::put('/admin/vehicles/{vehicle}', [AdminPortalController::class, 'updateVehicle'])->name('admin.vehicles.update');
+        Route::patch('/admin/vehicles/{vehicle}/toggle', [AdminPortalController::class, 'toggleVehicle'])->name('admin.vehicles.toggle');
+        Route::delete('/admin/vehicles/{vehicle}', [AdminPortalController::class, 'destroyVehicle'])->name('admin.vehicles.destroy');
         Route::get('/admin/settings', [AdminPortalController::class, 'settings'])->name('admin.settings');
+        Route::get('/admin/mail-test', [AdminPortalController::class, 'mailTest'])->name('admin.mail-test');
+        Route::post('/admin/mail-test', [AdminPortalController::class, 'sendMailTest'])->middleware('throttle:5,10')->name('admin.mail-test.send');
         Route::get('/admin/features', [AdminPortalController::class, 'features'])->name('admin.features');
         Route::get('/admin/plans', [AdminPortalController::class, 'plans'])->name('admin.plans');
         Route::get('/admin/news', [AdminPortalController::class, 'news'])->name('admin.news');
@@ -134,6 +144,4 @@ Route::middleware('auth')->group(function (): void {
         Route::delete('/admin/feature-options/{featureOption}', [AdminPortalController::class, 'destroyFeatureOption'])->name('admin.feature-options.destroy');
     });
 });
-
-
 

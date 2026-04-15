@@ -110,6 +110,7 @@ class SellerOnboardingController extends Controller
 
                 Auth::login($user);
                 $request->session()->regenerate();
+                $user->sendWelcomeEmail();
             } else {
                 $updates = [
                     'last_seen_at' => now(),

@@ -324,6 +324,127 @@ class PortalWebTest extends TestCase
             ->assertSee('Autos que te interesan')
             ->assertSee($vehicle->title);
     }
+    public function test_admin_can_crud_users_from_admin_panel(): void
+    {
+        $admin = User::where('email', 'admin@movikaa.local')->firstOrFail();
+
+        $this->actingAs($admin)
+            ->post(route('admin.users.store'), [
+                'name' => 'Usuario Admin CRUD',
+                'email' => 'crud-user@movikaa.local',
+                'password' => 'Password123',
+                'account_type' => 'seller',
+                'phone' => '70001234',
+                'is_verified' => '1',
+                'is_active' => '1',
+            ])
+            ->assertRedirect(route('admin.users').'#users-list');
+
+        $user = User::where('email', 'crud-user@movikaa.local')->firstOrFail();
+
+        $this->actingAs($admin)
+            ->put(route('admin.users.update', $user), [
+                'name' => 'Usuario Actualizado',
+                'email' => 'crud-user@movikaa.local',
+                'account_type' => 'dealer',
+                'phone' => '71112222',
+                'is_verified' => '1',
+                'is_active' => '1',
+            ])
+            ->assertRedirect(route('admin.users').'#users-list');
+
+        $this->actingAs($admin)
+            ->patch(route('admin.users.toggle', $user))
+            ->assertRedirect(route('admin.users').'#users-list');
+
+        $user->refresh();
+
+        $this->assertSame('Usuario Actualizado', $user->name);
+        $this->assertSame('dealer', $user->account_type->value);
+        $this->assertFalse($user->is_active);
+        $this->assertNotNull($user->deactivated_at);
+
+        $this->post('/logout');
+
+        $this->post('/login', [
+            'email' => 'crud-user@movikaa.local',
+            'password' => 'Password123',
+        ])->assertSessionHasErrors('email');
+
+        $this->actingAs($admin)
+            ->delete(route('admin.users.destroy', $user))
+            ->assertRedirect(route('admin.users').'#users-list');
+
+        $this->assertDatabaseMissing('users', [
+            'id' => $user->id,
+        ]);
+    }
+
+    public function test_admin_can_crud_vehicles_from_admin_panel(): void
+    {
+        $admin = User::where('email', 'admin@movikaa.local')->firstOrFail();
+        $seller = User::where('email', 'seller@movikaa.local')->firstOrFail();
+
+        $this->actingAs($admin)
+            ->post(route('admin.vehicles.store'), [
+                'user_id' => $seller->id,
+                'vehicle_make_id' => 1,
+                'vehicle_model_id' => 1,
+                'title' => 'Admin Vehicle CRUD',
+                'condition' => 'used',
+                'year' => 2024,
+                'body_type' => 'SUV',
+                'fuel_type' => 'Gasolina',
+                'transmission' => 'Automatica',
+                'price' => 32000,
+                'currency' => 'CRC',
+                'city' => 'San Jose',
+                'description' => 'Vehiculo creado desde el panel admin para validar el CRUD completo.',
+                'status' => 'draft',
+                'publication_tier' => 'basic',
+            ])
+            ->assertRedirect();
+
+        $vehicle = Vehicle::where('title', 'Admin Vehicle CRUD')->firstOrFail();
+
+        $this->actingAs($admin)
+            ->put(route('admin.vehicles.update', $vehicle), [
+                'user_id' => $seller->id,
+                'vehicle_make_id' => 1,
+                'vehicle_model_id' => 1,
+                'title' => 'Admin Vehicle Updated',
+                'condition' => 'used',
+                'year' => 2025,
+                'body_type' => 'SUV',
+                'fuel_type' => 'Gasolina',
+                'transmission' => 'Automatica',
+                'price' => 35000,
+                'currency' => 'USD',
+                'city' => 'Heredia',
+                'description' => 'Vehiculo actualizado desde el panel admin para validar cambios y estado.',
+                'status' => 'published',
+                'publication_tier' => 'premium',
+            ])
+            ->assertRedirect(route('admin.users').'#vehicles');
+
+        $this->actingAs($admin)
+            ->patch(route('admin.vehicles.toggle', $vehicle))
+            ->assertRedirect(route('admin.users').'#vehicles');
+
+        $vehicle->refresh();
+
+        $this->assertSame('Admin Vehicle Updated', $vehicle->title);
+        $this->assertSame('paused', $vehicle->status);
+        $this->assertSame('Heredia', $vehicle->city);
+
+        $this->actingAs($admin)
+            ->delete(route('admin.vehicles.destroy', $vehicle))
+            ->assertRedirect(route('admin.users').'#vehicles');
+
+        $this->assertSoftDeleted('vehicles', [
+            'id' => $vehicle->id,
+        ]);
+    }
 }
 
 

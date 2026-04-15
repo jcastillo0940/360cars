@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Enums\AccountType;
 use App\Models\NewsPost;
 use App\Models\Plan;
 use App\Models\Subscription;
@@ -19,9 +20,13 @@ use App\Services\Valuation\VehicleValuationAiNarrator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Throwable;
 
 class AdminPortalController extends Controller
 {
@@ -158,41 +163,279 @@ class AdminPortalController extends Controller
 
     public function users(Request $request)
     {
-        $filters = [
+        $userFilters = [
             'q' => trim($request->string('q')->toString()),
             'role' => $request->string('role')->toString(),
+            'status' => $request->string('status')->toString(),
+        ];
+
+        $vehicleFilters = [
+            'q' => trim($request->string('vehicle_q')->toString()),
+            'status' => $request->string('vehicle_status')->toString(),
         ];
 
         $latestUsers = User::query()
-            ->when($filters['q'] !== '', function ($query) use ($filters): void {
-                $query->where(function ($builder) use ($filters): void {
-                    $builder->where('name', 'like', '%'.$filters['q'].'%')
-                        ->orWhere('email', 'like', '%'.$filters['q'].'%');
+            ->when($userFilters['q'] !== '', function ($query) use ($userFilters): void {
+                $query->where(function ($builder) use ($userFilters): void {
+                    $builder->where('name', 'like', '%'.$userFilters['q'].'%')
+                        ->orWhere('email', 'like', '%'.$userFilters['q'].'%')
+                        ->orWhere('phone', 'like', '%'.$userFilters['q'].'%');
                 });
             })
-            ->when($filters['role'] !== '', fn ($query) => $query->where('account_type', $filters['role']))
+            ->when($userFilters['role'] !== '', fn ($query) => $query->where('account_type', $userFilters['role']))
+            ->when($userFilters['status'] !== '', fn ($query) => $query->where('is_active', $userFilters['status'] === 'active'))
             ->latest()
             ->paginate(15)
             ->withQueryString();
 
         $latestVehicles = Vehicle::query()
             ->with(['owner', 'make', 'model'])
+            ->when($vehicleFilters['q'] !== '', function ($query) use ($vehicleFilters): void {
+                $query->where(function ($builder) use ($vehicleFilters): void {
+                    $builder->where('title', 'like', '%'.$vehicleFilters['q'].'%')
+                        ->orWhere('city', 'like', '%'.$vehicleFilters['q'].'%')
+                        ->orWhere('plate_number', 'like', '%'.$vehicleFilters['q'].'%')
+                        ->orWhereHas('owner', fn ($ownerQuery) => $ownerQuery->where('email', 'like', '%'.$vehicleFilters['q'].'%'));
+                });
+            })
+            ->when($vehicleFilters['status'] !== '', fn ($query) => $query->where('status', $vehicleFilters['status']))
             ->latest()
             ->paginate(12, ['*'], 'vehicles_page')
             ->withQueryString();
 
+        $editingUser = $request->integer('edit_user')
+            ? User::query()->find($request->integer('edit_user'))
+            : null;
+
+        $editingVehicle = $request->integer('edit_vehicle')
+            ? Vehicle::query()->with(['owner', 'make', 'model'])->find($request->integer('edit_vehicle'))
+            : null;
+
         return view('portal.admin.users', $this->sharedData($request) + [
             'latestUsers' => $latestUsers,
             'latestVehicles' => $latestVehicles,
-            'userFilters' => $filters,
+            'userFilters' => $userFilters,
+            'vehicleFilters' => $vehicleFilters,
+            'editingUser' => $editingUser,
+            'editingVehicle' => $editingVehicle,
+            'userRoleOptions' => AccountType::values(),
+            'vehicleStatusOptions' => ['draft', 'published', 'paused', 'sold', 'archived'],
+            'vehicleTierOptions' => ['basic', 'estándar', 'premium', 'agencia', 'agencia-pro'],
+            'vehicleOwners' => User::query()
+                ->whereIn('account_type', [AccountType::Seller->value, AccountType::Dealer->value, AccountType::Admin->value])
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name', 'email']),
         ]);
     }
 
+    public function storeUser(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
+            'account_type' => ['required', Rule::in(AccountType::values())],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'whatsapp_phone' => ['nullable', 'string', 'max:30'],
+            'country_code' => ['nullable', 'string', 'size:2'],
+            'company_name' => ['nullable', 'string', 'max:255'],
+            'agency_name' => ['nullable', 'string', 'max:255'],
+            'is_verified' => ['nullable', 'boolean'],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
+
+        User::query()->create([
+            'name' => $data['name'],
+            'email' => strtolower((string) $data['email']),
+            'password' => Hash::make($data['password']),
+            'account_type' => $data['account_type'],
+            'phone' => $data['phone'] ?? null,
+            'whatsapp_phone' => $data['whatsapp_phone'] ?? ($data['phone'] ?? null),
+            'country_code' => strtoupper((string) ($data['country_code'] ?? 'CR')),
+            'company_name' => $data['company_name'] ?? null,
+            'agency_name' => $data['agency_name'] ?? null,
+            'is_verified' => (bool) ($data['is_verified'] ?? false),
+            'verified_at' => ! empty($data['is_verified']) ? now() : null,
+            'is_active' => ! array_key_exists('is_active', $data) || (bool) $data['is_active'],
+            'deactivated_at' => array_key_exists('is_active', $data) && ! $data['is_active'] ? now() : null,
+            'last_seen_at' => now(),
+        ]);
+
+        return redirect()->to(route('admin.users').'#users-list')->with('status', 'Usuario creado correctamente.');
+    }
+
+    public function updateUser(Request $request, User $user): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'password' => ['nullable', 'string', 'min:8'],
+            'account_type' => ['required', Rule::in(AccountType::values())],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'whatsapp_phone' => ['nullable', 'string', 'max:30'],
+            'country_code' => ['nullable', 'string', 'size:2'],
+            'company_name' => ['nullable', 'string', 'max:255'],
+            'agency_name' => ['nullable', 'string', 'max:255'],
+            'is_verified' => ['nullable', 'boolean'],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
+
+        if ($user->id === $request->user()->id && array_key_exists('is_active', $data) && ! $data['is_active']) {
+            return redirect()->to(route('admin.users', ['edit_user' => $user->id]).'#user-form')->with('status', 'No puedes desactivar tu propia cuenta.');
+        }
+
+        $payload = [
+            'name' => $data['name'],
+            'email' => strtolower((string) $data['email']),
+            'account_type' => $data['account_type'],
+            'phone' => $data['phone'] ?? null,
+            'whatsapp_phone' => $data['whatsapp_phone'] ?? ($data['phone'] ?? null),
+            'country_code' => strtoupper((string) ($data['country_code'] ?? 'CR')),
+            'company_name' => $data['company_name'] ?? null,
+            'agency_name' => $data['agency_name'] ?? null,
+            'is_verified' => (bool) ($data['is_verified'] ?? false),
+            'verified_at' => ! empty($data['is_verified']) ? ($user->verified_at ?? now()) : null,
+            'is_active' => ! array_key_exists('is_active', $data) || (bool) $data['is_active'],
+            'deactivated_at' => array_key_exists('is_active', $data) && ! $data['is_active'] ? ($user->deactivated_at ?? now()) : null,
+        ];
+
+        if (! empty($data['password'])) {
+            $payload['password'] = Hash::make($data['password']);
+        }
+
+        $user->update($payload);
+
+        if (! $user->is_active) {
+            DB::table('sessions')->where('user_id', $user->id)->delete();
+            $user->tokens()->delete();
+        }
+
+        return redirect()->to(route('admin.users').'#users-list')->with('status', 'Usuario actualizado correctamente.');
+    }
+
+    public function toggleUser(Request $request, User $user): RedirectResponse
+    {
+        if ($user->id === $request->user()->id) {
+            return redirect()->to(route('admin.users').'#users-list')->with('status', 'No puedes desactivar tu propia cuenta.');
+        }
+
+        $nextState = ! $user->is_active;
+
+        $user->update([
+            'is_active' => $nextState,
+            'deactivated_at' => $nextState ? null : now(),
+        ]);
+
+        if (! $nextState) {
+            DB::table('sessions')->where('user_id', $user->id)->delete();
+            $user->tokens()->delete();
+        }
+
+        return redirect()->to(route('admin.users').'#users-list')->with('status', $nextState ? 'Usuario activado correctamente.' : 'Usuario desactivado correctamente.');
+    }
+
+    public function destroyUser(Request $request, User $user): RedirectResponse
+    {
+        if ($user->id === $request->user()->id) {
+            return redirect()->to(route('admin.users').'#users-list')->with('status', 'No puedes eliminar tu propia cuenta.');
+        }
+
+        DB::table('sessions')->where('user_id', $user->id)->delete();
+        $user->tokens()->delete();
+        $user->delete();
+
+        return redirect()->to(route('admin.users').'#users-list')->with('status', 'Usuario eliminado correctamente.');
+    }
+
+    public function storeVehicle(Request $request): RedirectResponse
+    {
+        $data = $this->validateAdminVehicle($request);
+        $vehicle = Vehicle::query()->create($this->adminVehiclePayload($data));
+
+        return redirect()->to(route('admin.users', ['edit_vehicle' => $vehicle->id]).'#vehicle-form')->with('status', 'Vehiculo creado correctamente.');
+    }
+
+    public function updateVehicle(Request $request, Vehicle $vehicle): RedirectResponse
+    {
+        $data = $this->validateAdminVehicle($request, $vehicle);
+        $vehicle->update($this->adminVehiclePayload($data, $vehicle));
+
+        return redirect()->to(route('admin.users').'#vehicles')->with('status', 'Vehiculo actualizado correctamente.');
+    }
+
+    public function toggleVehicle(Vehicle $vehicle): RedirectResponse
+    {
+        $nextStatus = $vehicle->status === 'published' ? 'paused' : 'published';
+
+        $vehicle->update([
+            'status' => $nextStatus,
+            'published_at' => $nextStatus === 'published' ? ($vehicle->published_at ?? now()) : $vehicle->published_at,
+        ]);
+
+        return redirect()->to(route('admin.users').'#vehicles')->with('status', $nextStatus === 'published' ? 'Vehiculo publicado correctamente.' : 'Vehiculo desactivado correctamente.');
+    }
+
+    public function destroyVehicle(Vehicle $vehicle): RedirectResponse
+    {
+        $vehicle->delete();
+
+        return redirect()->to(route('admin.users').'#vehicles')->with('status', 'Vehiculo eliminado correctamente.');
+    }
     public function settings(Request $request)
     {
         return view('portal.admin.settings', $this->sharedData($request) + [
             'paymentMethods' => $this->paymentMethods(),
         ]);
+    }
+
+    public function mailTest(Request $request)
+    {
+        return view('portal.admin.mail-test', $this->sharedData($request) + [
+            'mailConfig' => $this->mailConfigSnapshot(),
+            'defaultRecipient' => (string) ($request->user()?->email ?? ''),
+        ]);
+    }
+
+    public function sendMailTest(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email'],
+            'subject' => ['nullable', 'string', 'max:120'],
+            'message' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $recipient = strtolower((string) $data['email']);
+        $subject = trim((string) ($data['subject'] ?? '')) ?: 'Prueba SMTP Movikaa';
+        $message = trim((string) ($data['message'] ?? '')) ?: 'Este es un correo de prueba enviado desde el panel admin de Movikaa.';
+        $mailConfig = $this->mailConfigSnapshot();
+
+        try {
+            Mail::html(
+                view('portal.admin.partials.mail-test-message', [
+                    'messageBody' => $message,
+                    'mailConfig' => $mailConfig,
+                    'sentAt' => now(),
+                    'senderName' => (string) ($request->user()?->name ?? config('app.name')),
+                ])->render(),
+                function ($mail) use ($recipient, $subject): void {
+                    $mail->to($recipient)->subject($subject);
+                }
+            );
+        } catch (Throwable $exception) {
+            return redirect()
+                ->to(route('admin.mail-test').'#mail-test-form')
+                ->withErrors(['email' => 'No se pudo enviar el correo de prueba: '.$exception->getMessage()])
+                ->withInput();
+        }
+
+        $statusMessage = $mailConfig['default_mailer'] === 'smtp'
+            ? 'Correo de prueba enviado. Revisa la bandeja del destinatario.'
+            : 'Correo de prueba procesado, pero el mailer activo no es SMTP. Revisa el log y la configuraciÃ³n antes de usar producciÃ³n.';
+
+        return redirect()
+            ->to(route('admin.mail-test').'#mail-test-form')
+            ->with('status', $statusMessage);
     }
 
     public function features(Request $request)
@@ -470,6 +713,19 @@ class AdminPortalController extends Controller
         ];
     }
 
+    private function mailConfigSnapshot(): array
+    {
+        return [
+            'default_mailer' => (string) config('mail.default'),
+            'host' => (string) config('mail.mailers.smtp.host'),
+            'port' => (string) config('mail.mailers.smtp.port'),
+            'scheme' => (string) (config('mail.mailers.smtp.scheme') ?? ''),
+            'username' => (string) (config('mail.mailers.smtp.username') ?? ''),
+            'from_address' => (string) config('mail.from.address'),
+            'from_name' => (string) config('mail.from.name'),
+        ];
+    }
+
     public function refreshExchangeRate(): RedirectResponse
     {
         $quote = $this->exchangeRateService->refresh();
@@ -692,6 +948,85 @@ class AdminPortalController extends Controller
         );
     }
 
+    private function validateAdminVehicle(Request $request, ?Vehicle $vehicle = null): array
+    {
+        $data = $request->validate([
+            'user_id' => ['required', 'integer', Rule::exists('users', 'id')->where(fn ($query) => $query
+                ->where('is_active', true)
+                ->whereIn('account_type', [AccountType::Seller->value, AccountType::Dealer->value, AccountType::Admin->value]))],
+            'vehicle_make_id' => ['required', 'integer', Rule::exists('vehicle_makes', 'id')],
+            'vehicle_model_id' => ['required', 'integer', Rule::exists('vehicle_models', 'id')],
+            'title' => ['required', 'string', 'max:255'],
+            'condition' => ['required', Rule::in(['new', 'used'])],
+            'year' => ['required', 'integer', 'min:1950', 'max:'.(now()->year + 1)],
+            'body_type' => ['required', 'string', 'max:60'],
+            'fuel_type' => ['required', 'string', 'max:60'],
+            'transmission' => ['required', 'string', 'max:60'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'currency' => ['nullable', 'string', 'size:3'],
+            'city' => ['nullable', 'string', 'max:120'],
+            'description' => ['required', 'string', 'min:20'],
+            'status' => ['required', Rule::in(['draft', 'published', 'paused', 'sold', 'archived'])],
+            'publication_tier' => ['required', Rule::in(['basic', 'estándar', 'premium', 'agencia', 'agencia-pro'])],
+        ]);
+
+        $modelBelongs = VehicleModel::query()
+            ->whereKey($data['vehicle_model_id'])
+            ->where('vehicle_make_id', $data['vehicle_make_id'])
+            ->exists();
+
+        if (! $modelBelongs) {
+            abort(422, 'El modelo seleccionado no pertenece a la marca indicada.');
+        }
+
+        return $data;
+    }
+
+    private function adminVehiclePayload(array $data, ?Vehicle $vehicle = null): array
+    {
+        $targetStatus = $data['status'];
+        $isPublishingNow = $targetStatus === 'published' && ($vehicle?->status !== 'published');
+
+        return [
+            'user_id' => $data['user_id'],
+            'vehicle_make_id' => $data['vehicle_make_id'],
+            'vehicle_model_id' => $data['vehicle_model_id'],
+            'title' => $data['title'],
+            'slug' => $this->uniqueAdminVehicleSlug($data['title'], (int) $data['year'], $vehicle?->id),
+            'condition' => $data['condition'],
+            'year' => $data['year'],
+            'body_type' => $data['body_type'],
+            'fuel_type' => $data['fuel_type'],
+            'transmission' => $data['transmission'],
+            'price' => $data['price'],
+            'currency' => strtoupper((string) ($data['currency'] ?? 'CRC')),
+            'city' => $data['city'] ?? null,
+            'description' => $data['description'],
+            'status' => $targetStatus,
+            'publication_tier' => $data['publication_tier'],
+            'country_code' => $vehicle?->country_code ?? 'CR',
+            'published_at' => $targetStatus === 'published'
+                ? ($vehicle?->published_at ?? ($isPublishingNow ? now() : now()))
+                : $vehicle?->published_at,
+        ];
+    }
+
+    private function uniqueAdminVehicleSlug(string $title, int $year, ?int $ignoreId = null): string
+    {
+        $base = Str::slug(trim($title).' '.$year) ?: 'vehiculo';
+        $slug = $base;
+        $counter = 2;
+
+        while (Vehicle::query()
+            ->when($ignoreId, fn ($query) => $query->whereKeyNot($ignoreId))
+            ->where('slug', $slug)
+            ->exists()) {
+            $slug = $base.'-'.$counter;
+            $counter++;
+        }
+
+        return $slug;
+    }
     private function paymentMethods(): array
     {
         return $this->valuationSettings->get('billing.payment_methods', [
@@ -707,7 +1042,5 @@ class AdminPortalController extends Controller
         ]);
     }
 }
-
-
 
 

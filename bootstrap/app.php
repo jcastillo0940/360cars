@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\ApplySecurityHeaders;
+use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\LogAuthDebug;
 use App\Http\Middleware\LoggablePreventRequestForgery;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             PreventRequestForgery::class => LoggablePreventRequestForgery::class,
         ]);
         $middleware->alias([
+            'active' => EnsureUserIsActive::class,
             'role' => EnsureUserHasRole::class,
         ]);
     })

@@ -30,6 +30,8 @@ class AuthController extends Controller
             'last_seen_at' => now(),
         ]);
 
+        $user->sendWelcomeEmail();
+
         $token = $user->createToken($request->input('device_name', 'api-token'))->plainTextToken;
 
         return response()->json([
@@ -43,6 +45,12 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         $user = User::query()->where('email', $request->string('email')->lower()->toString())->first();
+
+        if ($user && ! $user->is_active && Hash::check($request->string('password')->toString(), $user->password)) {
+            throw ValidationException::withMessages([
+                'email' => ['Tu cuenta esta desactivada. Contacta al administrador.'],
+            ]);
+        }
 
         if (! $user || ! Hash::check($request->string('password')->toString(), $user->password)) {
             throw ValidationException::withMessages([
@@ -87,3 +95,5 @@ class AuthController extends Controller
         ]);
     }
 }
+
+

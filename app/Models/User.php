@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\AccountType;
+use App\Mail\Auth\WelcomeUserMail;
+use App\Notifications\Auth\ResetPasswordNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -10,8 +12,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Throwable;
 
 #[Fillable([
     'name',
@@ -30,7 +35,9 @@ use Laravel\Sanctum\HasApiTokens;
     'apple_id',
     'facebook_id',
     'is_verified',
+    'is_active',
     'verified_at',
+    'deactivated_at',
     'rating_average',
     'rating_count',
     'last_seen_at',
@@ -58,7 +65,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_verified' => 'boolean',
+            'is_active' => 'boolean',
             'verified_at' => 'datetime',
+            'deactivated_at' => 'datetime',
             'last_seen_at' => 'datetime',
             'account_type' => AccountType::class,
         ];
@@ -183,5 +192,32 @@ class User extends Authenticatable
     public function messages(): HasMany
     {
         return $this->hasMany(Message::class);
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
+
+    public function shouldReceiveAccountEmails(): bool
+    {
+        return filled($this->email) && ! str_ends_with(strtolower((string) $this->email), '@phone.movikaa.local');
+    }
+
+    public function sendWelcomeEmail(): void
+    {
+        if (! $this->shouldReceiveAccountEmails()) {
+            return;
+        }
+
+        try {
+            Mail::to($this->email)->send(new WelcomeUserMail($this));
+        } catch (Throwable $exception) {
+            Log::warning('mail.welcome.failed', [
+                'user_id' => $this->id,
+                'email' => $this->email,
+                'message' => $exception->getMessage(),
+            ]);
+        }
     }
 }
