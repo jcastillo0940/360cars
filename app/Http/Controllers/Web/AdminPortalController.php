@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Web;
 
+
+
 use App\Http\Controllers\Controller;
 use App\Enums\AccountType;
 use App\Models\NewsPost;
@@ -28,6 +30,8 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Throwable;
 
+
+
 class AdminPortalController extends Controller
 {
     public function __construct(
@@ -38,14 +42,20 @@ class AdminPortalController extends Controller
     ) {
     }
 
+
+
     public function index(Request $request)
     {
         $selectedYear = (int) $request->input('year', now()->year);
         $selectedMake = $request->input('make_id');
+
         
+
         $data = $this->sharedData($request);
         $latestTransactions = Transaction::query()->with(['user', 'plan'])->latest()->take(6)->get();
+
         
+
         // Revenue Trend by Month for the selected year
         $paymentTrend = collect(range(1, 12))->map(function ($month) use ($selectedYear) {
             return [
@@ -58,6 +68,8 @@ class AdminPortalController extends Controller
             ];
         });
 
+
+
         // Inventory Growth
         $inventoryTrend = collect(range(1, 12))->map(function ($month) use ($selectedYear, $selectedMake) {
             return [
@@ -69,6 +81,8 @@ class AdminPortalController extends Controller
                     ->count(),
             ];
         });
+
+
 
         // Top Brands distribution
         $topBrands = Vehicle::query()
@@ -84,8 +98,12 @@ class AdminPortalController extends Controller
                 'percentage' => $data['vehicleCount'] > 0 ? round(($v->count / $data['vehicleCount']) * 100) : 0
             ]);
 
+
+
         $paymentMax = max(1, $paymentTrend->max('value'));
         $inventoryMax = max(1, $inventoryTrend->max('value'));
+
+
 
         return view('portal.admin.overview', $data + [
             'latestTransactions' => $latestTransactions,
@@ -97,6 +115,8 @@ class AdminPortalController extends Controller
             'availableYears' => range(now()->year, now()->year - 3),
         ]);
     }
+
+
 
     public function catalog(Request $request)
     {
@@ -112,6 +132,8 @@ class AdminPortalController extends Controller
             ->orderBy('name')
             ->get();
 
+
+
         return view('portal.admin.catalog', $this->sharedData($request) + [
             'catalogMakes' => $catalogMakes,
             'catalogStats' => [
@@ -124,6 +146,8 @@ class AdminPortalController extends Controller
         ]);
     }
 
+
+
     public function payments(Request $request)
     {
         $filters = [
@@ -131,6 +155,8 @@ class AdminPortalController extends Controller
             'status' => $request->string('status')->toString(),
             'provider' => $request->string('provider')->toString(),
         ];
+
+
 
         $latestTransactions = Transaction::query()
             ->with(['user', 'plan', 'payable'])
@@ -146,12 +172,16 @@ class AdminPortalController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+
+
         $activeSubscriptions = Subscription::query()
             ->with(['user', 'plan'])
             ->where('status', 'active')
             ->latest()
             ->paginate(12, ['*'], 'subscriptions_page')
             ->withQueryString();
+
+
 
         return view('portal.admin.payments', $this->sharedData($request) + [
             'latestTransactions' => $latestTransactions,
@@ -161,6 +191,8 @@ class AdminPortalController extends Controller
         ]);
     }
 
+
+
     public function users(Request $request)
     {
         $userFilters = [
@@ -169,10 +201,14 @@ class AdminPortalController extends Controller
             'status' => $request->string('status')->toString(),
         ];
 
+
+
         $vehicleFilters = [
             'q' => trim($request->string('vehicle_q')->toString()),
             'status' => $request->string('vehicle_status')->toString(),
         ];
+
+
 
         $latestUsers = User::query()
             ->when($userFilters['q'] !== '', function ($query) use ($userFilters): void {
@@ -187,6 +223,8 @@ class AdminPortalController extends Controller
             ->latest()
             ->paginate(15)
             ->withQueryString();
+
+
 
         $latestVehicles = Vehicle::query()
             ->with(['owner', 'make', 'model'])
@@ -203,13 +241,19 @@ class AdminPortalController extends Controller
             ->paginate(12, ['*'], 'vehicles_page')
             ->withQueryString();
 
+
+
         $editingUser = $request->integer('edit_user')
             ? User::query()->find($request->integer('edit_user'))
             : null;
 
+
+
         $editingVehicle = $request->integer('edit_vehicle')
             ? Vehicle::query()->with(['owner', 'make', 'model'])->find($request->integer('edit_vehicle'))
             : null;
+
+
 
         return view('portal.admin.users', $this->sharedData($request) + [
             'latestUsers' => $latestUsers,
@@ -220,7 +264,7 @@ class AdminPortalController extends Controller
             'editingVehicle' => $editingVehicle,
             'userRoleOptions' => AccountType::values(),
             'vehicleStatusOptions' => ['draft', 'published', 'paused', 'sold', 'archived'],
-            'vehicleTierOptions' => ['basic', 'est�ndar', 'premium', 'agencia', 'agencia-pro'],
+            'vehicleTierOptions' => ['basic', 'estándar', 'premium', 'agencia', 'agencia-pro'],
             'vehicleOwners' => User::query()
                 ->whereIn('account_type', [AccountType::Seller->value, AccountType::Dealer->value, AccountType::Admin->value])
                 ->where('is_active', true)
@@ -228,6 +272,8 @@ class AdminPortalController extends Controller
                 ->get(['id', 'name', 'email']),
         ]);
     }
+
+
 
     public function storeUser(Request $request): RedirectResponse
     {
@@ -244,6 +290,8 @@ class AdminPortalController extends Controller
             'is_verified' => ['nullable', 'boolean'],
             'is_active' => ['nullable', 'boolean'],
         ]);
+
+
 
         User::query()->create([
             'name' => $data['name'],
@@ -262,8 +310,12 @@ class AdminPortalController extends Controller
             'last_seen_at' => now(),
         ]);
 
+
+
         return redirect()->to(route('admin.users').'#users-list')->with('status', 'Usuario creado correctamente.');
     }
+
+
 
     public function updateUser(Request $request, User $user): RedirectResponse
     {
@@ -281,9 +333,13 @@ class AdminPortalController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ]);
 
+
+
         if ($user->id === $request->user()->id && array_key_exists('is_active', $data) && ! $data['is_active']) {
             return redirect()->to(route('admin.users', ['edit_user' => $user->id]).'#user-form')->with('status', 'No puedes desactivar tu propia cuenta.');
         }
+
+
 
         $payload = [
             'name' => $data['name'],
@@ -300,19 +356,29 @@ class AdminPortalController extends Controller
             'deactivated_at' => array_key_exists('is_active', $data) && ! $data['is_active'] ? ($user->deactivated_at ?? now()) : null,
         ];
 
+
+
         if (! empty($data['password'])) {
             $payload['password'] = Hash::make($data['password']);
         }
 
+
+
         $user->update($payload);
+
+
 
         if (! $user->is_active) {
             DB::table('sessions')->where('user_id', $user->id)->delete();
             $user->tokens()->delete();
         }
 
+
+
         return redirect()->to(route('admin.users').'#users-list')->with('status', 'Usuario actualizado correctamente.');
     }
+
+
 
     public function toggleUser(Request $request, User $user): RedirectResponse
     {
@@ -320,20 +386,30 @@ class AdminPortalController extends Controller
             return redirect()->to(route('admin.users').'#users-list')->with('status', 'No puedes desactivar tu propia cuenta.');
         }
 
+
+
         $nextState = ! $user->is_active;
+
+
 
         $user->update([
             'is_active' => $nextState,
             'deactivated_at' => $nextState ? null : now(),
         ]);
 
+
+
         if (! $nextState) {
             DB::table('sessions')->where('user_id', $user->id)->delete();
             $user->tokens()->delete();
         }
 
+
+
         return redirect()->to(route('admin.users').'#users-list')->with('status', $nextState ? 'Usuario activado correctamente.' : 'Usuario desactivado correctamente.');
     }
+
+
 
     public function destroyUser(Request $request, User $user): RedirectResponse
     {
@@ -341,46 +417,68 @@ class AdminPortalController extends Controller
             return redirect()->to(route('admin.users').'#users-list')->with('status', 'No puedes eliminar tu propia cuenta.');
         }
 
+
+
         DB::table('sessions')->where('user_id', $user->id)->delete();
         $user->tokens()->delete();
         $user->delete();
 
+
+
         return redirect()->to(route('admin.users').'#users-list')->with('status', 'Usuario eliminado correctamente.');
     }
+
+
 
     public function storeVehicle(Request $request): RedirectResponse
     {
         $data = $this->validateAdminVehicle($request);
         $vehicle = Vehicle::query()->create($this->adminVehiclePayload($data));
 
-        return redirect()->to(route('admin.users', ['edit_vehicle' => $vehicle->id]).'#vehicle-form')->with('status', 'Vehiculo creado correctamente.');
+
+
+        return redirect()->to(route('admin.users', ['edit_vehicle' => $vehicle->id]).'#vehicle-form')->with('status', 'Vehículo creado correctamente.');
     }
+
+
 
     public function updateVehicle(Request $request, Vehicle $vehicle): RedirectResponse
     {
         $data = $this->validateAdminVehicle($request, $vehicle);
         $vehicle->update($this->adminVehiclePayload($data, $vehicle));
 
-        return redirect()->to(route('admin.users').'#vehicles')->with('status', 'Vehiculo actualizado correctamente.');
+
+
+        return redirect()->to(route('admin.users').'#vehicles')->with('status', 'Vehículo actualizado correctamente.');
     }
+
+
 
     public function toggleVehicle(Vehicle $vehicle): RedirectResponse
     {
         $nextStatus = $vehicle->status === 'published' ? 'paused' : 'published';
+
+
 
         $vehicle->update([
             'status' => $nextStatus,
             'published_at' => $nextStatus === 'published' ? ($vehicle->published_at ?? now()) : $vehicle->published_at,
         ]);
 
-        return redirect()->to(route('admin.users').'#vehicles')->with('status', $nextStatus === 'published' ? 'Vehiculo publicado correctamente.' : 'Vehiculo desactivado correctamente.');
+
+
+        return redirect()->to(route('admin.users').'#vehicles')->with('status', $nextStatus === 'published' ? 'Vehículo publicado correctamente.' : 'Vehículo desactivado correctamente.');
     }
+
+
 
     public function destroyVehicle(Vehicle $vehicle): RedirectResponse
     {
         $vehicle->delete();
 
-        return redirect()->to(route('admin.users').'#vehicles')->with('status', 'Vehiculo eliminado correctamente.');
+
+
+        return redirect()->to(route('admin.users').'#vehicles')->with('status', 'Vehículo eliminado correctamente.');
     }
     public function settings(Request $request)
     {
@@ -388,6 +486,8 @@ class AdminPortalController extends Controller
             'paymentMethods' => $this->paymentMethods(),
         ]);
     }
+
+
 
     public function mailTest(Request $request)
     {
@@ -397,6 +497,8 @@ class AdminPortalController extends Controller
         ]);
     }
 
+
+
     public function sendMailTest(Request $request): RedirectResponse
     {
         $data = $request->validate([
@@ -405,10 +507,14 @@ class AdminPortalController extends Controller
             'message' => ['nullable', 'string', 'max:2000'],
         ]);
 
+
+
         $recipient = strtolower((string) $data['email']);
         $subject = trim((string) ($data['subject'] ?? '')) ?: 'Prueba SMTP Movikaa';
         $message = trim((string) ($data['message'] ?? '')) ?: 'Este es un correo de prueba enviado desde el panel admin de Movikaa.';
         $mailConfig = $this->mailConfigSnapshot();
+
+
 
         try {
             Mail::html(
@@ -429,14 +535,20 @@ class AdminPortalController extends Controller
                 ->withInput();
         }
 
+
+
         $statusMessage = $mailConfig['default_mailer'] === 'smtp'
             ? 'Correo de prueba enviado. Revisa la bandeja del destinatario.'
             : 'Correo de prueba procesado, pero el mailer activo no es SMTP. Revisa el log y la configuración antes de usar producción.';
+
+
 
         return redirect()
             ->to(route('admin.mail-test').'#mail-test-form')
             ->with('status', $statusMessage);
     }
+
+
 
     public function features(Request $request)
     {
@@ -445,6 +557,8 @@ class AdminPortalController extends Controller
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
+
+
 
         return view('portal.admin.features', $this->sharedData($request) + [
             'featureOptions' => $featureOptions,
@@ -457,9 +571,13 @@ class AdminPortalController extends Controller
         ]);
     }
 
+
+
     public function plans(Request $request)
     {
         $plans = Plan::query()->orderBy('price')->get();
+
+
 
         return view('portal.admin.plans', $this->sharedData($request) + [
             'plans' => $plans,
@@ -471,10 +589,14 @@ class AdminPortalController extends Controller
         ]);
     }
 
+
+
     public function news(Request $request)
     {
         $search = trim($request->string('q')->toString());
         $status = $request->string('status')->toString();
+
+
 
         $posts = NewsPost::query()
             ->with('author')
@@ -492,6 +614,8 @@ class AdminPortalController extends Controller
             ->paginate(12)
             ->withQueryString();
 
+
+
         return view('portal.admin.news.index', $this->sharedData($request) + [
             'newsPosts' => $posts,
             'newsFilters' => [
@@ -506,10 +630,14 @@ class AdminPortalController extends Controller
         ]);
     }
 
+
+
     public function createNews(Request $request)
     {
         return view('portal.admin.news.create', $this->sharedData($request));
     }
+
+
 
     public function storeNews(Request $request): RedirectResponse
     {
@@ -527,6 +655,8 @@ class AdminPortalController extends Controller
             'meta_description' => ['nullable', 'string'],
         ]);
 
+
+
         $post = NewsPost::create([
             'user_id' => auth()->id(),
             'title' => $data['title'],
@@ -541,8 +671,12 @@ class AdminPortalController extends Controller
             'meta_description' => $data['meta_description'] ?? null,
         ]);
 
-        return redirect()->to(route('admin.news.edit', $post).'#editor')->with('status', 'Articulo creado correctamente.');
+
+
+        return redirect()->to(route('admin.news.edit', $post).'#editor')->with('status', 'Artículo creado correctamente.');
     }
+
+
 
     public function editNews(Request $request, NewsPost $newsPost)
     {
@@ -550,6 +684,8 @@ class AdminPortalController extends Controller
             'newsPost' => $newsPost,
         ]);
     }
+
+
 
     public function updateNews(Request $request, NewsPost $newsPost): RedirectResponse
     {
@@ -567,21 +703,31 @@ class AdminPortalController extends Controller
             'meta_description' => ['nullable', 'string'],
         ]);
 
+
+
         $publishedAt = $data['status'] === 'published'
             ? ($data['published_at'] ?? $newsPost->published_at ?? now())
             : null;
 
+
+
         $coverImageUrl = $newsPost->cover_image_url;
+
+
 
         if ($request->boolean('remove_cover_image')) {
             $this->deleteNewsCoverImage($coverImageUrl);
             $coverImageUrl = null;
         }
 
+
+
         if ($request->hasFile('cover_image')) {
             $this->deleteNewsCoverImage($coverImageUrl);
             $coverImageUrl = $this->storeNewsCoverImage($request->file('cover_image'));
         }
+
+
 
         $newsPost->update([
             'title' => $data['title'],
@@ -596,16 +742,25 @@ class AdminPortalController extends Controller
             'meta_description' => $data['meta_description'] ?? null,
         ]);
 
-        return redirect()->to(route('admin.news.edit', $newsPost).'#editor')->with('status', 'Articulo actualizado correctamente.');
+
+
+        return redirect()->to(route('admin.news.edit', $newsPost).'#editor')->with('status', 'Artículo actualizado correctamente.');
     }
+
+
 
     public function destroyNews(NewsPost $newsPost): RedirectResponse
     {
         $this->deleteNewsCoverImage($newsPost->cover_image_url);
         $newsPost->delete();
 
-        return redirect()->to(route('admin.news').'#news-list')->with('status', 'Articulo eliminado correctamente.');
+
+
+        return redirect()->to(route('admin.news').'#news-list')->with('status', 'Artículo eliminado correctamente.');
     }
+
+
+
 
 
     private function storeNewsCoverImage(?UploadedFile $file): ?string
@@ -614,17 +769,25 @@ class AdminPortalController extends Controller
             return null;
         }
 
+
+
         $disk = Storage::disk('public');
         $directory = 'news/covers';
         $baseName = (string) Str::uuid();
         $binary = $file->get();
 
+
+
         if ($binary === false) {
             return null;
         }
 
+
+
         if (function_exists('imagecreatefromstring') && function_exists('imagewebp')) {
             $source = @imagecreatefromstring($binary);
+
+
 
             if ($source) {
                 $width = imagesx($source);
@@ -638,24 +801,36 @@ class AdminPortalController extends Controller
                 imagefilledrectangle($canvas, 0, 0, $targetWidth, $targetHeight, $transparent);
                 imagecopyresampled($canvas, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
 
+
+
                 ob_start();
                 imagewebp($canvas, null, (int) config('media.webp_quality', 82));
                 $optimized = (string) ob_get_clean();
                 $path = $directory.'/'.$baseName.'.webp';
                 $disk->put($path, $optimized, 'public');
 
+
+
                 imagedestroy($source);
                 imagedestroy($canvas);
+
+
 
                 return $disk->url($path);
             }
         }
 
+
+
         $extension = strtolower($file->getClientOriginalExtension() ?: 'jpg');
         $path = $disk->putFileAs($directory, $file, $baseName.'.'.$extension, 'public');
 
+
+
         return $path ? $disk->url($path) : null;
     }
+
+
 
     private function deleteNewsCoverImage(?string $coverImageUrl): void
     {
@@ -663,21 +838,29 @@ class AdminPortalController extends Controller
             return;
         }
 
+
+
         $storagePrefix = Storage::disk('public')->url('');
         $path = str_starts_with($coverImageUrl, $storagePrefix)
             ? ltrim(Str::after($coverImageUrl, $storagePrefix), '/')
             : ltrim($coverImageUrl, '/');
+
+
 
         if (str_starts_with($path, 'news/covers/')) {
             Storage::disk('public')->delete($path);
         }
     }
 
+
+
     private function uniqueNewsSlug(string $value, ?int $ignoreId = null): string
     {
         $base = Str::slug($value) ?: 'articulo';
         $slug = $base;
         $suffix = 2;
+
+
 
         while (NewsPost::query()
             ->when($ignoreId, fn ($query) => $query->whereKeyNot($ignoreId))
@@ -687,8 +870,12 @@ class AdminPortalController extends Controller
             $suffix++;
         }
 
+
+
         return $slug;
     }
+
+
 
     private function sharedData(Request $request): array
     {
@@ -696,6 +883,8 @@ class AdminPortalController extends Controller
             ->with(['models' => fn ($query) => $query->orderBy('name')])
             ->orderBy('name')
             ->get();
+
+
 
         return [
             'gmv' => (float) Transaction::query()->where('status', 'paid')->sum('amount'),
@@ -713,6 +902,8 @@ class AdminPortalController extends Controller
         ];
     }
 
+
+
     private function mailConfigSnapshot(): array
     {
         return [
@@ -726,16 +917,24 @@ class AdminPortalController extends Controller
         ];
     }
 
+
+
     public function refreshExchangeRate(): RedirectResponse
     {
         $quote = $this->exchangeRateService->refresh();
+
+
 
         if (! data_get($quote, 'usd_to_crc')) {
             return redirect()->to(route('admin.settings').'#exchange-rate')->with('status', 'No fue posible actualizar el tipo de cambio en este momento.');
         }
 
+
+
         return redirect()->to(route('admin.settings').'#exchange-rate')->with('status', 'Tipo de cambio actualizado correctamente.');
     }
+
+
 
     public function storeCatalogMake(Request $request): RedirectResponse
     {
@@ -743,14 +942,20 @@ class AdminPortalController extends Controller
             'name' => ['required', 'string', 'max:100', Rule::unique('vehicle_makes', 'name')],
         ]);
 
+
+
         VehicleMake::create([
             'name' => $data['name'],
             'slug' => Str::slug($data['name']),
             'is_active' => true,
         ]);
 
+
+
         return redirect()->to(route('admin.catalog').'#catalog-create')->with('status', 'Marca creada correctamente.');
     }
+
+
 
     public function storeCatalogEntry(Request $request): RedirectResponse
     {
@@ -759,11 +964,15 @@ class AdminPortalController extends Controller
             'model_name' => ['nullable', 'string', 'max:100'],
         ]);
 
+
+
         $make = VehicleMake::create([
             'name' => $data['make_name'],
             'slug' => Str::slug($data['make_name']),
             'is_active' => true,
         ]);
+
+
 
         if (! empty($data['model_name'])) {
             VehicleModel::create([
@@ -774,24 +983,37 @@ class AdminPortalController extends Controller
             ]);
         }
 
+
+
         return redirect()->to(route('admin.catalog').'#catalog-list')->with('status', empty($data['model_name']) ? 'Marca creada correctamente.' : 'Marca y modelo creados correctamente.');
     }
+
+
+
 
 
     public function toggleCatalogMake(VehicleMake $vehicleMake): RedirectResponse
     {
         $nextState = ! $vehicleMake->is_active;
 
+
+
         $vehicleMake->update([
             'is_active' => $nextState,
         ]);
+
+
 
         if (! $nextState) {
             $vehicleMake->models()->update(['is_active' => false]);
         }
 
+
+
         return redirect()->to(route('admin.catalog').'#catalog-list')->with('status', 'Estado de la marca actualizado.');
     }
+
+
 
     public function storeCatalogModel(Request $request): RedirectResponse
     {
@@ -800,13 +1022,19 @@ class AdminPortalController extends Controller
             'name' => ['required', 'string', 'max:100'],
         ]);
 
+
+
         $make = VehicleMake::query()->findOrFail($data['vehicle_make_id']);
+
+
 
         $request->validate([
             'name' => [
                 Rule::unique('vehicle_models', 'name')->where(fn ($query) => $query->where('vehicle_make_id', $make->id)),
             ],
         ]);
+
+
 
         VehicleModel::create([
             'vehicle_make_id' => $make->id,
@@ -815,8 +1043,12 @@ class AdminPortalController extends Controller
             'is_active' => (bool) $make->is_active,
         ]);
 
+
+
         return redirect()->to(route('admin.catalog').'#catalog-create')->with('status', 'Modelo creado correctamente.');
     }
+
+
 
     public function toggleCatalogModel(VehicleModel $vehicleModel): RedirectResponse
     {
@@ -824,12 +1056,18 @@ class AdminPortalController extends Controller
             return redirect()->to(route('admin.catalog').'#catalog-list')->with('status', 'Activa primero la marca antes de habilitar este modelo.');
         }
 
+
+
         $vehicleModel->update([
             'is_active' => ! $vehicleModel->is_active,
         ]);
 
+
+
         return redirect()->to(route('admin.catalog').'#catalog-list')->with('status', 'Estado del modelo actualizado.');
     }
+
+
 
     public function storeFeatureOption(Request $request): RedirectResponse
     {
@@ -840,11 +1078,17 @@ class AdminPortalController extends Controller
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:9999'],
         ]);
 
+
+
         $slug = Str::slug($data['name']);
+
+
 
         $request->validate([
             'name' => [Rule::unique('vehicle_feature_options', 'name')],
         ]);
+
+
 
         VehicleFeatureOption::create([
             'name' => $data['name'],
@@ -855,8 +1099,12 @@ class AdminPortalController extends Controller
             'is_active' => true,
         ]);
 
+
+
         return redirect()->to(route('admin.features').'#features')->with('status', 'Extra configurable creado correctamente.');
     }
+
+
 
     public function toggleFeatureOption(VehicleFeatureOption $featureOption): RedirectResponse
     {
@@ -864,8 +1112,12 @@ class AdminPortalController extends Controller
             'is_active' => ! $featureOption->is_active,
         ]);
 
+
+
         return redirect()->to(route('admin.features').'#features')->with('status', 'Estado del extra actualizado.');
     }
+
+
 
     public function updateFeatureOption(Request $request, VehicleFeatureOption $featureOption): RedirectResponse
     {
@@ -876,6 +1128,8 @@ class AdminPortalController extends Controller
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:9999'],
         ]);
 
+
+
         $featureOption->update([
             'name' => $data['name'],
             'slug' => Str::slug($data['name']),
@@ -884,8 +1138,12 @@ class AdminPortalController extends Controller
             'sort_order' => $data['sort_order'] ?? 0,
         ]);
 
+
+
         return redirect()->to(route('admin.features').'#features')->with('status', 'Característica actualizada correctamente.');
     }
+
+
 
     public function destroyFeatureOption(VehicleFeatureOption $featureOption): RedirectResponse
     {
@@ -893,10 +1151,17 @@ class AdminPortalController extends Controller
             return redirect()->to(route('admin.features').'#features')->with('status', 'No puedes eliminar esta característica porque ya está en uso en uno o más vehículos.');
         }
 
+
+
         $featureOption->delete();
+
+
 
         return redirect()->to(route('admin.features').'#features')->with('status', 'Característica eliminada correctamente.');
     }
+
+
+
 
 
     public function updatePaymentMethods(Request $request): RedirectResponse
@@ -905,7 +1170,11 @@ class AdminPortalController extends Controller
             'methods' => ['nullable', 'array'],
         ]);
 
+
+
         $methods = $this->paymentMethods();
+
+
 
         foreach (['offline', 'online'] as $group) {
             foreach ($methods[$group] ?? [] as $key => $method) {
@@ -913,24 +1182,38 @@ class AdminPortalController extends Controller
             }
         }
 
+
+
         $this->valuationSettings->put('billing.payment_methods', $methods, 'json');
 
-        return redirect()->to(route('admin.settings').'#payment-methods')->with('status', 'Metodos de pago actualizados correctamente.');
+
+
+        return redirect()->to(route('admin.settings').'#payment-methods')->with('status', 'Métodos de pago actualizados correctamente.');
     }
+
+
 
     public function approvePayment(Transaction $transaction): RedirectResponse
     {
         $this->billingService->approvePendingTransaction($transaction);
 
+
+
         return redirect()->to(route('admin.payments').'#transactions')->with('status', 'Pago verificado y plan activado correctamente.');
     }
+
+
 
     public function rejectPayment(Transaction $transaction): RedirectResponse
     {
         $this->billingService->rejectPendingTransaction($transaction);
 
+
+
         return redirect()->to(route('admin.payments').'#transactions')->with('status', 'Solicitud de pago rechazada.');
     }
+
+
 
     public function updatePublicTheme(Request $request): RedirectResponse
     {
@@ -938,7 +1221,11 @@ class AdminPortalController extends Controller
             'public_theme' => ['required', Rule::in(['light', 'dark'])],
         ]);
 
+
+
         $this->valuationSettings->put('frontend.public_theme', $data['public_theme'], 'string');
+
+
 
         return redirect()->to(route('admin.settings').'#public-theme')->with(
             'status',
@@ -947,6 +1234,8 @@ class AdminPortalController extends Controller
                 : 'Tema claro activado para el home público.'
         );
     }
+
+
 
     private function validateAdminVehicle(Request $request, ?Vehicle $vehicle = null): array
     {
@@ -967,25 +1256,35 @@ class AdminPortalController extends Controller
             'city' => ['nullable', 'string', 'max:120'],
             'description' => ['required', 'string', 'min:20'],
             'status' => ['required', Rule::in(['draft', 'published', 'paused', 'sold', 'archived'])],
-            'publication_tier' => ['required', Rule::in(['basic', 'est�ndar', 'premium', 'agencia', 'agencia-pro'])],
+            'publication_tier' => ['required', Rule::in(['basic', 'estándar', 'premium', 'agencia', 'agencia-pro'])],
         ]);
+
+
 
         $modelBelongs = VehicleModel::query()
             ->whereKey($data['vehicle_model_id'])
             ->where('vehicle_make_id', $data['vehicle_make_id'])
             ->exists();
 
+
+
         if (! $modelBelongs) {
             abort(422, 'El modelo seleccionado no pertenece a la marca indicada.');
         }
 
+
+
         return $data;
     }
+
+
 
     private function adminVehiclePayload(array $data, ?Vehicle $vehicle = null): array
     {
         $targetStatus = $data['status'];
         $isPublishingNow = $targetStatus === 'published' && ($vehicle?->status !== 'published');
+
+
 
         return [
             'user_id' => $data['user_id'],
@@ -1011,11 +1310,15 @@ class AdminPortalController extends Controller
         ];
     }
 
+
+
     private function uniqueAdminVehicleSlug(string $title, int $year, ?int $ignoreId = null): string
     {
         $base = Str::slug(trim($title).' '.$year) ?: 'vehiculo';
         $slug = $base;
         $counter = 2;
+
+
 
         while (Vehicle::query()
             ->when($ignoreId, fn ($query) => $query->whereKeyNot($ignoreId))
@@ -1024,6 +1327,8 @@ class AdminPortalController extends Controller
             $slug = $base.'-'.$counter;
             $counter++;
         }
+
+
 
         return $slug;
     }
@@ -1042,5 +1347,8 @@ class AdminPortalController extends Controller
         ]);
     }
 }
+
+
+
 
 

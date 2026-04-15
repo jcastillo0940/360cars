@@ -1,20 +1,26 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bienvenido a Movikaa</title>
-</head>
-<body style="margin:0; padding:0; background:#0b0b0f; color:#e5e7eb; font-family:Arial, sans-serif;">
-    <div style="max-width:640px; margin:0 auto; padding:32px 20px;">
-        <div style="background:#111827; border:1px solid #1f2937; border-radius:24px; padding:32px;">
-            <p style="margin:0 0 12px; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:#f59e0b;">Movikaa</p>
-            <h1 style="margin:0 0 16px; font-size:28px; line-height:1.2; color:#ffffff;">Tu cuenta ya esta lista</h1>
-            <p style="margin:0 0 16px; font-size:16px; line-height:1.7;">Hola {{ $user->name }}, gracias por registrarte en Movikaa.</p>
-            <p style="margin:0 0 24px; font-size:16px; line-height:1.7;">Ya puedes entrar a tu panel para publicar vehiculos, gestionar tus datos y seguir tus oportunidades.</p>
-            <a href="{{ route('login') }}" style="display:inline-block; background:#f59e0b; color:#111827; text-decoration:none; padding:14px 22px; border-radius:14px; font-weight:700;">Entrar a mi cuenta</a>
-            <p style="margin:24px 0 0; font-size:14px; line-height:1.7; color:#9ca3af;">Si no creaste esta cuenta, responde a este correo o contacta al equipo de soporte.</p>
-        </div>
-    </div>
-</body>
-</html>
+@extends('emails.layouts.brand')
+
+@php
+    $subject = 'Bienvenido a Movikaa';
+    $eyebrow = 'Tu cuenta ya esta activa y lista para moverse.';
+    $headline = 'Bienvenido a Movikaa';
+    $subcopy = 'Creamos una experiencia de compra y venta con el mismo pulso premium del sitio. Ya puedes entrar y empezar.';
+@endphp
+
+@section('content')
+    <p style="margin:0 0 16px; font-size:16px; line-height:1.7; color:#f3f4f6;">Hola {{ $user->name }},</p>
+    <p style="margin:0 0 16px; font-size:15px; line-height:1.8; color:#c1c7d0;">
+        Gracias por registrarte en Movikaa. Tu cuenta esta lista para publicar vehiculos, gestionar contactos y seguir oportunidades desde tu panel.
+    </p>
+    <p style="margin:0 0 22px; font-size:15px; line-height:1.8; color:#c1c7d0;">
+        Mantuvimos la misma linea visual del sitio: limpia, oscura y enfocada en conversion para que cada punto de contacto se sienta consistente.
+    </p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse; margin:0 0 20px;">
+        <tr>
+            <td align="center" bgcolor="#ffb347" style="border-radius:18px;">
+                <a href="{{ route('login') }}" style="display:inline-block; padding:16px 26px; font-size:16px; font-weight:800; color:#0c0d12; text-decoration:none;">Entrar a mi cuenta</a>
+            </td>
+        </tr>
+    </table>
+    <p style="margin:0; font-size:14px; line-height:1.8; color:#98a1ad;">Si no creaste esta cuenta, responde este correo y lo revisamos contigo.</p>
+@endsection

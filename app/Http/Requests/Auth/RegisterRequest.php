@@ -33,4 +33,18 @@ class RegisterRequest extends FormRequest
             'device_name' => ['nullable', 'string', 'max:100'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'password.required' => 'La contraseña es obligatoria.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.letters' => 'La contraseña debe contener al menos una letra.',
+            'password.mixed' => 'La contraseña debe tener mayúsculas y minúsculas.',
+            'password.numbers' => 'La contraseña debe contener al menos un número.',
+            'email.unique' => 'Este correo ya está registrado.',
+            'email.email' => 'Ingresa un correo electrónico válido.',
+        ];
+    }
 }

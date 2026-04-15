@@ -16,10 +16,10 @@ class ResetPasswordNotification extends BaseResetPassword
 
         return (new MailMessage)
             ->subject('Recupera tu acceso a Movikaa')
-            ->greeting('Hola '.$notifiable->name.',')
-            ->line('Recibimos una solicitud para restablecer la contraseña de tu cuenta.')
-            ->action('Restablecer contrasena', $url)
-            ->line('Si no solicitaste este cambio, puedes ignorar este correo con seguridad.')
-            ->line('Este enlace expirara en '.config('auth.passwords.'.config('auth.defaults.passwords').'.expire').' minutos.');
+            ->view('emails.auth.reset-password', [
+                'user' => $notifiable,
+                'actionUrl' => $url,
+                'expireMinutes' => config('auth.passwords.'.config('auth.defaults.passwords').'.expire'),
+            ]);
     }
 }
