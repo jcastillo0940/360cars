@@ -213,6 +213,7 @@ class WebAuthController extends Controller
             'token' => ['required', 'string'],
             'email' => ['required', 'email'],
             'password' => ['required', 'confirmed', PasswordRule::min(8)->letters()->mixedCase()->numbers()],
+            'password_confirmation' => ['required', 'string'],
         ]);
 
         $status = Password::reset(

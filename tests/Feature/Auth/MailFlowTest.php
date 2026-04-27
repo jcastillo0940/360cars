@@ -8,6 +8,7 @@ use App\Notifications\Auth\ResetPasswordNotification;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
@@ -79,6 +80,25 @@ class MailFlowTest extends TestCase
             ->assertOk()
             ->assertSee('reset-token-123')
             ->assertSee('reset@example.com');
+    }
+
+    public function test_password_can_be_reset_from_web_form(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'reset@example.com',
+            'password' => 'OldPassword123',
+        ]);
+
+        $token = Password::broker()->createToken($user);
+
+        $this->post(route('password.update'), [
+            'token' => $token,
+            'email' => 'reset@example.com',
+            'password' => 'NewPassword123',
+            'password_confirmation' => 'NewPassword123',
+        ])->assertRedirect(route('login'));
+
+        $this->assertTrue(Hash::check('NewPassword123', $user->fresh()->password));
     }
 
     public function test_seller_onboarding_with_real_email_sends_welcome_email(): void
