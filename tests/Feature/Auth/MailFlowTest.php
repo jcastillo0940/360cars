@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
 class MailFlowTest extends TestCase
@@ -54,6 +55,30 @@ class MailFlowTest extends TestCase
         ])->assertSessionHas('status');
 
         Notification::assertSentTo($user, ResetPasswordNotification::class);
+    }
+
+    public function test_password_reset_mail_failure_returns_controlled_error(): void
+    {
+        Password::shouldReceive('sendResetLink')
+            ->once()
+            ->andThrow(new \RuntimeException('smtp down'));
+
+        $this->post(route('password.email'), [
+            'email' => 'reset@example.com',
+        ])
+            ->assertRedirect()
+            ->assertSessionHasErrors('email');
+    }
+
+    public function test_password_reset_page_renders_with_token_and_email(): void
+    {
+        $this->get(route('password.reset', [
+            'token' => 'reset-token-123',
+            'email' => 'reset@example.com',
+        ]))
+            ->assertOk()
+            ->assertSee('reset-token-123')
+            ->assertSee('reset@example.com');
     }
 
     public function test_seller_onboarding_with_real_email_sends_welcome_email(): void
