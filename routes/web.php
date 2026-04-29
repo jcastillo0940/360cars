@@ -4,16 +4,23 @@ use App\Http\Controllers\Web\AdminPortalController;
 use App\Http\Controllers\Web\Auth\WebAuthController;
 use App\Http\Controllers\Web\BuyerEngagementController;
 use App\Http\Controllers\Web\BuyerPortalController;
+use App\Http\Controllers\Web\IndexNowController;
 use App\Http\Controllers\Web\NewsController;
 use App\Http\Controllers\Web\PublicCatalogController;
 use App\Http\Controllers\Web\SellerBillingController;
 use App\Http\Controllers\Web\SellerOnboardingController;
 use App\Http\Controllers\Web\SellerPortalController;
+use App\Http\Controllers\Web\SitemapController;
 use App\Http\Controllers\Web\VehicleValuationController;
 use App\Http\Controllers\Web\UserProfileController;
 use Illuminate\Support\Facades\Route;
+use Spatie\Honeypot\ProtectAgainstSpam;
 
 Route::get('/', [App\Http\Controllers\Web\HomeController::class, 'index'])->name('home');
+Route::get('/indexnow-key.txt', IndexNowController::class)->name('indexnow.key');
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap.index');
+Route::get('/sitemap-vehicles.xml', [SitemapController::class, 'vehicles'])->name('sitemap.vehicles');
+Route::get('/sitemap-news.xml', [SitemapController::class, 'news'])->name('sitemap.news');
 Route::get('/inventario', [PublicCatalogController::class, 'index'])->name('catalog.index');
 Route::get('/marcas', [App\Http\Controllers\Web\HomeController::class, 'brands'])->name('brands.index');
 Route::get('/noticias', [NewsController::class, 'index'])->name('news.index');
@@ -22,10 +29,10 @@ Route::get('/vehiculos/{vehicle:slug}', [PublicCatalogController::class, 'show']
 Route::get('/vehiculos/{vehicle:slug}/contactar-whatsapp', [PublicCatalogController::class, 'contactViaWhatsApp'])->name('catalog.contact-whatsapp');
 Route::get('/buyer/comparisons', [PublicCatalogController::class, 'comparisons'])->name('buyer.comparisons.index');
 Route::get('/tasador', [VehicleValuationController::class, 'index'])->name('valuation.index');
-Route::post('/tasador', [VehicleValuationController::class, 'store'])->name('valuation.store');
+Route::post('/tasador', [VehicleValuationController::class, 'store'])->middleware(['throttle:valuation-submit', ProtectAgainstSpam::class])->name('valuation.store');
 Route::get('/tasador/evaluaciones/{token}', [VehicleValuationController::class, 'show'])->name('valuation.show');
 Route::get('/vende-tu-auto', [SellerOnboardingController::class, 'create'])->name('seller.onboarding.create');
-Route::post('/vende-tu-auto', [SellerOnboardingController::class, 'store'])->name('seller.onboarding.store');
+Route::post('/vende-tu-auto', [SellerOnboardingController::class, 'store'])->middleware(['throttle:seller-onboarding', ProtectAgainstSpam::class])->name('seller.onboarding.store');
 
 Route::view('/legal/terminos', 'legal.page', [
     'pageTitle' => 'Terminos de servicio',
@@ -42,13 +49,13 @@ Route::view('/legal/cookies', 'legal.page', [
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [WebAuthController::class, 'create'])->name('login');
-    Route::post('/login', [WebAuthController::class, 'store'])->middleware('throttle:5,1')->name('login.store');
+    Route::post('/login', [WebAuthController::class, 'store'])->middleware(['throttle:auth-login', ProtectAgainstSpam::class])->name('login.store');
     Route::get('/register', [WebAuthController::class, 'register'])->name('register');
-    Route::post('/register', [WebAuthController::class, 'registerStore'])->middleware('throttle:3,10')->name('register.store');
+    Route::post('/register', [WebAuthController::class, 'registerStore'])->middleware(['throttle:auth-register', ProtectAgainstSpam::class])->name('register.store');
     Route::get('/forgot-password', [WebAuthController::class, 'forgotPassword'])->name('password.request');
-    Route::post('/forgot-password', [WebAuthController::class, 'sendResetLink'])->middleware('throttle:3,10')->name('password.email');
+    Route::post('/forgot-password', [WebAuthController::class, 'sendResetLink'])->middleware(['throttle:password-reset-link', ProtectAgainstSpam::class])->name('password.email');
     Route::get('/reset-password/{token}', [WebAuthController::class, 'resetPassword'])->name('password.reset');
-    Route::post('/reset-password', [WebAuthController::class, 'updatePassword'])->middleware('throttle:5,10')->name('password.update');
+    Route::post('/reset-password', [WebAuthController::class, 'updatePassword'])->middleware(['throttle:password-reset-submit', ProtectAgainstSpam::class])->name('password.update');
 });
 
 Route::middleware(['auth', 'active'])->group(function (): void {
@@ -114,6 +121,12 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         Route::patch('/admin/vehicles/{vehicle}/toggle', [AdminPortalController::class, 'toggleVehicle'])->name('admin.vehicles.toggle');
         Route::delete('/admin/vehicles/{vehicle}', [AdminPortalController::class, 'destroyVehicle'])->name('admin.vehicles.destroy');
         Route::get('/admin/settings', [AdminPortalController::class, 'settings'])->name('admin.settings');
+        Route::post('/admin/settings/security', [AdminPortalController::class, 'updateSecuritySettings'])->name('admin.security-settings.update');
+        Route::post('/admin/settings/security/clamav-test', [AdminPortalController::class, 'testClamavConnection'])->name('admin.security-settings.clamav-test');
+        Route::post('/admin/settings/seo', [AdminPortalController::class, 'updateSeoSettings'])->name('admin.seo-settings.update');
+        Route::post('/admin/settings/redirects', [AdminPortalController::class, 'storeRedirect'])->name('admin.redirects.store');
+        Route::put('/admin/settings/redirects/{redirect}', [AdminPortalController::class, 'updateRedirect'])->name('admin.redirects.update');
+        Route::delete('/admin/settings/redirects/{redirect}', [AdminPortalController::class, 'destroyRedirect'])->name('admin.redirects.destroy');
         Route::get('/admin/mail-test', [AdminPortalController::class, 'mailTest'])->name('admin.mail-test');
         Route::post('/admin/mail-test', [AdminPortalController::class, 'sendMailTest'])->middleware('throttle:5,10')->name('admin.mail-test.send');
         Route::get('/admin/features', [AdminPortalController::class, 'features'])->name('admin.features');

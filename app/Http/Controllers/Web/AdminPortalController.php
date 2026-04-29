@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Enums\AccountType;
 use App\Models\NewsPost;
 use App\Models\Plan;
+use App\Models\Redirect;
 use App\Models\Subscription;
 use App\Models\Transaction;
 use App\Models\User;
@@ -17,11 +18,13 @@ use App\Models\VehicleMake;
 use App\Models\VehicleModel;
 use App\Services\Billing\BillingService;
 use App\Services\Currency\ExchangeRateService;
+use App\Services\Seo\SeoService;
 use App\Services\Valuation\ValuationSettingsService;
 use App\Services\Valuation\VehicleValuationAiNarrator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -36,6 +39,7 @@ class AdminPortalController extends Controller
 {
     public function __construct(
         private readonly ExchangeRateService $exchangeRateService,
+        private readonly SeoService $seoService,
         private readonly ValuationSettingsService $valuationSettings,
         private readonly VehicleValuationAiNarrator $valuationAiNarrator,
         private readonly BillingService $billingService,
@@ -484,7 +488,155 @@ class AdminPortalController extends Controller
     {
         return view('portal.admin.settings', $this->sharedData($request) + [
             'paymentMethods' => $this->paymentMethods(),
+            'seoSettings' => $this->seoService->settingsSnapshot(),
+            'seoRedirects' => Redirect::query()->latest()->get(),
+            'securitySettings' => $this->securitySettingsSnapshot(),
         ]);
+    }
+
+
+
+    public function updateSeoSettings(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'default_title' => ['required', 'string', 'max:180'],
+            'default_description' => ['required', 'string', 'max:255'],
+            'title_suffix' => ['required', 'string', 'max:120'],
+            'default_og_image' => ['nullable', 'string', 'max:2048'],
+            'google_site_verification' => ['nullable', 'string', 'max:255'],
+            'index_filtered_inventory' => ['nullable', 'boolean'],
+            'indexnow_enabled' => ['nullable', 'boolean'],
+            'indexnow_key' => ['nullable', 'string', 'max:120'],
+            'indexnow_endpoint' => ['nullable', 'string', 'max:2048'],
+        ]);
+
+
+
+        $this->valuationSettings->put('seo.default_title', $data['default_title'], 'string');
+        $this->valuationSettings->put('seo.default_description', $data['default_description'], 'string');
+        $this->valuationSettings->put('seo.title_suffix', $data['title_suffix'], 'string');
+        $this->valuationSettings->put('seo.default_og_image', $data['default_og_image'] ?? '', 'string');
+        $this->valuationSettings->put('seo.google_site_verification', $data['google_site_verification'] ?? '', 'string');
+        $this->valuationSettings->put('seo.index_filtered_inventory', (bool) ($data['index_filtered_inventory'] ?? false), 'boolean');
+        $this->valuationSettings->put('seo.indexnow_enabled', (bool) ($data['indexnow_enabled'] ?? false), 'boolean');
+        $this->valuationSettings->put('seo.indexnow_key', trim((string) ($data['indexnow_key'] ?? '')), 'string');
+        $this->valuationSettings->put('seo.indexnow_endpoint', trim((string) ($data['indexnow_endpoint'] ?? 'https://api.indexnow.org/indexnow')), 'string');
+
+
+
+        return redirect()->to(route('admin.settings').'#seo-settings')->with('status', 'Configuración SEO actualizada correctamente.');
+    }
+
+    public function updateSecuritySettings(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'honeypot_enabled' => ['nullable', 'boolean'],
+            'honeypot_randomize' => ['nullable', 'boolean'],
+            'honeypot_seconds' => ['required', 'integer', 'min:1', 'max:10'],
+            'clamav_skip_validation' => ['nullable', 'boolean'],
+            'clamav_preferred_socket' => ['required', Rule::in(['tcp_socket', 'unix_socket'])],
+            'clamav_tcp_socket' => ['nullable', 'string', 'max:255'],
+            'clamav_unix_socket' => ['nullable', 'string', 'max:255'],
+            'clamav_socket_connect_timeout' => ['required', 'integer', 'min:1', 'max:30'],
+            'clamav_socket_read_timeout' => ['required', 'integer', 'min:1', 'max:120'],
+            'blocked_ips' => ['nullable', 'string', 'max:5000'],
+            'allowed_ips' => ['nullable', 'string', 'max:5000'],
+            'blocked_user_agents' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        $this->valuationSettings->put('security.honeypot.enabled', (bool) ($data['honeypot_enabled'] ?? false), 'boolean');
+        $this->valuationSettings->put('security.honeypot.randomize_name_field_name', (bool) ($data['honeypot_randomize'] ?? false), 'boolean');
+        $this->valuationSettings->put('security.honeypot.amount_of_seconds', (int) $data['honeypot_seconds'], 'integer');
+        $this->valuationSettings->put('security.clamav.skip_validation', (bool) ($data['clamav_skip_validation'] ?? false), 'boolean');
+        $this->valuationSettings->put('security.clamav.preferred_socket', $data['clamav_preferred_socket'], 'string');
+        $this->valuationSettings->put('security.clamav.tcp_socket', trim((string) ($data['clamav_tcp_socket'] ?? '')), 'string');
+        $this->valuationSettings->put('security.clamav.unix_socket', trim((string) ($data['clamav_unix_socket'] ?? '')), 'string');
+        $this->valuationSettings->put('security.clamav.socket_connect_timeout', (int) $data['clamav_socket_connect_timeout'], 'integer');
+        $this->valuationSettings->put('security.clamav.socket_read_timeout', (int) $data['clamav_socket_read_timeout'], 'integer');
+        $this->valuationSettings->put('security.request_filters.blocked_ips', $this->splitTextareaList((string) ($data['blocked_ips'] ?? '')), 'json');
+        $this->valuationSettings->put('security.request_filters.allowed_ips', $this->splitTextareaList((string) ($data['allowed_ips'] ?? '')), 'json');
+        $this->valuationSettings->put('security.request_filters.blocked_user_agents', $this->splitTextareaList((string) ($data['blocked_user_agents'] ?? '')), 'json');
+
+        return redirect()->to(route('admin.settings').'#security-center')->with('status', 'Configuracion de seguridad actualizada correctamente.');
+    }
+
+    public function testClamavConnection(): RedirectResponse
+    {
+        $clamav = $this->clamavStatusSnapshot(forceProbe: true);
+        $message = $clamav['reachable'] === true
+            ? 'Conexion ClamAV verificada correctamente.'
+            : 'No se pudo conectar con ClamAV. '.$clamav['status'];
+
+        return redirect()->to(route('admin.settings').'#security-center')->with('status', $message);
+    }
+
+
+
+    public function storeRedirect(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'from_path' => ['required', 'string', 'max:255', 'unique:redirects,from_path'],
+            'to_url' => ['required', 'string', 'max:2048'],
+            'status_code' => ['required', Rule::in([301, 302])],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
+
+
+
+        Redirect::query()->create([
+            'from_path' => $this->normalizeRedirectPath($data['from_path']),
+            'to_url' => $data['to_url'],
+            'status_code' => (int) $data['status_code'],
+            'is_active' => (bool) ($data['is_active'] ?? false),
+        ]);
+
+        Cache::forget('seo-redirect:'.$this->normalizeRedirectPath($data['from_path']));
+
+
+
+        return redirect()->to(route('admin.settings').'#seo-redirects')->with('status', 'Redirección SEO creada correctamente.');
+    }
+
+
+
+    public function updateRedirect(Request $request, Redirect $redirect): RedirectResponse
+    {
+        $data = $request->validate([
+            'from_path' => ['required', 'string', 'max:255', Rule::unique('redirects', 'from_path')->ignore($redirect->id)],
+            'to_url' => ['required', 'string', 'max:2048'],
+            'status_code' => ['required', Rule::in([301, 302])],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
+
+        $previousPath = $redirect->from_path;
+
+
+
+        $redirect->update([
+            'from_path' => $this->normalizeRedirectPath($data['from_path']),
+            'to_url' => $data['to_url'],
+            'status_code' => (int) $data['status_code'],
+            'is_active' => (bool) ($data['is_active'] ?? false),
+        ]);
+
+        Cache::forget('seo-redirect:'.$previousPath);
+        Cache::forget('seo-redirect:'.$this->normalizeRedirectPath($data['from_path']));
+
+
+
+        return redirect()->to(route('admin.settings').'#seo-redirects')->with('status', 'Redirección SEO actualizada correctamente.');
+    }
+
+
+
+    public function destroyRedirect(Redirect $redirect): RedirectResponse
+    {
+        Cache::forget('seo-redirect:'.$redirect->from_path);
+        $redirect->delete();
+
+
+
+        return redirect()->to(route('admin.settings').'#seo-redirects')->with('status', 'Redirección SEO eliminada correctamente.');
     }
 
 
@@ -902,6 +1054,92 @@ class AdminPortalController extends Controller
         ];
     }
 
+    private function securitySettingsSnapshot(): array
+    {
+        $protectedForms = [
+            'Inicio de sesion',
+            'Registro',
+            'Recuperacion de clave',
+            'Cambio de clave',
+            'Onboarding de vendedor',
+            'Tasador publico',
+        ];
+
+        return [
+            'honeypot' => [
+                'enabled' => (bool) $this->valuationSettings->get('security.honeypot.enabled', config('honeypot.enabled')),
+                'randomize' => (bool) $this->valuationSettings->get('security.honeypot.randomize_name_field_name', config('honeypot.randomize_name_field_name')),
+                'seconds' => (int) $this->valuationSettings->get('security.honeypot.amount_of_seconds', config('honeypot.amount_of_seconds', 2)),
+                'field' => (string) config('honeypot.name_field_name', 'company_website'),
+                'timestamp_field' => (string) config('honeypot.valid_from_field_name', 'valid_from'),
+                'protected_forms' => $protectedForms,
+            ],
+            'clamav' => $this->clamavStatusSnapshot(),
+            'request_filters' => [
+                'blocked_ips' => array_values($this->valuationSettings->get('security.request_filters.blocked_ips', config('security.blocked_ips', [])) ?: []),
+                'allowed_ips' => array_values($this->valuationSettings->get('security.request_filters.allowed_ips', config('security.allowed_ips', [])) ?: []),
+                'blocked_user_agents' => array_values($this->valuationSettings->get('security.request_filters.blocked_user_agents', config('security.blocked_user_agents', [])) ?: []),
+            ],
+        ];
+    }
+
+    private function clamavStatusSnapshot(bool $forceProbe = false): array
+    {
+        $preferredSocket = (string) $this->valuationSettings->get('security.clamav.preferred_socket', config('clamav.preferred_socket', 'tcp_socket'));
+        $socket = $preferredSocket === 'unix_socket'
+            ? (string) $this->valuationSettings->get('security.clamav.unix_socket', config('clamav.unix_socket'))
+            : (string) $this->valuationSettings->get('security.clamav.tcp_socket', config('clamav.tcp_socket'));
+        $skipValidation = (bool) $this->valuationSettings->get('security.clamav.skip_validation', config('clamav.skip_validation', false));
+        $clientExceptions = (bool) $this->valuationSettings->get('security.clamav.client_exceptions', config('clamav.client_exceptions', false));
+        $connectTimeout = (int) $this->valuationSettings->get('security.clamav.socket_connect_timeout', config('clamav.socket_connect_timeout', 5));
+
+        if (app()->environment('testing') && ! $forceProbe) {
+            return [
+                'preferred_socket' => $preferredSocket,
+                'socket' => $socket,
+                'skip_validation' => $skipValidation,
+                'client_exceptions' => $clientExceptions,
+                'reachable' => null,
+                'status' => 'No verificado en pruebas',
+            ];
+        }
+
+        $reachable = false;
+        $status = 'No disponible';
+
+        if ($preferredSocket === 'unix_socket') {
+            $reachable = $socket !== '' && file_exists($socket);
+            $status = $reachable ? 'Socket unix detectado' : 'Socket unix no encontrado';
+        } else {
+            $connection = @stream_socket_client($socket, $errorCode, $errorMessage, $connectTimeout);
+
+            if (is_resource($connection)) {
+                fclose($connection);
+                $reachable = true;
+                $status = 'Socket TCP alcanzable';
+            } elseif (! empty($errorMessage)) {
+                $status = 'Sin conexion: '.$errorMessage;
+            }
+        }
+
+        return [
+            'preferred_socket' => $preferredSocket,
+            'socket' => $socket,
+            'skip_validation' => $skipValidation,
+            'client_exceptions' => $clientExceptions,
+            'reachable' => $reachable,
+            'status' => $status,
+        ];
+    }
+
+    private function splitTextareaList(string $value): array
+    {
+        return array_values(array_filter(array_map(
+            static fn (string $entry) => trim($entry),
+            preg_split('/[\r\n,]+/', $value) ?: []
+        )));
+    }
+
 
 
     private function mailConfigSnapshot(): array
@@ -1237,6 +1475,15 @@ class AdminPortalController extends Controller
 
 
 
+    private function normalizeRedirectPath(string $path): string
+    {
+        $normalized = '/'.trim($path, '/');
+
+        return $normalized === '//' ? '/' : $normalized;
+    }
+
+
+
     private function validateAdminVehicle(Request $request, ?Vehicle $vehicle = null): array
     {
         $data = $request->validate([
@@ -1347,8 +1594,3 @@ class AdminPortalController extends Controller
         ]);
     }
 }
-
-
-
-
-

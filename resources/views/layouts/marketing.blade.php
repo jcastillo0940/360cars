@@ -3,10 +3,13 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>@yield('title', 'Movikaa')</title>
-    <meta name="description" content="@yield('meta_description', 'Marketplace automotriz Movikaa para comprar y vender autos en Costa Rica.')"/>
+    @include('partials.seo.meta')
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="shortcut icon" href="/favicon.ico">
+    @include('partials.seo.json-ld')
+    @if (! empty($seoData))
+        <script>window.SEO_DATA = @json($seoData);</script>
+    @endif
     @yield('head')
 </head>
 <body>

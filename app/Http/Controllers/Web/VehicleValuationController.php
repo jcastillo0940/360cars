@@ -7,10 +7,12 @@ use App\Http\Requests\Valuation\StoreVehicleValuationRequest;
 use App\Models\VehicleMake;
 use App\Models\VehicleValuation;
 use App\Services\Currency\ExchangeRateService;
+use App\Services\Seo\SeoService;
 use App\Services\Valuation\ValuationSettingsService;
 use App\Services\Valuation\VehicleValuationAiNarrator;
 use App\Services\Valuation\VehicleValuationService;
 use App\Support\VehiclePricePresenter;
+use Spatie\Honeypot\Honeypot;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,8 +22,10 @@ class VehicleValuationController extends Controller
     public function __construct(
         private readonly VehicleValuationService $valuationService,
         private readonly ExchangeRateService $exchangeRateService,
+        private readonly SeoService $seoService,
         private readonly ValuationSettingsService $valuationSettings,
         private readonly VehicleValuationAiNarrator $aiNarrator,
+        private readonly Honeypot $honeypot,
     ) {
     }
 
@@ -29,6 +33,7 @@ class VehicleValuationController extends Controller
     {
         return view('valuation.index', [
             'valuationProps' => $this->baseProps(),
+            'seoData' => $this->seoService->forValuation(request()),
         ]);
     }
 
@@ -48,6 +53,7 @@ class VehicleValuationController extends Controller
 
         return view('valuation.index', [
             'valuationProps' => $props,
+            'seoData' => $this->seoService->forValuation(request()),
         ]);
     }
 
@@ -85,6 +91,7 @@ class VehicleValuationController extends Controller
             'authUser' => $this->authUserPayload($accountUrl),
             'submitUrl' => route('valuation.store'),
             'csrfToken' => csrf_token(),
+            'honeypot' => $this->honeypot->toArray(),
             'makes' => VehicleMake::query()->active()->with(['models' => fn ($query) => $query->active()->orderBy('name')])->orderBy('name')->get()->map(fn (VehicleMake $make) => [
                 'id' => $make->id,
                 'name' => $make->name,
@@ -171,6 +178,3 @@ class VehicleValuationController extends Controller
         ];
     }
 }
-
-
-

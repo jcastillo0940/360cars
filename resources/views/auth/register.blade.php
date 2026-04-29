@@ -24,6 +24,7 @@
 
         <form method="POST" action="{{ route('register.store') }}" class="mt-10 grid gap-5">
             @csrf
+            <x-honeypot />
             <input type="hidden" name="account_type" value="seller" />
 
             <div class="grid gap-5 sm:grid-cols-2">

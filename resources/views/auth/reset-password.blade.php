@@ -18,6 +18,7 @@
 
             <form method="POST" action="{{ route('password.update') }}" class="mt-8 grid gap-5">
                 @csrf
+                <x-honeypot />
                 <input type="hidden" name="token" value="{{ $token }}" />
                 <label class="grid gap-2">
                     <span class="text-sm font-semibold text-slate-200">Correo electrónico</span>

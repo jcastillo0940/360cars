@@ -169,6 +169,50 @@ class PortalWebTest extends TestCase
             ->assertSee('Planes disponibles');
     }
 
+    public function test_admin_settings_renders_security_center(): void
+    {
+        $admin = User::where('email', 'admin@movikaa.local')->firstOrFail();
+
+        $this->actingAs($admin)
+            ->get(route('admin.settings'))
+            ->assertOk()
+            ->assertSee('Centro de Seguridad')
+            ->assertSee('Formularios protegidos')
+            ->assertSee('ClamAV');
+    }
+
+    public function test_admin_can_update_security_settings_from_panel(): void
+    {
+        $admin = User::where('email', 'admin@movikaa.local')->firstOrFail();
+
+        $this->actingAs($admin)
+            ->post(route('admin.security-settings.update'), [
+                'honeypot_enabled' => '1',
+                'honeypot_randomize' => '1',
+                'honeypot_seconds' => 3,
+                'clamav_preferred_socket' => 'tcp_socket',
+                'clamav_tcp_socket' => 'tcp://127.0.0.1:3310',
+                'clamav_unix_socket' => '/var/run/clamav/clamd.ctl',
+                'clamav_socket_connect_timeout' => 5,
+                'clamav_socket_read_timeout' => 30,
+                'blocked_ips' => "203.0.113.10\n198.51.100.25",
+                'allowed_ips' => "192.0.2.10",
+                'blocked_user_agents' => "sqlmap\nnikto",
+            ])
+            ->assertRedirect(route('admin.settings').'#security-center');
+
+        $this->assertDatabaseHas('app_settings', [
+            'key' => 'security.honeypot.amount_of_seconds',
+            'value' => '3',
+            'type' => 'integer',
+        ]);
+
+        $this->assertDatabaseHas('app_settings', [
+            'key' => 'security.request_filters.blocked_ips',
+            'type' => 'json',
+        ]);
+    }
+
     public function test_seller_can_create_vehicle_from_web_form(): void
     {
         $seller = User::where('email', 'seller@movikaa.local')->firstOrFail();

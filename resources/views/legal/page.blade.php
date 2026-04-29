@@ -1,6 +1,7 @@
 @extends('layouts.marketing')
 
 @section('title', ($pageTitle ?? 'Legal').' | Movikaa')
+@section('meta_description', $pageDescription ?? 'Información legal y condiciones de uso del marketplace Movikaa.')
 
 @section('head')
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>

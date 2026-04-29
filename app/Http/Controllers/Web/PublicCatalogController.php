@@ -9,6 +9,7 @@ use App\Models\VehicleFeatureOption;
 use App\Models\VehicleMake;
 use App\Models\VehicleModel;
 use App\Services\Currency\ExchangeRateService;
+use App\Services\Seo\SeoService;
 use App\Services\Valuation\ValuationSettingsService;
 use App\Support\VehiclePricePresenter;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -20,6 +21,7 @@ class PublicCatalogController extends Controller
 {
     public function __construct(
         private readonly ExchangeRateService $exchangeRateService,
+        private readonly SeoService $seoService,
         private readonly ValuationSettingsService $valuationSettings,
     ) {
     }
@@ -112,6 +114,7 @@ class PublicCatalogController extends Controller
                 'endpoints' => $this->engagementEndpoints(),
                 'footerLinks' => $this->footerLinks(),
             ],
+            'seoData' => $this->seoService->forCatalogIndex($filters, $request),
         ]);
     }
 
@@ -156,6 +159,7 @@ class PublicCatalogController extends Controller
                 'endpoints' => $this->engagementEndpoints(),
                 'footerLinks' => $this->footerLinks(),
             ],
+            'seoData' => $this->seoService->forVehicle($vehicle, $isAvailable, request()),
         ]);
     }
 
@@ -200,6 +204,7 @@ class PublicCatalogController extends Controller
                 'suggestedVehicles' => $suggestedVehicles->map(fn (Vehicle $vehicle) => $this->mapVehicle($vehicle, $exchangeQuote))->values()->all(),
                 'footerLinks' => $this->footerLinks(),
             ],
+            'seoData' => $this->seoService->forComparisons($request),
         ]);
     }
 

@@ -15,9 +15,9 @@ class UploadVehicleMediaRequest extends FormRequest
     {
         return [
             'images' => ['required_without:required_images', 'array', 'max:20'],
-            'images.*' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'images.*' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240', 'clamav'],
             'required_images' => ['required_without:images', 'array'],
-            'required_images.*' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'required_images.*' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240', 'clamav'],
         ];
     }
 }

@@ -109,7 +109,7 @@ function ResultPanel({ result, shareUrl, isDark }) {
     );
 }
 
-function ValuationPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authUser, submitUrl, csrfToken, valuationUrl, publicTheme = 'light', makes = [], vehicleConfig, result, shareUrl, footerLinks }) {
+function ValuationPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, authUser, submitUrl, csrfToken, valuationUrl, publicTheme = 'light', makes = [], vehicleConfig, result, shareUrl, footerLinks, honeypot = null }) {
     const [makeId, setMakeId] = useState('');
     const isDark = publicTheme === 'dark';
 
@@ -165,6 +165,15 @@ function ValuationPage({ homeUrl, catalogUrl, sellUrl, accountUrl, loginUrl, aut
 
                                     <form action={submitUrl} method="POST" className="grid gap-6">
                                         <input type="hidden" name="_token" value={csrfToken} />
+                                        {honeypot ? (
+                                            <>
+                                                <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', opacity: 0, pointerEvents: 'none' }}>
+                                                    <label htmlFor={honeypot.nameFieldName}>No completar</label>
+                                                    <input id={honeypot.nameFieldName} type="text" name={honeypot.nameFieldName} autoComplete="off" tabIndex="-1" defaultValue="" />
+                                                </div>
+                                                <input type="hidden" name={honeypot.validFromFieldName} value={honeypot.encryptedValidFrom} />
+                                            </>
+                                        ) : null}
 
                                         <div className="grid gap-4 md:grid-cols-2">
                                             <label className="flex flex-col gap-2">

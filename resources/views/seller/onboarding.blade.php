@@ -1,6 +1,7 @@
 @extends('layouts.marketing')
 
 @section('title', 'Vende Tu Auto | Movikaa')
+@section('meta_description', 'Publica tu auto paso a paso en Movikaa, crea tu cuenta al final y empieza a recibir contactos desde Costa Rica.')
 
 @section('head')
     <link
@@ -175,9 +176,7 @@
                                 <h1
                                     class="mt-5 font-headline text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
                                     Publica rápido y termina sin perderte.</h1>
-                                <p class="mt-4 text-base leading-8 text-slate-300">Registra tu auto primero. Tu cuenta se
-                                    crea al final. Así reducimos fricción y te ayudamos a completar la publicación más
-                                    rápido.</p>
+                                <p class="mt-4 text-base leading-8 text-slate-300">Registra tu auto primero. Tu cuenta se crea al final. Así reducimos fricción y te ayudamos a completar la publicación más rápido.</p>
                             </div>
 
                             <div class="rounded-[24px] border border-white/10 bg-white/5 p-3 sm:p-5">
@@ -266,6 +265,7 @@
                                 data-usd-to-crc="{{ (float) data_get($exchangeQuote, 'usd_to_crc', 0) }}"
                                 data-initial-step="{{ (int) $initialWizardStep }}">
                                 @csrf
+                                <x-honeypot />
                                 <input type="hidden" name="current_step" value="{{ (int) $initialWizardStep }}" data-current-step-input />
                                 <input type="hidden" name="country_code" value="CR" />
                                 <input type="hidden" name="latitude" value="{{ old('latitude') }}" data-map-lat />
@@ -921,5 +921,6 @@
         </main>
     </div>
 @endsection
+
 
 

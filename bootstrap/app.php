@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Middleware\ApplySecurityHeaders;
+use App\Http\Middleware\ApplySeoRedirects;
+use App\Http\Middleware\BlockSuspiciousRequests;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\LogAuthDebug;
@@ -19,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->append(BlockSuspiciousRequests::class);
+        $middleware->append(ApplySeoRedirects::class);
         $middleware->append(ApplySecurityHeaders::class);
         $middleware->statefulApi();
         $middleware->trustProxies(at: '*');

@@ -32,6 +32,7 @@
 
         <form method="POST" action="{{ route('login.store') }}" class="mt-10 grid gap-5">
             @csrf
+            <x-honeypot />
             @if (!empty($redirectTo))
                 <input type="hidden" name="redirect" value="{{ $redirectTo }}" />
             @endif

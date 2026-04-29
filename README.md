@@ -133,6 +133,12 @@ php artisan test
 - `dealer@movikaa.local` / `password`
 - `buyer@movikaa.local` / `password`
 
+## Seguridad operativa
+
+- Honeypot publico con `spatie/laravel-honeypot`
+- Escaneo antivirus de uploads con `sunspikes/clamav-validator`
+- Guia de despliegue: `docs/SECURITY_DEPLOYMENT.md`
+
 ## Siguiente fase sugerida
 
 1. Tilopay.

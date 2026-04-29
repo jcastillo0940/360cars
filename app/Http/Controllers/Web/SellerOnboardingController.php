@@ -13,6 +13,7 @@ use App\Services\Currency\ExchangeRateService;
 use App\Services\Media\VehicleImageProcessor;
 use App\Services\Publication\PublicationLifecycleService;
 use App\Services\Publication\PublicationLimitGuard;
+use App\Services\Seo\SeoService;
 use App\Services\Valuation\ValuationSettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,6 +28,7 @@ class SellerOnboardingController extends Controller
         private readonly PublicationLimitGuard $limitGuard,
         private readonly PublicationLifecycleService $lifecycleService,
         private readonly ExchangeRateService $exchangeRateService,
+        private readonly SeoService $seoService,
         private readonly ValuationSettingsService $valuationSettings,
     ) {
     }
@@ -82,6 +84,7 @@ class SellerOnboardingController extends Controller
                 'canton' => $request->query('canton'),
                 'district' => $request->query('district'),
             ],
+            'seoData' => $this->seoService->forSellerOnboarding($request),
         ]);
     }
 

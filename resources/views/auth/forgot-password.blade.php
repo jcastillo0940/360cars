@@ -28,6 +28,7 @@
 
         <form method="POST" action="{{ route('password.email') }}" class="mt-10 grid gap-5">
             @csrf
+            <x-honeypot />
             <label class="grid gap-2 text-left">
                 <span class="ml-1 text-xs font-bold uppercase tracking-widest text-slate-500">Correo electrónico</span>
                 <input type="email" name="email" value="{{ old('email') }}" required class="min-h-14 rounded-2xl border border-white/5 bg-white/5 px-4 text-white outline-none transition placeholder:text-slate-600 focus:border-primary/50 focus:bg-white/10 focus:ring-4 focus:ring-primary/10" placeholder="tu@correo.com" />

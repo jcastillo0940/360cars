@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\NewsPost;
 use App\Services\Valuation\ValuationSettingsService;
+use App\Services\Seo\SeoService;
 use Illuminate\Contracts\View\View;
 
 class NewsController extends Controller
 {
     public function __construct(
+        private readonly SeoService $seoService,
         private readonly ValuationSettingsService $valuationSettings,
     ) {
     }
@@ -35,6 +37,7 @@ class NewsController extends Controller
                     ],
                 ],
             ],
+            'seoData' => $this->seoService->forNewsIndex(request()),
         ]);
     }
 
@@ -57,6 +60,7 @@ class NewsController extends Controller
                 'post' => $this->mapPost($newsPost->loadMissing('author'), true),
                 'relatedPosts' => $related,
             ],
+            'seoData' => $this->seoService->forNewsPost($newsPost, request()),
         ]);
     }
 

@@ -1,6 +1,7 @@
 @extends('layouts.marketing')
 
 @section('title', 'Tasador | Movikaa')
+@section('meta_description', 'Calcula una estimación de mercado para tu vehículo en Costa Rica con datos como año, kilometraje, condición y configuración.')
 
 @section('head')
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>

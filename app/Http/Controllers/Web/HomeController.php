@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Vehicle;
 use App\Models\VehicleMake;
 use App\Services\Currency\ExchangeRateService;
+use App\Services\Seo\SeoService;
 use App\Services\Valuation\ValuationSettingsService;
 use App\Support\VehiclePricePresenter;
 use Illuminate\Support\Facades\Schema;
@@ -15,6 +16,7 @@ class HomeController extends Controller
 {
     public function __construct(
         private readonly ExchangeRateService $exchangeRateService,
+        private readonly SeoService $seoService,
         private readonly ValuationSettingsService $valuationSettings,
     ) {
     }
@@ -102,6 +104,7 @@ class HomeController extends Controller
                 'max' => $yearCeiling,
             ],
             'publicTheme' => (string) $this->valuationSettings->get('frontend.public_theme', 'light'),
+            'seoData' => $this->seoService->forHome(request()),
         ]);
     }
 
@@ -157,6 +160,7 @@ class HomeController extends Controller
                     'cookiesUrl' => route('legal.cookies'),
                 ],
             ],
+            'seoData' => $this->seoService->forBrandsIndex(request()),
         ]);
     }
 
