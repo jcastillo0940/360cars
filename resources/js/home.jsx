@@ -1,7 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Icon, PriceStack, PublicFooter, PublicTopBar, formatCRC } from './public-shell';
 import { BrandMark } from './brand-assets';
+
+const heroBackgroundSrc = '/img/home-hero-showroom.jpg';
 
 function vehicleUrl(catalogUrl, filters) {
     const params = new URLSearchParams();
@@ -18,11 +20,21 @@ function vehicleUrl(catalogUrl, filters) {
     return `${catalogUrl}${query ? `?${query}` : ''}`;
 }
 
-function HomeVehicleCard({ vehicle, compact = false }) {
+function HomeVehicleCard({ vehicle, compact = false, titleAs = 'h3' }) {
+    const TitleTag = titleAs;
+
     return (
         <a href={vehicle.url} className="group overflow-hidden rounded-[1.75rem] border border-outline-variant/20 bg-white shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl">
             <div className={`relative overflow-hidden ${compact ? 'h-52' : 'h-64'}`}>
-                <img src={vehicle.image} alt={vehicle.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                <img
+                    src={vehicle.image}
+                    alt={vehicle.title}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    decoding="async"
+                    height="900"
+                    loading="lazy"
+                    width="1600"
+                />
                 {vehicle.is_featured ? (
                     <span className="absolute left-4 top-4 rounded-full bg-secondary px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-slate-950">
                         Destacado
@@ -38,7 +50,7 @@ function HomeVehicleCard({ vehicle, compact = false }) {
                 <div className="flex items-start justify-between gap-4">
                     <div>
                         <p className="text-xs font-bold uppercase tracking-[0.2em] text-secondary">{vehicle.make} {vehicle.model}</p>
-                        <h3 className="mt-2 font-headline text-2xl font-extrabold tracking-tight text-slate-950">{vehicle.title}</h3>
+                        <TitleTag className="mt-2 font-headline text-2xl font-extrabold tracking-tight text-slate-950">{vehicle.title}</TitleTag>
                         <p className="mt-2 text-sm text-slate-500">{vehicle.year} · {vehicle.province || vehicle.city || 'Costa Rica'} · {vehicle.published_label}</p>
                     </div>
                     <PriceStack primary={vehicle.price} secondary={vehicle.price_secondary} align="right" />
@@ -83,6 +95,7 @@ function HomePage({
     footerLinks,
 }) {
     const isDark = publicTheme === 'dark';
+    const idPrefix = useId().replace(/:/g, '');
     const [filters, setFilters] = useState({
         make: '',
         model: '',
@@ -99,6 +112,15 @@ function HomePage({
     );
 
     const models = selectedMake?.models || [];
+    const fieldIds = {
+        make: `${idPrefix}-make`,
+        model: `${idPrefix}-model`,
+        province: `${idPrefix}-province`,
+        minPrice: `${idPrefix}-min-price`,
+        maxPrice: `${idPrefix}-max-price`,
+        minYear: `${idPrefix}-min-year`,
+        maxYear: `${idPrefix}-max-year`,
+    };
     const yearTrackLeft = ((filters.min_year - catalogYearRange.min) / Math.max(catalogYearRange.max - catalogYearRange.min, 1)) * 100;
     const yearTrackRight = ((filters.max_year - catalogYearRange.min) / Math.max(catalogYearRange.max - catalogYearRange.min, 1)) * 100;
     const priceTrackLeft = (filters.min_price / Math.max(catalogPriceCeiling, 1)) * 100;
@@ -128,9 +150,14 @@ function HomePage({
                 <section className="relative isolate flex min-h-[80vh] flex-col items-center justify-center overflow-hidden border-b border-outline-variant/5 bg-[#05070b] py-12 text-white sm:min-h-screen sm:py-20">
                     <div className="absolute inset-0 z-0 overflow-hidden">
                         <img
-                            src="/luxury_car_showroom_dark_1775669453755.png"
-                            className="h-full w-full scale-110 object-cover opacity-40 blur-sm"
+                            src={heroBackgroundSrc}
+                            className="h-full w-full object-cover opacity-55"
                             alt="Background"
+                            decoding="async"
+                            fetchPriority="high"
+                            height="960"
+                            loading="eager"
+                            width="960"
                         />
                         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-[#05070b]" />
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_20%,_#05070b_100%)] opacity-80" />
@@ -150,7 +177,7 @@ function HomePage({
                                 <a href={catalogUrl} className="text-sm font-bold text-white/80 hover:text-white">Ver todos</a>
                             </div>
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                {recentVehicles.slice(0, 2).map((vehicle) => <HomeVehicleCard key={`hero-${vehicle.id}`} vehicle={vehicle} compact />)}
+                                {recentVehicles.slice(0, 2).map((vehicle) => <HomeVehicleCard key={`hero-${vehicle.id}`} vehicle={vehicle} compact titleAs="p" />)}
                             </div>
                         </div>
 
@@ -161,18 +188,33 @@ function HomePage({
                                         <span className="hero-search-label">VEHÍCULO</span>
                                         <div className="flex gap-2">
                                             <div className="flex-1">
-                                                <label className="hero-select-pill">
+                                                <label className="hero-select-pill" htmlFor={fieldIds.make}>
+                                                    <span className="sr-only">Marca del vehículo</span>
                                                     <Icon name="directions_car" className="text-[22px] text-white/72" />
-                                                    <select value={filters.make} onChange={(event) => setFilters((current) => ({ ...current, make: event.target.value, model: '' }))} className="public-hero-select hero-search-select">
+                                                    <select
+                                                        id={fieldIds.make}
+                                                        value={filters.make}
+                                                        onChange={(event) => setFilters((current) => ({ ...current, make: event.target.value, model: '' }))}
+                                                        className="public-hero-select hero-search-select"
+                                                        name="make"
+                                                    >
                                                         <option value="">Marca</option>
                                                         {catalogMakes.map((make) => <option key={make.id} value={make.name}>{make.name}</option>)}
                                                     </select>
                                                 </label>
                                             </div>
                                             <div className="flex-1">
-                                                <label className="hero-select-pill">
+                                                <label className="hero-select-pill" htmlFor={fieldIds.model}>
+                                                    <span className="sr-only">Modelo del vehículo</span>
                                                     <Icon name="sell" className="text-[22px] text-white/72" />
-                                                    <select value={filters.model} onChange={(event) => setFilters((current) => ({ ...current, model: event.target.value }))} className="public-hero-select hero-search-select" disabled={!selectedMake}>
+                                                    <select
+                                                        id={fieldIds.model}
+                                                        value={filters.model}
+                                                        onChange={(event) => setFilters((current) => ({ ...current, model: event.target.value }))}
+                                                        className="public-hero-select hero-search-select"
+                                                        disabled={!selectedMake}
+                                                        name="model"
+                                                    >
                                                         <option value="">Modelo (ej)</option>
                                                         {models.map((model) => <option key={model.id} value={model.name}>{model.name}</option>)}
                                                     </select>
@@ -189,8 +231,30 @@ function HomePage({
                                                 <div className="hero-range-track" aria-hidden="true">
                                                     <span className="hero-range-track__active" style={{ left: `${priceTrackLeft}%`, width: `${Math.max(priceTrackRight - priceTrackLeft, 0)}%` }} />
                                                 </div>
-                                                <input min="0" max={catalogPriceCeiling} step="500000" className="brand-range hero-dark-range hero-dark-range--overlay w-full" type="range" value={filters.min_price} onChange={(event) => setFilters((current) => ({ ...current, min_price: Math.min(Number(event.target.value), current.max_price) }))} />
-                                                <input min="0" max={catalogPriceCeiling} step="500000" className="brand-range hero-dark-range hero-dark-range--overlay w-full" type="range" value={filters.max_price} onChange={(event) => setFilters((current) => ({ ...current, max_price: Math.max(Number(event.target.value), current.min_price) }))} />
+                                                <input
+                                                    aria-label="Precio mínimo"
+                                                    aria-valuetext={formatCRC(filters.min_price)}
+                                                    id={fieldIds.minPrice}
+                                                    min="0"
+                                                    max={catalogPriceCeiling}
+                                                    step="500000"
+                                                    className="brand-range hero-dark-range hero-dark-range--overlay w-full"
+                                                    type="range"
+                                                    value={filters.min_price}
+                                                    onChange={(event) => setFilters((current) => ({ ...current, min_price: Math.min(Number(event.target.value), current.max_price) }))}
+                                                />
+                                                <input
+                                                    aria-label="Precio máximo"
+                                                    aria-valuetext={filters.max_price >= catalogPriceCeiling ? 'Sin límite' : formatCRC(filters.max_price)}
+                                                    id={fieldIds.maxPrice}
+                                                    min="0"
+                                                    max={catalogPriceCeiling}
+                                                    step="500000"
+                                                    className="brand-range hero-dark-range hero-dark-range--overlay w-full"
+                                                    type="range"
+                                                    value={filters.max_price}
+                                                    onChange={(event) => setFilters((current) => ({ ...current, max_price: Math.max(Number(event.target.value), current.min_price) }))}
+                                                />
                                             </div>
                                             <div className="hero-price-meta"><span>{formatCRC(0)}</span><span>Sin límite</span></div>
                                         </div>
@@ -204,8 +268,30 @@ function HomePage({
                                                 <div className="hero-range-track" aria-hidden="true">
                                                     <span className="hero-range-track__active" style={{ left: `${yearTrackLeft}%`, width: `${Math.max(yearTrackRight - yearTrackLeft, 0)}%` }} />
                                                 </div>
-                                                <input min={catalogYearRange.min} max={catalogYearRange.max} step="1" className="brand-range hero-dark-range hero-dark-range--overlay w-full" type="range" value={filters.min_year} onChange={(event) => setFilters((current) => ({ ...current, min_year: Math.min(Number(event.target.value), current.max_year) }))} />
-                                                <input min={catalogYearRange.min} max={catalogYearRange.max} step="1" className="brand-range hero-dark-range hero-dark-range--overlay w-full" type="range" value={filters.max_year} onChange={(event) => setFilters((current) => ({ ...current, max_year: Math.max(Number(event.target.value), current.min_year) }))} />
+                                                <input
+                                                    aria-label="Año mínimo"
+                                                    aria-valuetext={`${filters.min_year}`}
+                                                    id={fieldIds.minYear}
+                                                    min={catalogYearRange.min}
+                                                    max={catalogYearRange.max}
+                                                    step="1"
+                                                    className="brand-range hero-dark-range hero-dark-range--overlay w-full"
+                                                    type="range"
+                                                    value={filters.min_year}
+                                                    onChange={(event) => setFilters((current) => ({ ...current, min_year: Math.min(Number(event.target.value), current.max_year) }))}
+                                                />
+                                                <input
+                                                    aria-label="Año máximo"
+                                                    aria-valuetext={`${filters.max_year}`}
+                                                    id={fieldIds.maxYear}
+                                                    min={catalogYearRange.min}
+                                                    max={catalogYearRange.max}
+                                                    step="1"
+                                                    className="brand-range hero-dark-range hero-dark-range--overlay w-full"
+                                                    type="range"
+                                                    value={filters.max_year}
+                                                    onChange={(event) => setFilters((current) => ({ ...current, max_year: Math.max(Number(event.target.value), current.min_year) }))}
+                                                />
                                             </div>
                                             <div className="hero-price-meta"><span>{catalogYearRange.min}</span><span>{catalogYearRange.max}</span></div>
                                         </div>
@@ -213,9 +299,16 @@ function HomePage({
 
                                     <section className="hero-search-block">
                                         <span className="hero-search-label">UBICACIÓN</span>
-                                        <label className="hero-select-pill">
+                                        <label className="hero-select-pill" htmlFor={fieldIds.province}>
+                                            <span className="sr-only">Provincia</span>
                                             <Icon name="location_on" className="text-[22px] text-white/72" />
-                                            <select value={filters.province} onChange={(event) => setFilters((current) => ({ ...current, province: event.target.value }))} className="public-hero-select hero-search-select">
+                                            <select
+                                                id={fieldIds.province}
+                                                value={filters.province}
+                                                onChange={(event) => setFilters((current) => ({ ...current, province: event.target.value }))}
+                                                className="public-hero-select hero-search-select"
+                                                name="province"
+                                            >
                                                 <option value="">Todo el país</option>
                                                 {catalogProvinces.map((province) => <option key={province} value={province}>{province}</option>)}
                                             </select>

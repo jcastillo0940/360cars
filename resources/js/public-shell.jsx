@@ -53,15 +53,232 @@ function LogoutButton({ className = '' }) {
 }
 
 export function Icon({ name, className = '', filled = false }) {
-    return (
-        <span
-            className={`material-symbols-outlined ${className}`.trim()}
-            style={filled ? { fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24" } : undefined}
-            aria-hidden="true"
-        >
-            {name}
-        </span>
-    );
+    const sharedProps = {
+        'aria-hidden': 'true',
+        className,
+        fill: 'none',
+        focusable: 'false',
+        stroke: 'currentColor',
+        strokeLinecap: 'round',
+        strokeLinejoin: 'round',
+        strokeWidth: 2,
+        viewBox: '0 0 24 24',
+    };
+
+    switch (name) {
+        case 'analytics':
+            return (
+                <svg {...sharedProps}>
+                    <path d="M5 20V10" />
+                    <path d="M12 20V4" />
+                    <path d="M19 20v-7" />
+                </svg>
+            );
+        case 'article':
+            return (
+                <svg {...sharedProps}>
+                    <path d="M7 4h8l4 4v12H7z" />
+                    <path d="M15 4v4h4" />
+                    <path d="M10 13h6" />
+                    <path d="M10 17h6" />
+                </svg>
+            );
+        case 'arrow_back':
+            return (
+                <svg {...sharedProps}>
+                    <path d="M19 12H5" />
+                    <path d="m12 19-7-7 7-7" />
+                </svg>
+            );
+        case 'auto_awesome':
+            return (
+                <svg {...sharedProps}>
+                    <path d="m12 3 1.7 4.3L18 9l-4.3 1.7L12 15l-1.7-4.3L6 9l4.3-1.7z" />
+                    <path d="m18 15 .9 2.1L21 18l-2.1.9L18 21l-.9-2.1L15 18l2.1-.9z" />
+                </svg>
+            );
+        case 'chat':
+            return (
+                <svg {...sharedProps}>
+                    <path d="M7 17 3 21V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2z" />
+                </svg>
+            );
+        case 'close':
+            return (
+                <svg {...sharedProps}>
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                </svg>
+            );
+        case 'compare_arrows':
+            return (
+                <svg {...sharedProps}>
+                    <path d="M8 7h11" />
+                    <path d="m16 3 4 4-4 4" />
+                    <path d="M16 17H5" />
+                    <path d="m8 13-4 4 4 4" />
+                </svg>
+            );
+        case 'directions_car':
+            return (
+                <svg {...sharedProps}>
+                    <path d="m5 16 1.5-5A2 2 0 0 1 8.4 9h7.2a2 2 0 0 1 1.9 1.4L19 16" />
+                    <path d="M4 16h16" />
+                    <path d="M6 16v2" />
+                    <path d="M18 16v2" />
+                    <circle cx="7.5" cy="13.5" r="1.25" />
+                    <circle cx="16.5" cy="13.5" r="1.25" />
+                </svg>
+            );
+        case 'expand_less':
+            return (
+                <svg {...sharedProps}>
+                    <path d="m6 15 6-6 6 6" />
+                </svg>
+            );
+        case 'expand_more':
+            return (
+                <svg {...sharedProps}>
+                    <path d="m6 9 6 6 6-6" />
+                </svg>
+            );
+        case 'favorite':
+            return filled ? (
+                <svg aria-hidden="true" className={className} fill="currentColor" focusable="false" viewBox="0 0 24 24">
+                    <path d="m12 20.5-1.1-1C5.1 14.2 2 11.4 2 7.9A4.9 4.9 0 0 1 6.9 3 5.4 5.4 0 0 1 12 5.7 5.4 5.4 0 0 1 17.1 3 4.9 4.9 0 0 1 22 7.9c0 3.5-3.1 6.3-8.9 11.6z" />
+                </svg>
+            ) : (
+                <svg {...sharedProps}>
+                    <path d="m12 20.5-1.1-1C5.1 14.2 2 11.4 2 7.9A4.9 4.9 0 0 1 6.9 3 5.4 5.4 0 0 1 12 5.7 5.4 5.4 0 0 1 17.1 3 4.9 4.9 0 0 1 22 7.9c0 3.5-3.1 6.3-8.9 11.6z" />
+                </svg>
+            );
+        case 'forum':
+            return (
+                <svg {...sharedProps}>
+                    <path d="M4 15h8l4 4v-4h3a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z" />
+                </svg>
+            );
+        case 'ios_share':
+            return (
+                <svg {...sharedProps}>
+                    <path d="M12 16V4" />
+                    <path d="m8 8 4-4 4 4" />
+                    <path d="M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
+                </svg>
+            );
+        case 'location_on':
+            return (
+                <svg {...sharedProps}>
+                    <path d="M12 21s6-4.6 6-10a6 6 0 1 0-12 0c0 5.4 6 10 6 10Z" />
+                    <circle cx="12" cy="11" r="2.25" />
+                </svg>
+            );
+        case 'menu':
+            return (
+                <svg {...sharedProps}>
+                    <path d="M4 7h16" />
+                    <path d="M4 12h16" />
+                    <path d="M4 17h16" />
+                </svg>
+            );
+        case 'newspaper':
+            return (
+                <svg {...sharedProps}>
+                    <path d="M5 7h12v10a2 2 0 0 0 2 2H7a2 2 0 0 1-2-2z" />
+                    <path d="M17 7h2a2 2 0 0 1 2 2v8" />
+                    <path d="M8 11h6" />
+                    <path d="M8 15h6" />
+                </svg>
+            );
+        case 'notifications_active':
+            return (
+                <svg {...sharedProps}>
+                    <path d="M15 18H5l1.4-1.4a2 2 0 0 0 .6-1.4V11a5 5 0 1 1 10 0v4.2a2 2 0 0 0 .6 1.4L19 18h-4" />
+                    <path d="M10 20a2 2 0 0 0 4 0" />
+                    <path d="M19 4v3" />
+                    <path d="M20.5 5.5h-3" />
+                </svg>
+            );
+        case 'person':
+            return (
+                <svg {...sharedProps}>
+                    <circle cx="12" cy="8" r="3.25" />
+                    <path d="M5 19a7 7 0 0 1 14 0" />
+                </svg>
+            );
+        case 'query_stats':
+            return (
+                <svg {...sharedProps}>
+                    <path d="M4 19h16" />
+                    <path d="m6 15 4-4 3 3 5-6" />
+                </svg>
+            );
+        case 'search':
+            return (
+                <svg {...sharedProps}>
+                    <circle cx="11" cy="11" r="6" />
+                    <path d="m20 20-4.35-4.35" />
+                </svg>
+            );
+        case 'search_off':
+            return (
+                <svg {...sharedProps}>
+                    <circle cx="11" cy="11" r="6" />
+                    <path d="m20 20-4.35-4.35" />
+                    <path d="M4 4 20 20" />
+                </svg>
+            );
+        case 'sell':
+            return (
+                <svg {...sharedProps}>
+                    <path d="m12 3 8 8-8 8-8-8V3z" />
+                    <circle cx="9" cy="9" r="1.25" />
+                </svg>
+            );
+        case 'trending_up':
+            return (
+                <svg {...sharedProps}>
+                    <path d="m4 16 6-6 4 4 6-8" />
+                    <path d="M14 6h6v6" />
+                </svg>
+            );
+        case 'tune':
+            return (
+                <svg {...sharedProps}>
+                    <path d="M4 6h8" />
+                    <path d="M16 6h4" />
+                    <path d="M10 6a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z" />
+                    <path d="M4 12h3" />
+                    <path d="M11 12h9" />
+                    <path d="M7 12a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z" />
+                    <path d="M4 18h10" />
+                    <path d="M18 18h2" />
+                    <path d="M14 18a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z" />
+                </svg>
+            );
+        case 'verified':
+            return (
+                <svg {...sharedProps}>
+                    <path d="m9 12 2 2 4-4" />
+                    <path d="M12 3.5 15 5l3.5.5.5 3.5L20.5 12 19 15l-.5 3.5-3.5.5L12 20.5 9 19l-3.5-.5L5 15 3.5 12 5 9l.5-3.5L9 5z" />
+                </svg>
+            );
+        case 'visibility':
+            return (
+                <svg {...sharedProps}>
+                    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
+                    <circle cx="12" cy="12" r="2.5" />
+                </svg>
+            );
+        default:
+            return (
+                <svg {...sharedProps}>
+                    <circle cx="12" cy="12" r="8" />
+                    <path d="M12 8v5" />
+                    <path d="M12 17h.01" />
+                </svg>
+            );
+    }
 }
 
 export function Logo({ className = '' }) {
@@ -70,11 +287,14 @@ export function Logo({ className = '' }) {
             <img 
                 src="/img/logo.png" 
                 alt="Movikaa" 
-                className="h-8 w-auto object-contain sm:h-10" 
+                className="h-8 w-auto object-contain sm:h-10"
+                decoding="async"
+                height="1374"
                 onError={(e) => {
                     e.target.style.display = 'none';
                     e.target.nextSibling.style.display = 'block';
                 }}
+                width="3922"
             />
             <span className="hidden font-headline text-2xl font-black tracking-tighter sm:text-3xl">Movikaa</span>
         </div>
