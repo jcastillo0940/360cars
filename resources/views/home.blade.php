@@ -3,10 +3,7 @@
 @section('title', 'Movikaa | Encuentra tu próximo auto en Costa Rica')
 
 @section('head')
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
-<link rel="preload" as="image" href="/img/home-hero-showroom.jpg" fetchpriority="high"/>
+<link rel="preload" as="image" href="/img/home-hero-showroom.webp" type="image/webp" fetchpriority="high"/>
 @vite(['resources/css/home.css', 'resources/js/home.jsx'])
 @endsection
 
@@ -64,7 +61,22 @@
                 <div class="flex items-center gap-4 lg:gap-12">
                     <a href="{{ route('home') }}" class="text-white">
                         <span class="flex items-center">
-                            <img src="/img/logo.png" alt="Movikaa" class="h-8 w-auto object-contain sm:h-10" width="3922" height="1374" decoding="async">
+                            <picture>
+                                <source
+                                    srcset="/img/logo-160.webp 160w, /img/logo-320.webp 320w"
+                                    sizes="(min-width: 640px) 160px, 128px"
+                                    type="image/webp"
+                                >
+                                <img
+                                    src="/img/logo.png"
+                                    alt="Movikaa"
+                                    class="h-8 w-auto object-contain sm:h-10"
+                                    width="160"
+                                    height="56"
+                                    decoding="async"
+                                    fetchpriority="high"
+                                >
+                            </picture>
                         </span>
                     </a>
                     <div class="hidden md:flex md:gap-6 lg:gap-8">
@@ -89,13 +101,14 @@
             <section class="relative isolate flex min-h-[80vh] flex-col items-center justify-center overflow-hidden border-b border-outline-variant/5 bg-[#05070b] py-12 text-white sm:min-h-screen sm:py-20">
                 <div class="absolute inset-0 z-0 overflow-hidden">
                     <img
-                        src="/img/home-hero-showroom.jpg"
+                        src="/img/home-hero-showroom.webp"
                         class="h-full w-full object-cover opacity-55"
                         alt="Background"
                         width="960"
                         height="960"
                         fetchpriority="high"
                         decoding="async"
+                        loading="eager"
                     >
                     <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-[#05070b]"></div>
                     <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_20%,_#05070b_100%)] opacity-80"></div>
@@ -119,7 +132,20 @@
                                 @foreach ($heroVehicles as $vehicle)
                                     <a href="{{ $vehicle['url'] }}" class="group overflow-hidden rounded-[1.75rem] border border-outline-variant/20 bg-white shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl">
                                         <div class="relative h-52 overflow-hidden">
-                                            <img src="{{ $vehicle['image'] }}" alt="{{ $vehicle['title'] }}" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" width="1600" height="900" decoding="async" loading="lazy">
+                                            <img
+                                                src="{{ $vehicle['image_thumb'] ?: $vehicle['image'] }}"
+                                                @if (! empty($vehicle['image_thumb']) && ! empty($vehicle['image_thumb_width']) && ! empty($vehicle['image']))
+                                                    srcset="{{ $vehicle['image_thumb'] }} {{ $vehicle['image_thumb_width'] }}w, {{ $vehicle['image'] }} {{ $vehicle['image_width'] ?: 1600 }}w"
+                                                    sizes="(min-width: 640px) 50vw, 100vw"
+                                                @endif
+                                                alt="{{ $vehicle['title'] }}"
+                                                class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                width="{{ $vehicle['image_width'] ?: 1600 }}"
+                                                height="{{ $vehicle['image_height'] ?: 900 }}"
+                                                decoding="async"
+                                                loading="{{ $loop->first ? 'eager' : 'lazy' }}"
+                                                fetchpriority="{{ $loop->first ? 'high' : 'auto' }}"
+                                            >
                                         </div>
                                         <div class="p-5 sm:p-6">
                                             <p class="text-xs font-bold uppercase tracking-[0.2em] text-secondary">{{ trim(($vehicle['make'] ?? '') . ' ' . ($vehicle['model'] ?? '')) }}</p>

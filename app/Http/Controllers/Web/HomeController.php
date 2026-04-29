@@ -186,6 +186,7 @@ class HomeController extends Controller
         $image = $primary && $primary->path
             ? Storage::disk($primary->disk ?: 'public')->url($primary->path)
             : 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1400&q=80';
+        $imageThumb = $primary?->thumbUrl();
         $pricing = VehiclePricePresenter::present((float) $vehicle->price, $vehicle->currency, $exchangeQuote);
 
         return [
@@ -195,6 +196,11 @@ class HomeController extends Controller
             'price_secondary' => $pricing['secondary_formatted'],
             'price_raw' => $pricing['primary_raw'],
             'image' => $image,
+            'image_thumb' => $imageThumb,
+            'image_width' => $primary?->width,
+            'image_height' => $primary?->height,
+            'image_thumb_width' => data_get($primary?->conversions, 'thumb_width'),
+            'image_thumb_height' => data_get($primary?->conversions, 'thumb_height'),
             'url' => route('catalog.show', $vehicle->slug),
             'city' => $vehicle->city,
             'province' => $vehicle->province ?: $vehicle->state,
