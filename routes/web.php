@@ -5,6 +5,7 @@ use App\Http\Controllers\Web\Auth\WebAuthController;
 use App\Http\Controllers\Web\BuyerEngagementController;
 use App\Http\Controllers\Web\BuyerPortalController;
 use App\Http\Controllers\Web\IndexNowController;
+use App\Http\Controllers\Web\LegalController;
 use App\Http\Controllers\Web\NewsController;
 use App\Http\Controllers\Web\PublicCatalogController;
 use App\Http\Controllers\Web\SellerBillingController;
@@ -34,18 +35,9 @@ Route::get('/tasador/evaluaciones/{token}', [VehicleValuationController::class, 
 Route::get('/vende-tu-auto', [SellerOnboardingController::class, 'create'])->name('seller.onboarding.create');
 Route::post('/vende-tu-auto', [SellerOnboardingController::class, 'store'])->middleware(['throttle:seller-onboarding', ProtectAgainstSpam::class])->name('seller.onboarding.store');
 
-Route::view('/legal/terminos', 'legal.page', [
-    'pageTitle' => 'Terminos de servicio',
-    'pageDescription' => 'Condiciones generales para publicar, vender y explorar vehiculos dentro de Movikaa en Costa Rica.',
-])->name('legal.terms');
-Route::view('/legal/privacidad', 'legal.page', [
-    'pageTitle' => 'Politica de privacidad',
-    'pageDescription' => 'Resumen de tratamiento de datos, autenticacion, contacto y trazabilidad comercial del marketplace.',
-])->name('legal.privacy');
-Route::view('/legal/cookies', 'legal.page', [
-    'pageTitle' => 'Politica de cookies',
-    'pageDescription' => 'Uso de cookies funcionales, de sesion y de rendimiento para mejorar la experiencia del usuario.',
-])->name('legal.cookies');
+Route::get('/legal/terminos', [LegalController::class, 'terms'])->name('legal.terms');
+Route::get('/legal/privacidad', [LegalController::class, 'privacy'])->name('legal.privacy');
+Route::get('/legal/cookies', [LegalController::class, 'cookies'])->name('legal.cookies');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [WebAuthController::class, 'create'])->name('login');

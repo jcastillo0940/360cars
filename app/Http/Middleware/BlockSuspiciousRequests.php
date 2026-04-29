@@ -10,6 +10,10 @@ class BlockSuspiciousRequests
 {
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->is('sitemap.xml', 'sitemap-vehicles.xml', 'sitemap-news.xml', 'robots.txt')) {
+            return $next($request);
+        }
+
         $ip = (string) $request->ip();
         $userAgent = strtolower((string) $request->userAgent());
         $allowedIps = config('security.allowed_ips', []);

@@ -31,6 +31,50 @@ class SeoWebTest extends TestCase
             ->assertSee('window.SEO_DATA', false);
     }
 
+    public function test_legal_pages_render_with_canonical_and_content(): void
+    {
+        $this->get(route('legal.terms'))
+            ->assertOk()
+            ->assertSee('<link rel="canonical" href="'.route('legal.terms').'"/>', false)
+            ->assertSee('Terminos y condiciones');
+
+        $this->get(route('legal.privacy'))
+            ->assertOk()
+            ->assertSee('<link rel="canonical" href="'.route('legal.privacy').'"/>', false)
+            ->assertSee('Politica de privacidad');
+
+        $this->get(route('legal.cookies'))
+            ->assertOk()
+            ->assertSee('<link rel="canonical" href="'.route('legal.cookies').'"/>', false)
+            ->assertSee('Politica de cookies');
+    }
+
+    public function test_sitemap_routes_are_not_blocked_by_user_agent_filters(): void
+    {
+        config()->set('security.blocked_user_agents', ['curl/']);
+
+        $this->withHeaders([
+            'User-Agent' => 'curl/8.0.1',
+        ])->get(route('sitemap.index'))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/xml')
+            ->assertSee('<sitemapindex', false);
+
+        $this->withHeaders([
+            'User-Agent' => 'curl/8.0.1',
+        ])->get(route('sitemap.vehicles'))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/xml')
+            ->assertSee('<urlset', false);
+
+        $this->withHeaders([
+            'User-Agent' => 'curl/8.0.1',
+        ])->get(route('sitemap.news'))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/xml')
+            ->assertSee('<urlset', false);
+    }
+
     public function test_filtered_inventory_defaults_to_noindex_follow(): void
     {
         $response = $this->get(route('catalog.index', [
