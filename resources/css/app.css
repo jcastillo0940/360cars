@@ -381,9 +381,36 @@ h1, h2, h3, h4, strong { font-family: 'Manrope', sans-serif; font-weight: 700; c
     color: var(--portal-danger);
     border: 1px dashed rgba(239, 68, 68, 0.4);
 }
+.flash-banner--warning {
+    background: rgba(245, 158, 11, 0.12);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.42);
+}
+
+.flash-banner--warning-large {
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 1.25rem 1.5rem;
+    border-radius: 0.9rem;
+    box-shadow: 0 18px 40px rgba(245, 158, 11, 0.12);
+}
+
+.flash-banner--warning-large strong {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 1.02rem;
+    color: #fde68a;
+}
+
+.flash-banner--warning-large p {
+    margin: 0;
+    max-width: 80ch;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: #fef3c7;
+}
 
 /* Utilities */
 .pill { background: var(--portal-soft); padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
 .text-link { color: var(--portal-primary); font-weight: 600; cursor: pointer; }
 .text-link:hover { text-decoration: underline; }
-

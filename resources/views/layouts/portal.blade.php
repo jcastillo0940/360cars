@@ -152,6 +152,15 @@
             </header>
 
             <main class="portal-content">
+                @if (! empty($supportIntegrityAlert))
+                    <div class="flash-banner flash-banner--warning flash-banner--warning-large">
+                        <div>
+                            <strong>{{ $supportIntegrityAlert['title'] }}</strong>
+                            <p>{{ $supportIntegrityAlert['message'] }}</p>
+                        </div>
+                    </div>
+                @endif
+
                 @if (session('status'))
                     <div class="flash-banner flash-banner--success">{{ session('status') }}</div>
                 @endif

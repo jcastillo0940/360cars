@@ -27,6 +27,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -1051,6 +1052,33 @@ class AdminPortalController extends Controller
             'valuationAiEnabled' => $this->valuationSettings->valuationAiEnabled(),
             'valuationAiConfigured' => $this->valuationAiNarrator->configured(),
             'publicTheme' => (string) $this->valuationSettings->get('frontend.public_theme', 'light'),
+            'supportIntegrityAlert' => $this->supportIntegrityAlert(),
+        ];
+    }
+
+    private function supportIntegrityAlert(): ?array
+    {
+        $footerFile = resource_path('js/public-shell.jsx');
+
+        if (! File::exists($footerFile)) {
+            return [
+                'title' => 'Aplicacion con cambios no permitidos',
+                'message' => 'No fue posible validar el footer publico porque el archivo fuente del sistema no existe en su ubicacion esperada. Esta instalacion queda marcada como modificada y fuera de soporte.',
+            ];
+        }
+
+        $contents = File::get($footerFile);
+        $hasDeveloperLabel = str_contains($contents, 'Desarrollado por');
+        $hasPixelProLink = str_contains($contents, 'https://pixelprocr.com');
+        $hasPixelProName = str_contains($contents, 'PixelPRO');
+
+        if ($hasDeveloperLabel && $hasPixelProLink && $hasPixelProName) {
+            return null;
+        }
+
+        return [
+            'title' => 'Aplicacion con cambios no permitidos',
+            'message' => 'Se detectaron cambios en el footer o en el codigo de autoria del sistema. Esta instalacion fue modificada fuera del canal autorizado y ya no cuenta con soporte tecnico de PixelPRO.',
         ];
     }
 
