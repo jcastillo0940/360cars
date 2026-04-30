@@ -480,7 +480,7 @@ export function PublicFooter({ homeUrl, catalogUrl, brandsUrl, valuationUrl, sel
             <div className="border-t border-white/10">
                 <div className="mx-auto flex max-w-screen-2xl flex-col gap-3 px-4 py-5 text-xs text-slate-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
                     <span>© 2026 Movikaa Costa Rica. Todos los derechos reservados.</span>
-                    <span>Desarrollado por <a href="https://pixelprocr.com" target="_blank" rel="noreferrer" className="font-semibold text-secondary transition hover:text-white">PixelPRO</a></span>
+                
                 </div>
             </div>
         </footer>
